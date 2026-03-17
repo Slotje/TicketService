@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { scannerAuthGuard } from './guards/scanner-auth.guard';
+import { adminAuthGuard } from './guards/admin-auth.guard';
 
 export const routes: Routes = [
   {
@@ -28,24 +29,33 @@ export const routes: Routes = [
     canActivate: [scannerAuthGuard]
   },
   {
+    path: 'admin/login',
+    loadComponent: () => import('./pages/admin/admin-login.component').then(m => m.AdminLoginComponent)
+  },
+  {
     path: 'admin',
-    loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
+    loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/customers',
-    loadComponent: () => import('./pages/admin/customer-management.component').then(m => m.CustomerManagementComponent)
+    loadComponent: () => import('./pages/admin/customer-management.component').then(m => m.CustomerManagementComponent),
+    canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/events',
-    loadComponent: () => import('./pages/admin/event-management.component').then(m => m.EventManagementComponent)
+    loadComponent: () => import('./pages/admin/event-management.component').then(m => m.EventManagementComponent),
+    canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/orders/:eventId',
-    loadComponent: () => import('./pages/admin/order-management.component').then(m => m.OrderManagementComponent)
+    loadComponent: () => import('./pages/admin/order-management.component').then(m => m.OrderManagementComponent),
+    canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/scanners',
-    loadComponent: () => import('./pages/admin/scanner-management.component').then(m => m.ScannerManagementComponent)
+    loadComponent: () => import('./pages/admin/scanner-management.component').then(m => m.ScannerManagementComponent),
+    canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/scan',

@@ -8,6 +8,8 @@ import nl.ticketservice.dto.*;
 import nl.ticketservice.entity.ScannerUser;
 import nl.ticketservice.service.AuthService;
 
+import nl.ticketservice.service.AdminAuthService;
+
 import java.util.List;
 
 @Path("/api/auth")
@@ -17,6 +19,9 @@ public class AuthResource {
 
     @Inject
     AuthService authService;
+
+    @Inject
+    AdminAuthService adminAuthService;
 
     @POST
     @Path("/login")
@@ -39,7 +44,8 @@ public class AuthResource {
 
     @GET
     @Path("/users")
-    public List<ScannerUserDTO> getUsers() {
+    public List<ScannerUserDTO> getUsers(@HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return authService.getAllUsers().stream()
                 .map(u -> new ScannerUserDTO(u.id, u.username, u.displayName, u.active, u.createdAt))
                 .toList();
@@ -47,20 +53,25 @@ public class AuthResource {
 
     @POST
     @Path("/users")
-    public ScannerUserDTO createUser(@Valid CreateScannerUserDTO dto) {
+    public ScannerUserDTO createUser(@Valid CreateScannerUserDTO dto,
+                                     @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         ScannerUser user = authService.createUser(dto.username(), dto.password(), dto.displayName());
         return new ScannerUserDTO(user.id, user.username, user.displayName, user.active, user.createdAt);
     }
 
     @DELETE
     @Path("/users/{id}")
-    public void deleteUser(@PathParam("id") Long id) {
+    public void deleteUser(@PathParam("id") Long id, @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         authService.deleteUser(id);
     }
 
     @PATCH
     @Path("/users/{id}/toggle")
-    public ScannerUserDTO toggleUser(@PathParam("id") Long id) {
+    public ScannerUserDTO toggleUser(@PathParam("id") Long id,
+                                     @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         ScannerUser user = authService.toggleActive(id);
         return new ScannerUserDTO(user.id, user.username, user.displayName, user.active, user.createdAt);
     }

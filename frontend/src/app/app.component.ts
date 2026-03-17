@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
+import { AdminAuthService } from './services/admin-auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -64,20 +66,43 @@ import { Menubar } from 'primeng/menubar';
     }
   `]
 })
-export class AppComponent {
-  menuItems: MenuItem[] = [
-    { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/' },
-    { label: 'Mijn Tickets', icon: 'pi pi-ticket', routerLink: '/my-tickets' },
-    { label: 'Scanner', icon: 'pi pi-qrcode', routerLink: '/scan/login' },
-    {
-      label: 'Beheer',
-      icon: 'pi pi-cog',
-      items: [
-        { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/admin' },
-        { label: 'Klanten', icon: 'pi pi-users', routerLink: '/admin/customers' },
-        { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/admin/events' },
-        { label: 'Scanner Accounts', icon: 'pi pi-id-card', routerLink: '/admin/scanners' }
-      ]
-    }
-  ];
+export class AppComponent implements OnInit, OnDestroy {
+  menuItems: MenuItem[] = [];
+  private authSub?: Subscription;
+
+  constructor(private adminAuth: AdminAuthService) {}
+
+  ngOnInit() {
+    this.authSub = this.adminAuth.isLoggedIn$.subscribe(() => this.buildMenu());
+  }
+
+  ngOnDestroy() {
+    this.authSub?.unsubscribe();
+  }
+
+  private buildMenu() {
+    const isAdmin = this.adminAuth.isLoggedIn;
+
+    this.menuItems = [
+      { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/' },
+      { label: 'Mijn Tickets', icon: 'pi pi-ticket', routerLink: '/my-tickets' },
+      { label: 'Scanner', icon: 'pi pi-qrcode', routerLink: '/scan/login' },
+      ...(isAdmin ? [{
+        label: 'Beheer',
+        icon: 'pi pi-cog',
+        items: [
+          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/admin' },
+          { label: 'Klanten', icon: 'pi pi-users', routerLink: '/admin/customers' },
+          { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/admin/events' },
+          { label: 'Scanner Accounts', icon: 'pi pi-id-card', routerLink: '/admin/scanners' },
+          { separator: true },
+          { label: 'Uitloggen', icon: 'pi pi-sign-out', command: () => this.adminAuth.logout() }
+        ]
+      }] : [{
+        label: 'Beheer',
+        icon: 'pi pi-lock',
+        routerLink: '/admin/login'
+      }])
+    ];
+  }
 }

@@ -9,6 +9,7 @@ import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
 import nl.ticketservice.exception.TicketServiceException;
+import nl.ticketservice.service.AdminAuthService;
 import nl.ticketservice.service.OrderService;
 import nl.ticketservice.service.PdfService;
 import nl.ticketservice.service.QrCodeService;
@@ -33,9 +34,14 @@ public class OrderResource {
     @Inject
     nl.ticketservice.service.AuthService authService;
 
+    @Inject
+    AdminAuthService adminAuthService;
+
     @GET
     @Path("/event/{eventId}")
-    public List<OrderResponseDTO> getByEvent(@PathParam("eventId") Long eventId) {
+    public List<OrderResponseDTO> getByEvent(@PathParam("eventId") Long eventId,
+                                             @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return orderService.getOrdersByEvent(eventId);
     }
 

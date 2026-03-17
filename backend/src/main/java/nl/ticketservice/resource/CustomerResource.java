@@ -8,6 +8,8 @@ import jakarta.ws.rs.core.Response;
 import nl.ticketservice.dto.CustomerDTO;
 import nl.ticketservice.service.CustomerService;
 
+import nl.ticketservice.service.AdminAuthService;
+
 import java.util.List;
 
 @Path("/api/customers")
@@ -18,32 +20,41 @@ public class CustomerResource {
     @Inject
     CustomerService customerService;
 
+    @Inject
+    AdminAuthService adminAuthService;
+
     @GET
-    public List<CustomerDTO> getAll() {
+    public List<CustomerDTO> getAll(@HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return customerService.getAllCustomers();
     }
 
     @GET
     @Path("/{id}")
-    public CustomerDTO getById(@PathParam("id") Long id) {
+    public CustomerDTO getById(@PathParam("id") Long id, @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return customerService.getCustomer(id);
     }
 
     @POST
-    public Response create(@Valid CustomerDTO dto) {
+    public Response create(@Valid CustomerDTO dto, @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         CustomerDTO created = customerService.createCustomer(dto);
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @PUT
     @Path("/{id}")
-    public CustomerDTO update(@PathParam("id") Long id, @Valid CustomerDTO dto) {
+    public CustomerDTO update(@PathParam("id") Long id, @Valid CustomerDTO dto,
+                              @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return customerService.updateCustomer(id, dto);
     }
 
     @DELETE
     @Path("/{id}")
-    public Response delete(@PathParam("id") Long id) {
+    public Response delete(@PathParam("id") Long id, @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         customerService.deleteCustomer(id);
         return Response.noContent().build();
     }
