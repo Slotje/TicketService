@@ -78,6 +78,10 @@ export class ApiService {
     return this.http.get<Order>(`${this.baseUrl}/orders/number/${orderNumber}`);
   }
 
+  getOrdersByEmail(email: string): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.baseUrl}/orders/email/${encodeURIComponent(email)}`);
+  }
+
   createOrder(order: OrderRequest): Observable<Order> {
     return this.http.post<Order>(`${this.baseUrl}/orders`, order);
   }

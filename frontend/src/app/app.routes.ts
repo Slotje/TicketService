@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/order-confirmation.component').then(m => m.OrderConfirmationComponent)
   },
   {
+    path: 'my-tickets',
+    loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent)
+  },
+  {
     path: 'scan/login',
     loadComponent: () => import('./pages/scanner/scanner-login.component').then(m => m.ScannerLoginComponent)
   },

@@ -52,6 +52,12 @@ public class OrderService {
         return toDTO(order);
     }
 
+    public List<OrderResponseDTO> getOrdersByEmail(String email) {
+        return TicketOrder.<TicketOrder>list("buyerEmail", email).stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto) {
         Event event = Event.findById(dto.eventId());

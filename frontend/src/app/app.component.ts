@@ -67,6 +67,7 @@ import { Menubar } from 'primeng/menubar';
 export class AppComponent {
   menuItems: MenuItem[] = [
     { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/' },
+    { label: 'Mijn Tickets', icon: 'pi pi-ticket', routerLink: '/my-tickets' },
     { label: 'Scanner', icon: 'pi pi-qrcode', routerLink: '/scan/login' },
     {
       label: 'Beheer',

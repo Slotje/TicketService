@@ -51,6 +51,12 @@ public class OrderResource {
         return orderService.getOrderByNumber(orderNumber);
     }
 
+    @GET
+    @Path("/email/{email}")
+    public List<OrderResponseDTO> getByEmail(@PathParam("email") String email) {
+        return orderService.getOrdersByEmail(email);
+    }
+
     @POST
     public Response create(@Valid OrderRequestDTO dto) {
         OrderResponseDTO created = orderService.createOrder(dto);
