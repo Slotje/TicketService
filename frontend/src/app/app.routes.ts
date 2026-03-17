@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { scannerAuthGuard } from './guards/scanner-auth.guard';
 import { adminAuthGuard } from './guards/admin-auth.guard';
+import { userAuthGuard } from './guards/user-auth.guard';
 
 export const routes: Routes = [
   {
@@ -16,8 +17,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/order-confirmation.component').then(m => m.OrderConfirmationComponent)
   },
   {
+    path: 'login',
+    loadComponent: () => import('./pages/home/user-login.component').then(m => m.UserLoginComponent)
+  },
+  {
     path: 'my-tickets',
-    loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent)
+    loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent),
+    canActivate: [userAuthGuard]
   },
   {
     path: 'scan/login',

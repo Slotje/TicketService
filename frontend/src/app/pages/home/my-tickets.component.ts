@@ -1,19 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { UserAuthService } from '../../services/user-auth.service';
 import { Order } from '../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 import { Message } from 'primeng/message';
-import { InputText } from 'primeng/inputtext';
 import { Divider } from 'primeng/divider';
+import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-my-tickets',
-  imports: [CommonModule, FormsModule, Card, Button, Tag, Message, InputText, Divider],
+  imports: [CommonModule, Card, Button, Tag, Message, Divider, ProgressBar],
   template: `
     <div class="my-tickets-page">
       <p-card>
@@ -24,31 +24,19 @@ import { Divider } from 'primeng/divider';
           </div>
         </ng-template>
         <ng-template #subtitle>
-          Voer je e-mailadres in om je bestellingen en tickets te bekijken.
+          Tickets voor {{ userAuth.email }}
         </ng-template>
 
-        <div class="search-form">
-          <div class="p-inputgroup">
-            <input
-              type="email"
-              pInputText
-              [(ngModel)]="email"
-              placeholder="E-mailadres"
-              (keyup.enter)="searchOrders()" />
-            <p-button
-              icon="pi pi-search"
-              label="Zoeken"
-              (onClick)="searchOrders()"
-              [loading]="loading" />
-          </div>
-        </div>
+        @if (loading) {
+          <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
+        }
 
         @if (errorMessage) {
           <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mt-2" />
         }
 
-        @if (searched && orders.length === 0 && !loading) {
-          <p-message severity="info" text="Geen bestellingen gevonden voor dit e-mailadres." [style]="{'width': '100%'}" class="mt-2" />
+        @if (!loading && orders.length === 0 && !errorMessage) {
+          <p-message severity="info" text="Je hebt nog geen tickets. Koop tickets bij een evenement en ze verschijnen hier." [style]="{'width': '100%'}" class="mt-2" />
         }
 
         @if (orders.length > 0) {
@@ -94,9 +82,6 @@ import { Divider } from 'primeng/divider';
     .my-tickets-page {
       max-width: 800px;
       margin: 0 auto;
-    }
-    .search-form {
-      max-width: 500px;
     }
     .orders-list {
       display: flex;
@@ -146,21 +131,25 @@ import { Divider } from 'primeng/divider';
     }
   `]
 })
-export class MyTicketsComponent {
-  email = '';
+export class MyTicketsComponent implements OnInit {
   orders: Order[] = [];
-  loading = false;
-  searched = false;
+  loading = true;
   errorMessage = '';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    public userAuth: UserAuthService,
+    private router: Router
+  ) {}
 
-  searchOrders() {
-    if (!this.email.trim()) return;
-    this.loading = true;
-    this.errorMessage = '';
-    this.searched = true;
-    this.api.getOrdersByEmail(this.email.trim()).subscribe({
+  ngOnInit() {
+    const email = this.userAuth.email;
+    if (!email) {
+      this.router.navigate(['/login'], { state: { returnUrl: '/my-tickets' } });
+      return;
+    }
+
+    this.api.getOrdersByEmail(email).subscribe({
       next: (orders) => {
         this.orders = orders;
         this.loading = false;
