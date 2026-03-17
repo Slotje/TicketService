@@ -64,9 +64,8 @@ public class OrderResource {
     }
 
     @POST
-    public Response create(@Valid OrderRequestDTO dto) {
-        OrderResponseDTO created = orderService.createOrder(dto);
-        return Response.status(Response.Status.CREATED).entity(created).build();
+    public OrderResponseDTO create(@Valid OrderRequestDTO dto) {
+        return orderService.createOrder(dto);
     }
 
     @POST

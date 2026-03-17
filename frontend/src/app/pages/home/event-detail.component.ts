@@ -285,9 +285,11 @@ export class EventDetailComponent implements OnInit {
     this.api.createOrder(this.orderForm).subscribe({
       next: (order) => {
         this.orderPlaced = true;
-        setTimeout(() => {
-          this.router.navigate(['/order', order.orderNumber]);
-        }, 1500);
+        if (order?.orderNumber) {
+          setTimeout(() => {
+            this.router.navigateByUrl('/order/' + order.orderNumber);
+          }, 1500);
+        }
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Er is een fout opgetreden bij het plaatsen van de bestelling';
