@@ -57,22 +57,21 @@ import { ProgressBar } from 'primeng/progressbar';
       </ng-template>
       <ng-template #body let-event>
         <tr>
-          <td>{{ event.name }}</td>
-          <td>{{ event.customerName }}</td>
-          <td>{{ formatDate(event.eventDate) }}</td>
-          <td>{{ event.location }}</td>
-          <td>
+          <td data-label="Naam">{{ event.name }}</td>
+          <td data-label="Klant">{{ event.customerName }}</td>
+          <td data-label="Datum">{{ formatDate(event.eventDate) }}</td>
+          <td data-label="Locatie">{{ event.location }}</td>
+          <td data-label="Tickets">
             <span>{{ event.ticketsSold }}/{{ event.maxTickets }}</span>
-            <p-progressBar [value]="(event.ticketsSold / event.maxTickets) * 100" [showValue]="false" [style]="{'height': '6px', 'margin-top': '4px'}" />
           </td>
-          <td>{{ event.ticketPrice | number:'1.2-2' }}</td>
-          <td>
+          <td data-label="Prijs">{{ event.ticketPrice | number:'1.2-2' }}</td>
+          <td data-label="Status">
             <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
             @if (isPastEvent(event)) {
               <p-tag value="Verlopen" severity="secondary" class="ml-1" />
             }
           </td>
-          <td>
+          <td data-label="Acties">
             <div class="flex gap-1">
               <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editEvent(event)" />
               <p-button icon="pi pi-list" [rounded]="true" [text]="true" severity="info" [routerLink]="'/admin/orders/' + event.id" pTooltip="Bestellingen" />

@@ -51,10 +51,10 @@ import { Tag } from 'primeng/tag';
       </ng-template>
       <ng-template #body let-customer>
         <tr>
-          <td>{{ customer.companyName }}</td>
-          <td>{{ customer.contactPerson }}</td>
-          <td>{{ customer.email }}</td>
-          <td>
+          <td data-label="Bedrijfsnaam">{{ customer.companyName }}</td>
+          <td data-label="Contactpersoon">{{ customer.contactPerson }}</td>
+          <td data-label="E-mail">{{ customer.email }}</td>
+          <td data-label="Kleuren">
             <div class="flex gap-1">
               @if (customer.primaryColor) {
                 <span class="color-swatch" [style.background-color]="customer.primaryColor"></span>
@@ -64,10 +64,10 @@ import { Tag } from 'primeng/tag';
               }
             </div>
           </td>
-          <td>
+          <td data-label="Status">
             <p-tag [value]="customer.active ? 'Actief' : 'Inactief'" [severity]="customer.active ? 'success' : 'danger'" />
           </td>
-          <td>
+          <td data-label="Acties">
             <div class="flex gap-1">
               <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editCustomer(customer)" />
               <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteCustomer(customer)" />

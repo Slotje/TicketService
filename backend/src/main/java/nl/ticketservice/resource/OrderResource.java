@@ -8,11 +8,11 @@ import jakarta.ws.rs.core.Response;
 import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
+import nl.ticketservice.exception.TicketServiceException;
 import nl.ticketservice.service.OrderService;
 import nl.ticketservice.service.PdfService;
 import nl.ticketservice.service.QrCodeService;
 import nl.ticketservice.entity.TicketOrder;
-import nl.ticketservice.exception.TicketServiceException;
 
 import java.util.List;
 
@@ -29,6 +29,9 @@ public class OrderResource {
 
     @Inject
     QrCodeService qrCodeService;
+
+    @Inject
+    nl.ticketservice.service.AuthService authService;
 
     @GET
     @Path("/event/{eventId}")
@@ -92,7 +95,14 @@ public class OrderResource {
 
     @POST
     @Path("/scan/{qrCodeData}")
-    public TicketDTO scanTicket(@PathParam("qrCodeData") String qrCodeData) {
+    public TicketDTO scanTicket(@PathParam("qrCodeData") String qrCodeData,
+                                @HeaderParam("Authorization") String authHeader) {
+        // Verify scanner user is authenticated
+        String token = authHeader != null && authHeader.startsWith("Bearer ")
+                ? authHeader.substring(7) : null;
+        if (token == null || authService.validateToken(token) == null) {
+            throw new TicketServiceException("Niet geautoriseerd. Log in als scanner gebruiker.", 401);
+        }
         return orderService.scanTicket(qrCodeData);
     }
 }

@@ -47,6 +47,14 @@ import { Menubar } from 'primeng/menubar';
       width: 100%;
       box-sizing: border-box;
     }
+    @media (max-width: 768px) {
+      .layout-content {
+        padding: 0.75rem;
+      }
+      .app-name {
+        font-size: 1rem;
+      }
+    }
     .layout-footer {
       text-align: center;
       padding: 1rem;
@@ -59,6 +67,7 @@ import { Menubar } from 'primeng/menubar';
 export class AppComponent {
   menuItems: MenuItem[] = [
     { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/' },
+    { label: 'Scanner', icon: 'pi pi-qrcode', routerLink: '/scan/login' },
     {
       label: 'Beheer',
       icon: 'pi pi-cog',
@@ -66,7 +75,7 @@ export class AppComponent {
         { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/admin' },
         { label: 'Klanten', icon: 'pi pi-users', routerLink: '/admin/customers' },
         { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/admin/events' },
-        { label: 'Ticket Scanner', icon: 'pi pi-qrcode', routerLink: '/admin/scan' }
+        { label: 'Scanner Accounts', icon: 'pi pi-id-card', routerLink: '/admin/scanners' }
       ]
     }
   ];

@@ -41,16 +41,16 @@ import { Card } from 'primeng/card';
       </ng-template>
       <ng-template #body let-order>
         <tr>
-          <td><code>{{ order.orderNumber }}</code></td>
-          <td>{{ order.buyerName }}</td>
-          <td>{{ order.buyerEmail }}</td>
-          <td>{{ order.quantity }}</td>
-          <td>{{ order.totalPrice | number:'1.2-2' }}</td>
-          <td>
+          <td data-label="Bestelnr."><code>{{ order.orderNumber }}</code></td>
+          <td data-label="Naam">{{ order.buyerName }}</td>
+          <td data-label="E-mail">{{ order.buyerEmail }}</td>
+          <td data-label="Aantal">{{ order.quantity }}</td>
+          <td data-label="Totaal">{{ order.totalPrice | number:'1.2-2' }}</td>
+          <td data-label="Status">
             <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
           </td>
-          <td>{{ formatDate(order.createdAt) }}</td>
-          <td>
+          <td data-label="Besteld op">{{ formatDate(order.createdAt) }}</td>
+          <td data-label="Acties">
             <div class="flex gap-1">
               @if (order.status === 'CONFIRMED') {
                 <p-button icon="pi pi-download" [rounded]="true" [text]="true" (onClick)="downloadPdf(order)" pTooltip="Download PDF" />

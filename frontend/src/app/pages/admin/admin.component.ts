@@ -24,10 +24,17 @@ import { Button } from 'primeng/button';
         </ng-template>
       </p-card>
       <p-card>
-        <ng-template #title><i class="pi pi-qrcode"></i> Ticket Scanner</ng-template>
-        <p>Scan tickets bij de ingang van het evenement.</p>
+        <ng-template #title><i class="pi pi-id-card"></i> Scanner Accounts</ng-template>
+        <p>Beheer scanner accounts voor het scannen van tickets bij evenementen.</p>
         <ng-template #footer>
-          <p-button label="Scanner Openen" icon="pi pi-arrow-right" routerLink="/admin/scan" />
+          <p-button label="Accounts Beheren" icon="pi pi-arrow-right" routerLink="/admin/scanners" />
+        </ng-template>
+      </p-card>
+      <p-card>
+        <ng-template #title><i class="pi pi-qrcode"></i> Ticket Scanner</ng-template>
+        <p>Open de ticket scanner met camera om tickets te scannen.</p>
+        <ng-template #footer>
+          <p-button label="Scanner Openen" icon="pi pi-arrow-right" routerLink="/scan/login" />
         </ng-template>
       </p-card>
     </div>
