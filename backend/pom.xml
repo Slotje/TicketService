@@ -104,6 +104,12 @@
             <type>pom</type>
         </dependency>
 
+        <!-- Email -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mailer</artifactId>
+        </dependency>
+
         <!-- Container image for OpenShift -->
         <dependency>
             <groupId>io.quarkus</groupId>

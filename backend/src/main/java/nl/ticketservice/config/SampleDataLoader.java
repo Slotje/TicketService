@@ -58,6 +58,7 @@ public class SampleDataLoader {
         event1.address = "Vondelpark 1, 1071 AA Amsterdam";
         event1.maxTickets = 500;
         event1.ticketPrice = new BigDecimal("35.00");
+        event1.serviceFee = new BigDecimal("3.50");
         event1.maxTicketsPerOrder = 10;
         event1.status = EventStatus.PUBLISHED;
         event1.customer = customer1;
@@ -72,6 +73,7 @@ public class SampleDataLoader {
         event2.address = "Witte de Withstraat 50, 3012 BR Rotterdam";
         event2.maxTickets = 200;
         event2.ticketPrice = new BigDecimal("25.00");
+        event2.serviceFee = new BigDecimal("2.50");
         event2.maxTicketsPerOrder = 5;
         event2.status = EventStatus.PUBLISHED;
         event2.customer = customer2;
@@ -86,6 +88,7 @@ public class SampleDataLoader {
         event3.address = "Jaarbeursplein 6, 3521 AL Utrecht";
         event3.maxTickets = 1000;
         event3.ticketPrice = new BigDecimal("45.00");
+        event3.serviceFee = new BigDecimal("4.50");
         event3.maxTicketsPerOrder = 8;
         event3.status = EventStatus.PUBLISHED;
         event3.customer = customer1;

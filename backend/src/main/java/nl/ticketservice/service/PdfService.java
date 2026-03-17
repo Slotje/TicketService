@@ -73,6 +73,11 @@ public class PdfService {
                 addInfoRow(infoTable, "Adres:", event.address);
             }
             addInfoRow(infoTable, "Aantal tickets:", String.valueOf(order.quantity));
+            addInfoRow(infoTable, "Ticketprijs:", "EUR " + event.ticketPrice.toPlainString() + " per ticket");
+            if (order.serviceFeePerTicket.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                addInfoRow(infoTable, "Servicekosten:", "EUR " + order.serviceFeePerTicket.toPlainString() + " per ticket");
+                addInfoRow(infoTable, "Totaal servicekosten:", "EUR " + order.totalServiceFee.toPlainString());
+            }
             addInfoRow(infoTable, "Totaalprijs:", "EUR " + order.totalPrice.toPlainString());
 
             document.add(infoTable);

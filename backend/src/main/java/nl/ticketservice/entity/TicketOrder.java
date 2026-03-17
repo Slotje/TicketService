@@ -37,6 +37,12 @@ public class TicketOrder extends PanacheEntity {
     public Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal serviceFeePerTicket = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal totalServiceFee = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     public BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)

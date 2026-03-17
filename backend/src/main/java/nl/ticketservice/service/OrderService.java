@@ -27,6 +27,9 @@ public class OrderService {
     @Inject
     QrCodeService qrCodeService;
 
+    @Inject
+    EmailService emailService;
+
     public List<OrderResponseDTO> getOrdersByEvent(Long eventId) {
         return TicketOrder.<TicketOrder>list("event.id", eventId).stream()
                 .map(this::toDTO)
@@ -85,7 +88,10 @@ public class OrderService {
         order.buyerEmail = dto.buyerEmail();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
-        order.totalPrice = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
+        order.serviceFeePerTicket = event.serviceFee;
+        order.totalServiceFee = event.serviceFee.multiply(BigDecimal.valueOf(dto.quantity()));
+        BigDecimal ticketTotal = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
+        order.totalPrice = ticketTotal.add(order.totalServiceFee);
         order.status = OrderStatus.RESERVED;
         order.event = event;
         order.expiresAt = LocalDateTime.now().plusMinutes(reservationTimeoutMinutes);
@@ -130,6 +136,8 @@ public class OrderService {
             event.status = EventStatus.SOLD_OUT;
         }
 
+        emailService.sendOrderConfirmation(order);
+
         return toDTO(order);
     }
 
@@ -164,6 +172,14 @@ public class OrderService {
 
     @Transactional
     public TicketDTO scanTicket(String qrCodeData) {
+        // Verify HMAC signature if present
+        if (qrCodeData.contains("|")) {
+            if (!qrCodeService.verifyQrCode(qrCodeData)) {
+                throw new TicketServiceException("Ongeldige QR code: handtekening komt niet overeen", 400);
+            }
+            qrCodeData = qrCodeService.extractTicketData(qrCodeData);
+        }
+
         Ticket ticket = Ticket.find("qrCodeData", qrCodeData).firstResult();
         if (ticket == null) {
             throw new TicketServiceException("Ticket niet gevonden", 404);
@@ -192,7 +208,8 @@ public class OrderService {
 
         return new OrderResponseDTO(
                 o.id, o.orderNumber, o.buyerName, o.buyerEmail, o.buyerPhone,
-                o.quantity, o.totalPrice, o.status.name(), o.event.name,
+                o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
+                o.totalPrice, o.status.name(), o.event.name,
                 o.event.id, o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
         );
     }

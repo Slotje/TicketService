@@ -24,6 +24,8 @@ public record EventDTO(
         @NotNull(message = "Prijs is verplicht")
         @DecimalMin("0.00")
         BigDecimal ticketPrice,
+        @DecimalMin("0.00")
+        BigDecimal serviceFee,
         @Min(1) @Max(10)
         Integer maxTicketsPerOrder,
         Integer ticketsSold,

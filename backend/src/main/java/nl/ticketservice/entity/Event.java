@@ -47,6 +47,11 @@ public class Event extends PanacheEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     public BigDecimal ticketPrice;
 
+    @NotNull(message = "Servicekosten zijn verplicht")
+    @DecimalMin(value = "0.00", message = "Servicekosten mogen niet negatief zijn")
+    @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal serviceFee = BigDecimal.ZERO;
+
     @Min(value = 1)
     @Max(value = 10)
     @Column(nullable = false)

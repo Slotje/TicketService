@@ -109,6 +109,9 @@ public class EventService {
         event.address = dto.address();
         event.maxTickets = dto.maxTickets();
         event.ticketPrice = dto.ticketPrice();
+        if (dto.serviceFee() != null) {
+            event.serviceFee = dto.serviceFee();
+        }
         if (dto.maxTicketsPerOrder() != null) {
             event.maxTicketsPerOrder = dto.maxTicketsPerOrder();
         }
@@ -122,7 +125,7 @@ public class EventService {
         return new EventDTO(
                 e.id, e.name, e.description, e.eventDate, e.endDate,
                 e.location, e.address, e.maxTickets, e.ticketPrice,
-                e.maxTicketsPerOrder, e.ticketsSold, e.ticketsReserved,
+                e.serviceFee, e.maxTicketsPerOrder, e.ticketsSold, e.ticketsReserved,
                 e.getAvailableTickets(), e.imageUrl, e.status.name(),
                 e.customer.id, e.customer.companyName
         );
