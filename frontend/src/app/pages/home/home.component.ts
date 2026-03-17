@@ -36,6 +36,9 @@ import { ProgressBar } from 'primeng/progressbar';
             <ng-template #header>
               <div class="event-card-header" [style.background-color]="'var(--p-primary-100)'">
                 <i class="pi pi-calendar" style="font-size: 2rem; color: var(--p-primary-color)"></i>
+                @if (event.availableTickets === 0) {
+                  <div class="sold-out-banner">Uitverkocht</div>
+                }
               </div>
             </ng-template>
             <ng-template #title>
@@ -105,6 +108,24 @@ import { ProgressBar } from 'primeng/progressbar';
       align-items: center;
       justify-content: center;
       height: 120px;
+      border-radius: var(--p-border-radius) var(--p-border-radius) 0 0;
+      position: relative;
+    }
+    .sold-out-banner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
       border-radius: var(--p-border-radius) var(--p-border-radius) 0 0;
     }
     .event-description {
