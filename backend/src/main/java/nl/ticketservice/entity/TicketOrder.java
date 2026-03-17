@@ -63,6 +63,14 @@ public class TicketOrder extends PanacheEntity {
 
     public LocalDateTime expiresAt;
 
+    @Column(nullable = false)
+    public boolean emailSent = false;
+
+    @Column(nullable = false)
+    public int emailRetryCount = 0;
+
+    public LocalDateTime lastEmailAttempt;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();

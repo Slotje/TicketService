@@ -21,7 +21,7 @@ public class EmailService {
     @Inject
     PdfService pdfService;
 
-    public void sendOrderConfirmation(TicketOrder order) {
+    public boolean sendOrderConfirmation(TicketOrder order) {
         try {
             byte[] pdfBytes = pdfService.generateOrderPdf(order);
 
@@ -37,9 +37,11 @@ public class EmailService {
 
             mailer.send(mail);
             LOG.infof("Bevestigingsmail verstuurd naar %s voor bestelling %s", order.buyerEmail, order.orderNumber);
+            return true;
         } catch (Exception e) {
             LOG.errorf(e, "Fout bij het versturen van bevestigingsmail naar %s voor bestelling %s",
                     order.buyerEmail, order.orderNumber);
+            return false;
         }
     }
 

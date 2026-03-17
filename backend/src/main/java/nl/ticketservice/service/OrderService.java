@@ -142,7 +142,10 @@ public class OrderService {
             event.status = EventStatus.SOLD_OUT;
         }
 
-        emailService.sendOrderConfirmation(order);
+        order.lastEmailAttempt = LocalDateTime.now();
+        order.emailRetryCount = 1;
+        boolean emailSuccess = emailService.sendOrderConfirmation(order);
+        order.emailSent = emailSuccess;
 
         return toDTO(order);
     }
