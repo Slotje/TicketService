@@ -67,7 +67,10 @@ import { ProgressBar } from 'primeng/progressbar';
           </td>
           <td>{{ event.ticketPrice | number:'1.2-2' }}</td>
           <td>
-            <p-tag [value]="event.status" [severity]="getStatusSeverity(event.status)" />
+            <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
+            @if (isPastEvent(event)) {
+              <p-tag value="Verlopen" severity="secondary" class="ml-1" />
+            }
           </td>
           <td>
             <div class="flex gap-1">
@@ -327,11 +330,23 @@ export class EventManagementComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
+  getStatusLabel(event: Event): string {
+    const labels: Record<string, string> = {
+      DRAFT: 'Concept', PUBLISHED: 'Gepubliceerd', SOLD_OUT: 'Uitverkocht',
+      CANCELLED: 'Geannuleerd', COMPLETED: 'Afgerond'
+    };
+    return labels[event.status ?? ''] ?? event.status ?? '';
+  }
+
+  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     const map: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
       DRAFT: 'info', PUBLISHED: 'success', SOLD_OUT: 'warn',
       CANCELLED: 'danger', COMPLETED: 'info'
     };
     return map[status] ?? 'info';
+  }
+
+  isPastEvent(event: Event): boolean {
+    return !!event.eventDate && new Date(event.eventDate) < new Date();
   }
 }

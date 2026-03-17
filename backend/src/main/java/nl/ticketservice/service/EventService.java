@@ -8,6 +8,7 @@ import nl.ticketservice.entity.Event;
 import nl.ticketservice.entity.EventStatus;
 import nl.ticketservice.exception.TicketServiceException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @ApplicationScoped
@@ -26,7 +27,9 @@ public class EventService {
     }
 
     public List<EventDTO> getPublishedEvents() {
-        return Event.<Event>list("status", EventStatus.PUBLISHED).stream()
+        return Event.<Event>list("status in ?1 and eventDate > ?2",
+                        List.of(EventStatus.PUBLISHED, EventStatus.SOLD_OUT),
+                        LocalDateTime.now()).stream()
                 .map(this::toDTO)
                 .toList();
     }
