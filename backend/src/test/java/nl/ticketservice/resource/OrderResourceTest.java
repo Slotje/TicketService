@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -28,6 +29,20 @@ public class OrderResourceTest {
     private static String ticketQrCodeData;
     private static Long publishedEventId;
     private static Long expiredOrderId;
+
+    private void setBuyerDetails(Long orderId) {
+        given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "buyerStreet", "Teststraat",
+                        "buyerHouseNumber", "1",
+                        "buyerPostalCode", "1234AB",
+                        "buyerCity", "Amsterdam"))
+            .when()
+                .put("/api/orders/" + orderId + "/details")
+            .then()
+                .statusCode(200);
+    }
 
     private String getAdminToken() {
         return given()
@@ -183,6 +198,7 @@ public class OrderResourceTest {
     @Test
     @Order(7)
     void testConfirmOrder() {
+        setBuyerDetails(orderId);
         given()
                 .contentType(ContentType.JSON)
             .when()
@@ -590,6 +606,7 @@ public class OrderResourceTest {
         Long newOrderId = ((Number) response.path("id")).longValue();
         String newQrCode = response.path("tickets[0].qrCodeData");
 
+        setBuyerDetails(newOrderId);
         given()
                 .contentType(ContentType.JSON)
             .when()
@@ -627,6 +644,7 @@ public class OrderResourceTest {
         Long newOrderId = ((Number) response.path("id")).longValue();
         String newQrCode = response.path("tickets[0].qrCodeData");
 
+        setBuyerDetails(newOrderId);
         given()
                 .contentType(ContentType.JSON)
             .when()

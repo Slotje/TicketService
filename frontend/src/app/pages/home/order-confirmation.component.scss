@@ -42,6 +42,24 @@
   width: 150px;
   height: 150px;
 }
+.address-hint {
+  font-size: 0.9rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 1rem;
+}
+.address-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  .street { grid-column: 1; }
+  .house-number { grid-column: 2; max-width: 120px; }
+  .postal-code { grid-column: 1; max-width: 150px; }
+  .city { grid-column: 2; }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    .house-number, .postal-code, .city { max-width: none; grid-column: 1; }
+  }
+}
 .action-buttons {
   display: flex;
   gap: 0.5rem;

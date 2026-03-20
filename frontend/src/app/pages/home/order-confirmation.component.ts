@@ -1,18 +1,21 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { Order } from '../../models/models';
+import { BuyerDetails, Order } from '../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 import { Message } from 'primeng/message';
 import { ProgressBar } from 'primeng/progressbar';
 import { Divider } from 'primeng/divider';
+import { InputText } from 'primeng/inputtext';
+import { FloatLabel } from 'primeng/floatlabel';
 
 @Component({
   selector: 'app-order-confirmation',
-  imports: [CommonModule, Card, Button, Tag, Message, ProgressBar, Divider],
+  imports: [CommonModule, FormsModule, Card, Button, Tag, Message, ProgressBar, Divider, InputText, FloatLabel],
   templateUrl: './order-confirmation.component.html',
   styleUrl: './order-confirmation.component.scss'
 })
@@ -20,10 +23,19 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   order: Order | null = null;
   loading = true;
   processing = false;
+  savingDetails = false;
   errorMessage = '';
   successMessage = '';
   remainingTime = '';
   private timerInterval: any;
+
+  buyerDetails: BuyerDetails = {
+    buyerStreet: '',
+    buyerHouseNumber: '',
+    buyerPostalCode: '',
+    buyerCity: ''
+  };
+  detailsSaved = false;
 
   constructor(public api: ApiService, private route: ActivatedRoute) {}
 
@@ -33,6 +45,15 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.order = order;
         this.loading = false;
+        if (order.buyerStreet) {
+          this.buyerDetails = {
+            buyerStreet: order.buyerStreet || '',
+            buyerHouseNumber: order.buyerHouseNumber || '',
+            buyerPostalCode: order.buyerPostalCode || '',
+            buyerCity: order.buyerCity || ''
+          };
+          this.detailsSaved = true;
+        }
         if (order.status === 'RESERVED') {
           this.startTimer();
         }
@@ -89,6 +110,30 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       CANCELLED: 'danger', EXPIRED: 'danger'
     };
     return map[this.order?.status ?? ''] ?? 'info';
+  }
+
+  isDetailsValid(): boolean {
+    return !!(this.buyerDetails.buyerStreet?.trim()
+      && this.buyerDetails.buyerHouseNumber?.trim()
+      && this.buyerDetails.buyerPostalCode?.trim()
+      && this.buyerDetails.buyerCity?.trim());
+  }
+
+  saveDetails() {
+    if (!this.isDetailsValid()) return;
+    this.savingDetails = true;
+    this.errorMessage = '';
+    this.api.updateOrderDetails(this.order!.id, this.buyerDetails).subscribe({
+      next: (order) => {
+        this.order = order;
+        this.savingDetails = false;
+        this.detailsSaved = true;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.error || 'Fout bij opslaan gegevens';
+        this.savingDetails = false;
+      }
+    });
   }
 
   confirmOrder() {

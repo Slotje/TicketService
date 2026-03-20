@@ -55,6 +55,10 @@ export interface Order {
   buyerLastName: string;
   buyerEmail: string;
   buyerPhone?: string;
+  buyerStreet?: string;
+  buyerHouseNumber?: string;
+  buyerPostalCode?: string;
+  buyerCity?: string;
   quantity: number;
   totalPrice: number;
   status: string;
@@ -64,6 +68,13 @@ export interface Order {
   confirmedAt?: string;
   expiresAt?: string;
   tickets: Ticket[];
+}
+
+export interface BuyerDetails {
+  buyerStreet: string;
+  buyerHouseNumber: string;
+  buyerPostalCode: string;
+  buyerCity: string;
 }
 
 export interface Ticket {

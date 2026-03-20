@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Customer, Event, Order, OrderRequest, Ticket, TicketSales } from '../models/models';
+import { BuyerDetails, Customer, Event, Order, OrderRequest, Ticket, TicketSales } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -163,6 +163,10 @@ export class ApiService {
 
   createOrder(order: OrderRequest): Observable<Order> {
     return this.http.post<Order>(`${this.baseUrl}/orders`, order);
+  }
+
+  updateOrderDetails(id: number, details: BuyerDetails): Observable<Order> {
+    return this.http.put<Order>(`${this.baseUrl}/orders/${id}/details`, details);
   }
 
   confirmOrder(id: number): Observable<Order> {

@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import nl.ticketservice.dto.BuyerDetailsDTO;
 import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
@@ -66,6 +67,12 @@ public class OrderResource {
     @POST
     public OrderResponseDTO create(@Valid OrderRequestDTO dto) {
         return orderService.createOrder(dto);
+    }
+
+    @PUT
+    @Path("/{id}/details")
+    public OrderResponseDTO updateDetails(@PathParam("id") Long id, @Valid BuyerDetailsDTO dto) {
+        return orderService.updateBuyerDetails(id, dto);
     }
 
     @POST

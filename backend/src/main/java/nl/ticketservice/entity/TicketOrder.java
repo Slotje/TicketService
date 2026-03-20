@@ -35,6 +35,18 @@ public class TicketOrder extends PanacheEntity {
     @Size(max = 20)
     public String buyerPhone;
 
+    @Size(max = 200)
+    public String buyerStreet;
+
+    @Size(max = 10)
+    public String buyerHouseNumber;
+
+    @Size(max = 10)
+    public String buyerPostalCode;
+
+    @Size(max = 100)
+    public String buyerCity;
+
     @NotNull
     @Min(value = 1, message = "Minimaal 1 ticket per bestelling")
     @Max(value = 10, message = "Maximaal 10 tickets per bestelling")

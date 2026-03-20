@@ -3,6 +3,7 @@ package nl.ticketservice.service;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import nl.ticketservice.dto.BuyerDetailsDTO;
 import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
@@ -120,6 +121,28 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponseDTO updateBuyerDetails(Long orderId, BuyerDetailsDTO dto) {
+        TicketOrder order = TicketOrder.findById(orderId);
+        if (order == null) {
+            throw new TicketServiceException("Bestelling niet gevonden", 404);
+        }
+        if (order.status != OrderStatus.RESERVED) {
+            throw new TicketServiceException("Gegevens kunnen alleen worden bijgewerkt bij een gereserveerde bestelling", 400);
+        }
+        if (order.expiresAt != null && order.expiresAt.isBefore(LocalDateTime.now())) {
+            cancelExpiredOrder(order);
+            throw new TicketServiceException("Reservering is verlopen. Plaats een nieuwe bestelling.", 400);
+        }
+
+        order.buyerStreet = dto.buyerStreet();
+        order.buyerHouseNumber = dto.buyerHouseNumber();
+        order.buyerPostalCode = dto.buyerPostalCode();
+        order.buyerCity = dto.buyerCity();
+
+        return toDTO(order);
+    }
+
+    @Transactional
     public OrderResponseDTO confirmOrder(Long orderId) {
         TicketOrder order = TicketOrder.findById(orderId);
         if (order == null) {
@@ -133,6 +156,11 @@ public class OrderService {
         if (order.expiresAt != null && order.expiresAt.isBefore(LocalDateTime.now())) {
             cancelExpiredOrder(order);
             throw new TicketServiceException("Reservering is verlopen. Plaats een nieuwe bestelling.", 400);
+        }
+
+        if (isBlank(order.buyerStreet) || isBlank(order.buyerHouseNumber)
+                || isBlank(order.buyerPostalCode) || isBlank(order.buyerCity)) {
+            throw new TicketServiceException("Vul eerst je adresgegevens in voordat je de bestelling bevestigt", 400);
         }
 
         order.status = OrderStatus.CONFIRMED;
@@ -228,10 +256,15 @@ public class OrderService {
         return new OrderResponseDTO(
                 o.id, o.orderNumber, o.buyerFirstName, o.buyerLastName,
                 o.buyerEmail, o.buyerPhone,
+                o.buyerStreet, o.buyerHouseNumber, o.buyerPostalCode, o.buyerCity,
                 o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
                 o.totalPrice, o.status.name(), o.event.name,
                 o.event.id, o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
         );
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     private TicketDTO toTicketDTO(Ticket t) {

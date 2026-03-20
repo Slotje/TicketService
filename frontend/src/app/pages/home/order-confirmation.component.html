@@ -17,7 +17,7 @@
         <p-message severity="warn" [style]="{'width': '100%'}">
           <ng-template #detail>
             Reservering verloopt over <strong>{{ remainingTime }}</strong>.
-            Bevestig je bestelling om je tickets veilig te stellen.
+            Vul je adresgegevens in en bevestig je bestelling.
           </ng-template>
         </p-message>
       }
@@ -58,6 +58,66 @@
         </div>
       </div>
 
+      @if (order.status === 'RESERVED') {
+        <p-divider />
+
+        <h3>Adresgegevens</h3>
+        <p class="address-hint">Vul je adresgegevens in om je bestelling te kunnen bevestigen.</p>
+
+        <div class="address-grid">
+          <div class="address-field street">
+            <p-floatlabel>
+              <input pInputText id="street" [(ngModel)]="buyerDetails.buyerStreet" class="w-full" />
+              <label for="street">Straat *</label>
+            </p-floatlabel>
+          </div>
+          <div class="address-field house-number">
+            <p-floatlabel>
+              <input pInputText id="houseNumber" [(ngModel)]="buyerDetails.buyerHouseNumber" class="w-full" />
+              <label for="houseNumber">Huisnr. *</label>
+            </p-floatlabel>
+          </div>
+          <div class="address-field postal-code">
+            <p-floatlabel>
+              <input pInputText id="postalCode" [(ngModel)]="buyerDetails.buyerPostalCode" class="w-full" />
+              <label for="postalCode">Postcode *</label>
+            </p-floatlabel>
+          </div>
+          <div class="address-field city">
+            <p-floatlabel>
+              <input pInputText id="city" [(ngModel)]="buyerDetails.buyerCity" class="w-full" />
+              <label for="city">Plaats *</label>
+            </p-floatlabel>
+          </div>
+        </div>
+
+        @if (!detailsSaved) {
+          <div class="mt-2">
+            <p-button
+              label="Gegevens Opslaan"
+              icon="pi pi-save"
+              (onClick)="saveDetails()"
+              [loading]="savingDetails"
+              [disabled]="!isDetailsValid()"
+              severity="info" />
+          </div>
+        }
+      }
+
+      @if (order.status === 'CONFIRMED' && order.buyerStreet) {
+        <p-divider />
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Adres</label>
+            <span>{{ order.buyerStreet }} {{ order.buyerHouseNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Postcode / Plaats</label>
+            <span>{{ order.buyerPostalCode }} {{ order.buyerCity }}</span>
+          </div>
+        </div>
+      }
+
       <p-divider />
 
       @if (order.status === 'CONFIRMED') {
@@ -82,6 +142,7 @@
             icon="pi pi-check"
             (onClick)="confirmOrder()"
             [loading]="processing"
+            [disabled]="!detailsSaved"
             severity="success" />
         }
         @if (order.status === 'CONFIRMED') {

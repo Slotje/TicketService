@@ -159,6 +159,18 @@ public class ScheduledServicesTest {
 
         given()
                 .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "buyerStreet", "Teststraat",
+                        "buyerHouseNumber", "1",
+                        "buyerPostalCode", "1234AB",
+                        "buyerCity", "Amsterdam"))
+            .when()
+                .put("/api/orders/" + confirmedOrderId + "/details")
+            .then()
+                .statusCode(200);
+
+        given()
+                .contentType(ContentType.JSON)
             .when()
                 .post("/api/orders/" + confirmedOrderId + "/confirm")
             .then()
@@ -306,6 +318,18 @@ public class ScheduledServicesTest {
                 .statusCode(200)
                 .extract()
                 .path("id")).longValue();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "buyerStreet", "Teststraat",
+                        "buyerHouseNumber", "1",
+                        "buyerPostalCode", "1234AB",
+                        "buyerCity", "Amsterdam"))
+            .when()
+                .put("/api/orders/" + noColorOrderId + "/details")
+            .then()
+                .statusCode(200);
 
         given()
                 .contentType(ContentType.JSON)
