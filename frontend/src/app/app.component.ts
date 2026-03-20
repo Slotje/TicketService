@@ -24,11 +24,16 @@ import { Subscription } from 'rxjs';
         </ng-template>
         <ng-template #end>
           <div class="auth-buttons">
-            @if (userAuth.isLoggedIn) {
+            @if (customerAuth.isLoggedIn) {
+              <p-button icon="pi pi-building" [label]="customerAuth.companyName" [text]="true" size="small" routerLink="/klant/dashboard" />
+              <p-button icon="pi pi-sign-out" [text]="true" size="small" (onClick)="customerAuth.logout()" pTooltip="Klant uitloggen" />
+            } @else if (userAuth.isLoggedIn) {
               <span class="user-greeting">{{ userAuth.name }}</span>
               <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="userAuth.logout()" />
             } @else {
               <p-button icon="pi pi-sign-in" label="Inloggen" [text]="true" size="small" (onClick)="goToLogin()" />
+              <span class="auth-divider">|</span>
+              <p-button icon="pi pi-building" label="Klantportaal" [text]="true" size="small" routerLink="/klant/login" />
             }
           </div>
         </ng-template>
@@ -88,6 +93,10 @@ import { Subscription } from 'rxjs';
       font-size: 0.9rem;
       color: var(--p-text-muted-color);
     }
+    .auth-divider {
+      color: var(--p-surface-300);
+      font-size: 0.85rem;
+    }
   `]
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -98,7 +107,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private adminAuth: AdminAuthService,
     private scannerAuth: AuthService,
     public userAuth: UserAuthService,
-    private customerAuth: CustomerAuthService,
+    public customerAuth: CustomerAuthService,
     private router: Router
   ) {}
 
