@@ -25,14 +25,14 @@ public class AdminAuthService {
     @ConfigProperty(name = "ticket.auth.token-expiry-hours", defaultValue = "24")
     int tokenExpiryHours;
 
-    public String login(String username, String password) {
-        AdminUser user = AdminUser.findByUsername(username);
+    public String login(String email, String password) {
+        AdminUser user = AdminUser.findByEmail(email);
         if (user == null || !user.active) {
-            throw new TicketServiceException("Ongeldige gebruikersnaam of wachtwoord", 401);
+            throw new TicketServiceException("Ongeldig e-mailadres of wachtwoord", 401);
         }
 
         if (!verifyPassword(password, user.passwordHash)) {
-            throw new TicketServiceException("Ongeldige gebruikersnaam of wachtwoord", 401);
+            throw new TicketServiceException("Ongeldig e-mailadres of wachtwoord", 401);
         }
 
         return generateToken(user);
@@ -71,13 +71,13 @@ public class AdminAuthService {
     }
 
     @Transactional
-    public AdminUser createUser(String username, String password, String displayName) {
-        if (AdminUser.findByUsername(username) != null) {
-            throw new TicketServiceException("Gebruikersnaam is al in gebruik", 400);
+    public AdminUser createUser(String email, String password, String displayName) {
+        if (AdminUser.findByEmail(email) != null) {
+            throw new TicketServiceException("E-mailadres is al in gebruik", 400);
         }
 
         AdminUser user = new AdminUser();
-        user.username = username;
+        user.email = email;
         user.passwordHash = hashPassword(password);
         user.displayName = displayName;
         user.persist();

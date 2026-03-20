@@ -2,6 +2,7 @@ package nl.ticketservice.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -12,9 +13,9 @@ import java.time.LocalDateTime;
 public class AdminUser extends PanacheEntity {
 
     @NotBlank
-    @Size(min = 3, max = 100)
+    @Email
     @Column(nullable = false, unique = true)
-    public String username;
+    public String email;
 
     @NotBlank
     @Column(nullable = false)
@@ -34,7 +35,7 @@ public class AdminUser extends PanacheEntity {
         createdAt = LocalDateTime.now();
     }
 
-    public static AdminUser findByUsername(String username) {
-        return find("username", username).firstResult();
+    public static AdminUser findByEmail(String email) {
+        return find("email", email).firstResult();
     }
 }

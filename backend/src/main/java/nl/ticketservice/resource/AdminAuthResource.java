@@ -4,8 +4,8 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import nl.ticketservice.dto.LoginDTO;
-import nl.ticketservice.dto.LoginResponseDTO;
+import nl.ticketservice.dto.UserLoginDTO;
+import nl.ticketservice.dto.UserResponseDTO;
 import nl.ticketservice.entity.AdminUser;
 import nl.ticketservice.service.AdminAuthService;
 
@@ -19,18 +19,18 @@ public class AdminAuthResource {
 
     @POST
     @Path("/login")
-    public LoginResponseDTO login(@Valid LoginDTO dto) {
-        String token = adminAuthService.login(dto.username(), dto.password());
+    public UserResponseDTO login(@Valid UserLoginDTO dto) {
+        String token = adminAuthService.login(dto.email(), dto.password());
         AdminUser user = adminAuthService.validateToken(token);
-        return new LoginResponseDTO(token, user.displayName, user.username);
+        return new UserResponseDTO(token, user.email, user.displayName);
     }
 
     @GET
     @Path("/verify")
-    public LoginResponseDTO verify(@HeaderParam("Authorization") String authHeader) {
+    public UserResponseDTO verify(@HeaderParam("Authorization") String authHeader) {
         adminAuthService.requireAdmin(authHeader);
         String token = authHeader.substring(7);
         AdminUser user = adminAuthService.validateToken(token);
-        return new LoginResponseDTO(token, user.displayName, user.username);
+        return new UserResponseDTO(token, user.email, user.displayName);
     }
 }

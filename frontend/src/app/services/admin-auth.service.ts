@@ -5,8 +5,8 @@ import { Router } from '@angular/router';
 
 export interface AdminLoginResponse {
   token: string;
-  displayName: string;
-  username: string;
+  email: string;
+  name: string;
 }
 
 @Injectable({
@@ -34,11 +34,11 @@ export class AdminAuthService {
     return localStorage.getItem('admin_display_name') || '';
   }
 
-  login(username: string, password: string): Observable<AdminLoginResponse> {
-    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/login`, { username, password }).pipe(
+  login(email: string, password: string): Observable<AdminLoginResponse> {
+    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
       tap(res => {
         localStorage.setItem('admin_token', res.token);
-        localStorage.setItem('admin_display_name', res.displayName || res.username);
+        localStorage.setItem('admin_display_name', res.name || res.email);
         this.loggedIn$.next(true);
       })
     );

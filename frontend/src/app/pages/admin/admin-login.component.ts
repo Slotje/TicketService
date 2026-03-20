@@ -31,9 +31,9 @@ import { Password } from 'primeng/password';
         <div class="login-form">
           <div class="form-field">
             <p-floatlabel>
-              <input pInputText id="username" [(ngModel)]="username" class="w-full"
-                     (keyup.enter)="login()" autocomplete="username" />
-              <label for="username">Gebruikersnaam</label>
+              <input pInputText id="email" [(ngModel)]="email" type="email" class="w-full"
+                     (keyup.enter)="login()" autocomplete="email" />
+              <label for="email">E-mailadres</label>
             </p-floatlabel>
           </div>
           <div class="form-field">
@@ -82,7 +82,7 @@ import { Password } from 'primeng/password';
   `]
 })
 export class AdminLoginComponent {
-  username = '';
+  email = '';
   password = '';
   loading = false;
   errorMessage = '';
@@ -94,14 +94,14 @@ export class AdminLoginComponent {
   }
 
   login() {
-    if (!this.username || !this.password) {
-      this.errorMessage = 'Vul gebruikersnaam en wachtwoord in';
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Vul e-mailadres en wachtwoord in';
       return;
     }
 
     this.loading = true;
     this.errorMessage = '';
-    this.adminAuth.login(this.username, this.password).subscribe({
+    this.adminAuth.login(this.email, this.password).subscribe({
       next: () => {
         this.router.navigate(['/admin']);
       },
