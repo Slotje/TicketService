@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Customer, Event, Order, OrderRequest, Ticket } from '../models/models';
+import { Customer, Event, Order, OrderRequest, Ticket, TicketSales } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -61,6 +61,31 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/events/my/${id}`);
   }
 
+  // Customer: Physical tickets & Sales
+  generateMyPhysicalTickets(eventId: number): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/events/my/${eventId}/physical-tickets/generate`, {}, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadMyPhysicalTicketsPdf(eventId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/events/my/${eventId}/physical-tickets/pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  markMyPhysicalTicketsSold(eventId: number, quantity: number): Observable<Event> {
+    return this.http.post<Event>(`${this.baseUrl}/events/my/${eventId}/physical-tickets/sell`, { quantity });
+  }
+
+  adjustMyPhysicalTicketsSold(eventId: number, count: number): Observable<Event> {
+    return this.http.put<Event>(`${this.baseUrl}/events/my/${eventId}/physical-tickets/sold-count`, { count });
+  }
+
+  getMyTicketSales(eventId: number): Observable<TicketSales> {
+    return this.http.get<TicketSales>(`${this.baseUrl}/events/my/${eventId}/sales`);
+  }
+
   // Events
   getEvents(): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.baseUrl}/events`);
@@ -92,6 +117,31 @@ export class ApiService {
 
   deleteEvent(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/events/${id}`);
+  }
+
+  // Physical tickets & Sales (admin)
+  generatePhysicalTickets(eventId: number): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/events/${eventId}/physical-tickets/generate`, {}, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadPhysicalTicketsPdf(eventId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/events/${eventId}/physical-tickets/pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  markPhysicalTicketsSold(eventId: number, quantity: number): Observable<Event> {
+    return this.http.post<Event>(`${this.baseUrl}/events/${eventId}/physical-tickets/sell`, { quantity });
+  }
+
+  adjustPhysicalTicketsSold(eventId: number, count: number): Observable<Event> {
+    return this.http.put<Event>(`${this.baseUrl}/events/${eventId}/physical-tickets/sold-count`, { count });
+  }
+
+  getTicketSales(eventId: number): Observable<TicketSales> {
+    return this.http.get<TicketSales>(`${this.baseUrl}/events/${eventId}/sales`);
   }
 
   // Orders

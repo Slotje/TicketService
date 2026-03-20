@@ -5,6 +5,7 @@ import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import nl.ticketservice.entity.Customer;
+import nl.ticketservice.entity.Event;
 import nl.ticketservice.entity.TicketOrder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -141,6 +142,67 @@ public class EmailService {
             return true;
         } catch (Exception e) {
             LOG.errorf(e, "Fout bij het versturen van wachtwoord reset mail naar %s", toEmail);
+            return false;
+        }
+    }
+
+    public boolean sendPhysicalTicketsPdf(Event event, byte[] pdfBytes) {
+        try {
+            Customer customer = event.customer;
+            String subject = "Fysieke tickets voor " + event.name + " - Klaar om te printen";
+            String body = """
+                    <html>
+                    <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                        <div style="background-color: #2980b9; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="color: white; margin: 0;">TicketService</h1>
+                        </div>
+                        <div style="padding: 30px; background: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <h2 style="color: #2c3e50;">Fysieke tickets gegenereerd</h2>
+                            <p>Beste %s,</p>
+                            <p>De fysieke tickets voor <strong>%s</strong> zijn gegenereerd en bijgevoegd als PDF.</p>
+                            <table style="border-collapse: collapse; margin: 16px 0;">
+                                <tr><td style="padding: 4px 12px 4px 0; font-weight: bold;">Evenement:</td><td>%s</td></tr>
+                                <tr><td style="padding: 4px 12px 4px 0; font-weight: bold;">Aantal fysieke tickets:</td><td>%d</td></tr>
+                                <tr><td style="padding: 4px 12px 4px 0; font-weight: bold;">Datum:</td><td>%s</td></tr>
+                            </table>
+                            <h3 style="color: #2c3e50;">Printinstructies</h3>
+                            <ul>
+                                <li>Print op <strong>dik papier</strong> (minimaal 250 g/m²)</li>
+                                <li>Gebruik <strong>dubbelzijdig printen</strong> (korte zijde spiegelen)</li>
+                                <li>Er staan 4 tickets per pagina (voorkant + achterkant)</li>
+                                <li>Snij de tickets langs de stippellijnen</li>
+                            </ul>
+                            <p>Elke ticket heeft een unieke QR-code die bij de ingang gescand kan worden.</p>
+                            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                            <p style="font-size: 12px; color: #999;">TicketService - Ticket Service Platform</p>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(
+                    customer.contactPerson,
+                    event.name,
+                    event.name,
+                    event.physicalTickets,
+                    event.eventDate.format(DATE_FMT)
+            );
+
+            String from = buildCustomerFrom(customer.companyName);
+
+            Mail mail = Mail.withHtml(customer.email, subject, body)
+                    .setFrom(from)
+                    .addAttachment(
+                            "fysieke-tickets-" + event.name.replaceAll("[^a-zA-Z0-9]", "-") + ".pdf",
+                            pdfBytes,
+                            "application/pdf"
+                    );
+
+            mailer.send(mail);
+            LOG.infof("Fysieke tickets PDF verstuurd naar %s voor evenement '%s'",
+                    customer.email, event.name);
+            return true;
+        } catch (Exception e) {
+            LOG.errorf(e, "Fout bij het versturen van fysieke tickets PDF naar %s voor evenement '%s'",
+                    event.customer.email, event.name);
             return false;
         }
     }

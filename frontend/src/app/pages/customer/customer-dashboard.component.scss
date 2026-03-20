@@ -19,7 +19,46 @@
   font-size: 0.9rem;
   color: var(--p-text-muted-color);
 }
+.sales-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.sales-card {
+  background: var(--p-surface-ground);
+  border-radius: 8px;
+  padding: 1rem;
+  &.span-2 { grid-column: span 2; }
+}
+.sales-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--p-text-muted-color);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.sales-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.revenue-table {
+  width: 100%;
+  border-collapse: collapse;
+  td {
+    padding: 0.25rem 0;
+    &:last-child { text-align: right; font-weight: 600; }
+  }
+  .total-row {
+    border-top: 2px solid var(--p-primary-color);
+    td { padding-top: 0.5rem; font-weight: 700; font-size: 1.1rem; }
+  }
+}
+.text-warn { color: var(--p-orange-500); }
 @media (max-width: 600px) {
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid, .sales-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: span 1; }
 }

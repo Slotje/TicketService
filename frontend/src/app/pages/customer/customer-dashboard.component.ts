@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { CustomerAuthService } from '../../services/customer-auth.service';
-import { Event } from '../../models/models';
+import { Event, TicketSales } from '../../models/models';
 import { TableModule } from 'primeng/table';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -16,6 +16,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Tag } from 'primeng/tag';
 import { Message } from 'primeng/message';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ProgressBar } from 'primeng/progressbar';
 import { ConfirmationService } from 'primeng/api';
 
 @Component({
@@ -23,7 +24,7 @@ import { ConfirmationService } from 'primeng/api';
   imports: [
     CommonModule, FormsModule, TableModule, Button, Dialog,
     InputText, InputNumber, Textarea, FloatLabel, Select, DatePicker,
-    Tag, Message, ConfirmDialog
+    Tag, Message, ConfirmDialog, ProgressBar
   ],
   providers: [ConfirmationService],
   templateUrl: './customer-dashboard.component.html',
@@ -41,6 +42,11 @@ export class CustomerDashboardComponent implements OnInit {
   editingId: number | null = null;
   eventDateValue: Date | null = null;
   endDateValue: Date | null = null;
+
+  salesDialogVisible = false;
+  salesData: TicketSales | null = null;
+  salesLoading = false;
+  physicalSellQuantity = 1;
 
   eventForm: Event = this.emptyForm();
 
@@ -65,8 +71,9 @@ export class CustomerDashboardComponent implements OnInit {
   emptyForm(): Event {
     return {
       name: '', description: '', eventDate: '', endDate: '',
-      location: '', address: '', maxTickets: 100, ticketPrice: 25.00,
-      maxTicketsPerOrder: 10, imageUrl: '', status: 'DRAFT', customerId: 0
+      location: '', address: '', maxTickets: 100, physicalTickets: 0,
+      ticketPrice: 25.00, maxTicketsPerOrder: 10, imageUrl: '',
+      status: 'DRAFT', customerId: 0
     };
   }
 
@@ -158,6 +165,59 @@ export class CustomerDashboardComponent implements OnInit {
           error: (err) => this.errorMessage = err.error?.error || 'Fout bij verwijderen'
         });
       }
+    });
+  }
+
+  generatePhysicalTickets(event: Event) {
+    this.api.generateMyPhysicalTickets(event.id!).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fysieke-tickets-${event.name}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.successMessage = 'Fysieke tickets gegenereerd en verzonden per e-mail';
+        this.loadEvents();
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij genereren fysieke tickets'
+    });
+  }
+
+  downloadPhysicalTickets(event: Event) {
+    this.api.downloadMyPhysicalTicketsPdf(event.id!).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fysieke-tickets-${event.name}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij downloaden'
+    });
+  }
+
+  openSalesDialog(event: Event) {
+    this.salesDialogVisible = true;
+    this.salesLoading = true;
+    this.salesData = null;
+    this.physicalSellQuantity = 1;
+    this.api.getMyTicketSales(event.id!).subscribe({
+      next: (data) => { this.salesData = data; this.salesLoading = false; },
+      error: () => this.salesLoading = false
+    });
+  }
+
+  markPhysicalSold() {
+    if (!this.salesData) return;
+    this.api.markMyPhysicalTicketsSold(this.salesData.eventId, this.physicalSellQuantity).subscribe({
+      next: () => {
+        this.openSalesDialog({ id: this.salesData!.eventId } as Event);
+        this.loadEvents();
+      },
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij registreren verkoop'
     });
   }
 

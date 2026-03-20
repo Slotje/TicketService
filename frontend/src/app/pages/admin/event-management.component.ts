@@ -75,8 +75,9 @@ export class EventManagementComponent implements OnInit {
   emptyForm(): Event {
     return {
       name: '', description: '', eventDate: '', endDate: '',
-      location: '', address: '', maxTickets: 100, ticketPrice: 25.00,
-      maxTicketsPerOrder: 10, imageUrl: '', status: 'DRAFT', customerId: 0
+      location: '', address: '', maxTickets: 100, physicalTickets: 0,
+      ticketPrice: 25.00, maxTicketsPerOrder: 10, imageUrl: '',
+      status: 'DRAFT', customerId: 0
     };
   }
 
@@ -153,6 +154,35 @@ export class EventManagementComponent implements OnInit {
           error: (err) => this.errorMessage = err.error?.error || 'Fout bij verwijderen'
         });
       }
+    });
+  }
+
+  generatePhysicalTickets(event: Event) {
+    this.api.generatePhysicalTickets(event.id!).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fysieke-tickets-${event.name}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.loadData();
+      },
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij genereren fysieke tickets'
+    });
+  }
+
+  downloadPhysicalTickets(event: Event) {
+    this.api.downloadPhysicalTicketsPdf(event.id!).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fysieke-tickets-${event.name}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij downloaden'
     });
   }
 

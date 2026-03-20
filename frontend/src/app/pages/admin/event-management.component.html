@@ -19,7 +19,9 @@
       <th pSortableColumn="customerName">Klant</th>
       <th>Datum</th>
       <th>Locatie</th>
-      <th>Tickets</th>
+      <th>Online</th>
+      <th>Fysiek</th>
+      <th>Totaal</th>
       <th>Prijs</th>
       <th>Status</th>
       <th>Acties</th>
@@ -31,9 +33,15 @@
       <td data-label="Klant">{{ event.customerName }}</td>
       <td data-label="Datum">{{ formatDate(event.eventDate) }}</td>
       <td data-label="Locatie">{{ event.location }}</td>
-      <td data-label="Tickets">
-        <span>{{ event.ticketsSold }}/{{ event.maxTickets }}</span>
+      <td data-label="Online">{{ event.ticketsSold }}/{{ event.onlineTickets || event.maxTickets }}</td>
+      <td data-label="Fysiek">
+        @if (event.physicalTickets > 0) {
+          {{ event.physicalTicketsSold }}/{{ event.physicalTickets }}
+        } @else {
+          -
+        }
       </td>
+      <td data-label="Totaal">{{ event.totalSold || event.ticketsSold }}/{{ event.maxTickets }}</td>
       <td data-label="Prijs">{{ event.ticketPrice | number:'1.2-2' }}</td>
       <td data-label="Status">
         <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
@@ -47,6 +55,12 @@
           <p-button icon="pi pi-list" [rounded]="true" [text]="true" severity="info" [routerLink]="'/admin/orders/' + event.id" pTooltip="Bestellingen" />
           @if (event.status === 'DRAFT') {
             <p-button icon="pi pi-play" [rounded]="true" [text]="true" severity="success" (onClick)="publishEvent(event)" />
+          }
+          @if (event.physicalTickets > 0 && !event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="help" (onClick)="generatePhysicalTickets(event)" pTooltip="Fysieke tickets genereren" />
+          }
+          @if (event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="help" (onClick)="downloadPhysicalTickets(event)" pTooltip="Fysieke tickets downloaden" />
           }
           <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteEvent(event)" />
         </div>
@@ -119,8 +133,12 @@
       </p-floatlabel>
     </div>
     <div class="form-field">
-      <label>Max Tickets *</label>
+      <label>Totaal Tickets *</label>
       <p-inputNumber [(ngModel)]="eventForm.maxTickets" [min]="1" [max]="100000" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Waarvan fysiek</label>
+      <p-inputNumber [(ngModel)]="eventForm.physicalTickets" [min]="0" [max]="eventForm.maxTickets" class="w-full" />
     </div>
     <div class="form-field">
       <label>Ticketprijs (EUR) *</label>
@@ -130,12 +148,19 @@
       <label>Max per bestelling</label>
       <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
     </div>
-    <div class="form-field">
+    <div class="form-field span-2">
       <p-floatlabel>
         <input pInputText id="imageUrl" [(ngModel)]="eventForm.imageUrl" class="w-full" />
         <label for="imageUrl">Afbeelding URL</label>
       </p-floatlabel>
     </div>
+    @if (eventForm.physicalTickets && eventForm.physicalTickets > 0) {
+      <div class="form-field span-2">
+        <p-message severity="info" [style]="{'width': '100%'}">
+          <span>Online: {{ eventForm.maxTickets - (eventForm.physicalTickets || 0) }} &bull; Fysiek: {{ eventForm.physicalTickets }}</span>
+        </p-message>
+      </div>
+    }
   </div>
 
   <ng-template #footer>

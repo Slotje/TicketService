@@ -86,7 +86,7 @@ public class OrderService {
             );
         }
 
-        // Reserve tickets
+        // Reserve tickets (online only - physical are handled separately)
         event.ticketsReserved += dto.quantity();
 
         TicketOrder order = new TicketOrder();
@@ -95,8 +95,10 @@ public class OrderService {
         order.buyerEmail = dto.buyerEmail();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
-        order.serviceFeePerTicket = event.serviceFee;
-        order.totalServiceFee = event.serviceFee.multiply(BigDecimal.valueOf(dto.quantity()));
+        // Use effective online service fee (total service cost spread over online tickets only)
+        BigDecimal effectiveFee = event.getEffectiveOnlineServiceFee();
+        order.serviceFeePerTicket = effectiveFee;
+        order.totalServiceFee = effectiveFee.multiply(BigDecimal.valueOf(dto.quantity()));
         BigDecimal ticketTotal = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
         order.totalPrice = ticketTotal.add(order.totalServiceFee);
         order.status = OrderStatus.RESERVED;
@@ -104,10 +106,12 @@ public class OrderService {
         order.expiresAt = LocalDateTime.now().plusMinutes(reservationTimeoutMinutes);
         order.persist();
 
-        // Generate tickets
+        // Generate tickets (online type, sold through webshop)
         for (int i = 0; i < dto.quantity(); i++) {
             Ticket ticket = new Ticket();
             ticket.order = order;
+            ticket.event = event;
+            ticket.ticketType = nl.ticketservice.entity.TicketType.ONLINE;
             ticket.persist();
             order.tickets.add(ticket);
         }
@@ -231,6 +235,6 @@ public class OrderService {
     }
 
     private TicketDTO toTicketDTO(Ticket t) {
-        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.scanned, t.scannedAt, t.createdAt);
+        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.ticketType.name(), t.scanned, t.scannedAt, t.createdAt);
     }
 }

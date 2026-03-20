@@ -16,14 +16,22 @@ public class Ticket extends PanacheEntity {
     @Column(nullable = false, unique = true, updatable = false)
     public String qrCodeData;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    public TicketType ticketType = TicketType.ONLINE;
+
     @Column(nullable = false)
     public boolean scanned = false;
 
     public LocalDateTime scannedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id")
     public TicketOrder order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id")
+    public Event event;
 
     @Column(nullable = false, updatable = false)
     public LocalDateTime createdAt;
