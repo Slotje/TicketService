@@ -22,6 +22,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/user-login.component').then(m => m.UserLoginComponent)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./pages/home/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/home/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
     path: 'my-tickets',
     loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent),
     canActivate: [userAuthGuard]
@@ -34,6 +42,14 @@ export const routes: Routes = [
   {
     path: 'klant/activeren/:token',
     loadComponent: () => import('./pages/customer/customer-activate.component').then(m => m.CustomerActivateComponent)
+  },
+  {
+    path: 'klant/forgot-password',
+    loadComponent: () => import('./pages/customer/customer-forgot-password.component').then(m => m.CustomerForgotPasswordComponent)
+  },
+  {
+    path: 'klant/reset-password',
+    loadComponent: () => import('./pages/home/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
     path: 'klant/dashboard',

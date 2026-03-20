@@ -5,6 +5,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import nl.ticketservice.entity.Customer;
 import nl.ticketservice.service.CustomerAuthService;
+import nl.ticketservice.service.EmailService;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Map;
 
@@ -15,6 +17,12 @@ public class CustomerAuthResource {
 
     @Inject
     CustomerAuthService customerAuthService;
+
+    @Inject
+    EmailService emailService;
+
+    @ConfigProperty(name = "ticket.app.base-url", defaultValue = "http://localhost:80")
+    String baseUrl;
 
     @POST
     @Path("/login")
@@ -28,6 +36,7 @@ public class CustomerAuthResource {
                 "token", token,
                 "customerId", customer.id,
                 "companyName", customer.companyName,
+                "contactPerson", customer.contactPerson,
                 "email", customer.email
         );
     }
@@ -45,6 +54,7 @@ public class CustomerAuthResource {
                 "token", authToken,
                 "customerId", customer.id,
                 "companyName", customer.companyName,
+                "contactPerson", customer.contactPerson,
                 "email", customer.email
         );
     }
@@ -56,6 +66,7 @@ public class CustomerAuthResource {
         return Map.of(
                 "customerId", customer.id,
                 "companyName", customer.companyName,
+                "contactPerson", customer.contactPerson,
                 "email", customer.email
         );
     }
@@ -74,5 +85,30 @@ public class CustomerAuthResource {
                 "companyName", customer.companyName,
                 "email", customer.email
         );
+    }
+
+    @POST
+    @Path("/forgot-password")
+    public Map<String, String> forgotPassword(Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return Map.of("message", "Als dit e-mailadres bij ons bekend is, ontvang je een e-mail met instructies.");
+        }
+        Customer customer = Customer.findByEmail(email.toLowerCase().trim());
+        if (customer != null && customer.passwordHash != null) {
+            String token = customerAuthService.generateResetToken(customer);
+            String resetUrl = baseUrl + "/klant/reset-password?token=" + token;
+            emailService.sendPasswordResetEmail(customer.email, customer.contactPerson, resetUrl);
+        }
+        return Map.of("message", "Als dit e-mailadres bij ons bekend is, ontvang je een e-mail met instructies.");
+    }
+
+    @POST
+    @Path("/reset-password")
+    public Map<String, String> resetPassword(Map<String, String> body) {
+        String token = body.get("token");
+        String password = body.get("password");
+        customerAuthService.resetPassword(token, password);
+        return Map.of("message", "Wachtwoord is succesvol gewijzigd. Je kunt nu inloggen.");
     }
 }

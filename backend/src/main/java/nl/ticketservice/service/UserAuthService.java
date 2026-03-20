@@ -76,6 +76,49 @@ public class UserAuthService {
         }
     }
 
+    public String generateResetToken(User user) {
+        long expiry = Instant.now().getEpochSecond() + 3600; // 1 hour
+        String payload = user.id + "|" + expiry;
+        String signature = hmac("reset|" + payload + "|" + user.passwordHash);
+        String token = payload + "|" + signature;
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(token.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        try {
+            String decoded = new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8);
+            String[] parts = decoded.split("\\|");
+            if (parts.length != 3) {
+                throw new TicketServiceException("Ongeldige of verlopen resetlink", 400);
+            }
+
+            String userId = parts[0];
+            long expiry = Long.parseLong(parts[1]);
+            String signature = parts[2];
+
+            if (Instant.now().getEpochSecond() > expiry) {
+                throw new TicketServiceException("Resetlink is verlopen", 400);
+            }
+
+            User user = User.findById(Long.parseLong(userId));
+            if (user == null) {
+                throw new TicketServiceException("Ongeldige resetlink", 400);
+            }
+
+            String expectedSig = hmac("reset|" + userId + "|" + expiry + "|" + user.passwordHash);
+            if (!expectedSig.equals(signature)) {
+                throw new TicketServiceException("Ongeldige of verlopen resetlink", 400);
+            }
+
+            user.passwordHash = hashPassword(newPassword);
+        } catch (TicketServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TicketServiceException("Ongeldige resetlink", 400);
+        }
+    }
+
     public User requireUser(String authHeader) {
         String token = extractToken(authHeader);
         User user = validateToken(token);

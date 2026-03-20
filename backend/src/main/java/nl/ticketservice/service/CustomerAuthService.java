@@ -65,6 +65,49 @@ public class CustomerAuthService {
         }
     }
 
+    public String generateResetToken(Customer customer) {
+        long expiry = Instant.now().getEpochSecond() + 3600; // 1 hour
+        String payload = customer.id + "|" + expiry;
+        String signature = hmac("customerreset|" + payload + "|" + customer.passwordHash);
+        String token = payload + "|" + signature;
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(token.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        try {
+            String decoded = new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8);
+            String[] parts = decoded.split("\\|");
+            if (parts.length != 3) {
+                throw new TicketServiceException("Ongeldige of verlopen resetlink", 400);
+            }
+
+            String customerId = parts[0];
+            long expiry = Long.parseLong(parts[1]);
+            String signature = parts[2];
+
+            if (Instant.now().getEpochSecond() > expiry) {
+                throw new TicketServiceException("Resetlink is verlopen", 400);
+            }
+
+            Customer customer = Customer.findById(Long.parseLong(customerId));
+            if (customer == null || customer.passwordHash == null) {
+                throw new TicketServiceException("Ongeldige resetlink", 400);
+            }
+
+            String expectedSig = hmac("customerreset|" + customerId + "|" + expiry + "|" + customer.passwordHash);
+            if (!expectedSig.equals(signature)) {
+                throw new TicketServiceException("Ongeldige of verlopen resetlink", 400);
+            }
+
+            customer.passwordHash = hashPassword(newPassword);
+        } catch (TicketServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TicketServiceException("Ongeldige resetlink", 400);
+        }
+    }
+
     public Customer requireCustomer(String authHeader) {
         String token = extractToken(authHeader);
         Customer customer = validateToken(token);

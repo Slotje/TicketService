@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { UserAuthService } from '../../services/user-auth.service';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -13,7 +13,7 @@ import { Divider } from 'primeng/divider';
 
 @Component({
   selector: 'app-user-login',
-  imports: [CommonModule, FormsModule, Card, Button, InputText, FloatLabel, Message, Password, Divider],
+  imports: [CommonModule, FormsModule, RouterLink, Card, Button, InputText, FloatLabel, Message, Password, Divider],
   template: `
     <div class="login-page">
       <p-card>
@@ -80,6 +80,12 @@ import { Divider } from 'primeng/divider';
             [disabled]="loading"
             [style]="{'width': '100%'}" />
 
+          @if (!isRegister) {
+            <div class="forgot-link">
+              <a routerLink="/forgot-password" class="link">Wachtwoord vergeten?</a>
+            </div>
+          }
+
           <p-divider />
 
           <div class="toggle-mode">
@@ -109,6 +115,11 @@ import { Divider } from 'primeng/divider';
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
+    }
+    .forgot-link {
+      text-align: right;
+      font-size: 0.85rem;
+      margin-top: -0.5rem;
     }
     .toggle-mode {
       text-align: center;

@@ -105,6 +105,46 @@ public class EmailService {
         }
     }
 
+    public boolean sendPasswordResetEmail(String toEmail, String name, String resetUrl) {
+        try {
+            String subject = "Wachtwoord herstellen - TicketService";
+            String body = """
+                    <html>
+                    <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                        <div style="background-color: #2980b9; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="color: white; margin: 0;">TicketService</h1>
+                        </div>
+                        <div style="padding: 30px; background: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <h2 style="color: #2c3e50;">Wachtwoord herstellen</h2>
+                            <p>Hallo %s,</p>
+                            <p>We hebben een verzoek ontvangen om je wachtwoord te herstellen.</p>
+                            <p>Klik op de onderstaande knop om een nieuw wachtwoord in te stellen:</p>
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="%s"
+                                   style="background-color: #2980b9; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                                    Nieuw wachtwoord instellen
+                                </a>
+                            </div>
+                            <p style="font-size: 13px; color: #888;">
+                                Deze link is 1 uur geldig. Als je geen wachtwoord reset hebt aangevraagd, kun je deze e-mail negeren.
+                            </p>
+                            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                            <p style="font-size: 12px; color: #999;">TicketService - Ticket Service Platform</p>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(name, resetUrl);
+
+            Mail mail = Mail.withHtml(toEmail, subject, body);
+            mailer.send(mail);
+            LOG.infof("Wachtwoord reset mail verstuurd naar %s", toEmail);
+            return true;
+        } catch (Exception e) {
+            LOG.errorf(e, "Fout bij het versturen van wachtwoord reset mail naar %s", toEmail);
+            return false;
+        }
+    }
+
     /**
      * Generates a from address like "Test Bedrijf <testbedrijf@ticketing.lockitree.com>"
      */

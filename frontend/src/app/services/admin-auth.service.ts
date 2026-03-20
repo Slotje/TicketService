@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 export interface AdminLoginResponse {
   token: string;
   email: string;
-  name: string;
+  firstName: string;
 }
 
 @Injectable({
@@ -48,7 +48,7 @@ export class AdminAuthService {
 
   private storeAuth(res: AdminLoginResponse) {
     localStorage.setItem('admin_token', res.token);
-    localStorage.setItem('admin_display_name', res.name || res.email);
+    localStorage.setItem('admin_display_name', res.firstName || res.email);
     this.loggedIn$.next(true);
   }
 

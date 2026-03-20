@@ -7,6 +7,7 @@ export interface CustomerLoginResponse {
   token: string;
   customerId: number;
   companyName: string;
+  contactPerson: string;
   email: string;
 }
 
@@ -40,6 +41,10 @@ export class CustomerAuthService {
     return localStorage.getItem('customer_company_name') || '';
   }
 
+  get contactPerson(): string {
+    return localStorage.getItem('customer_contact_person') || '';
+  }
+
   login(email: string, password: string): Observable<CustomerLoginResponse> {
     return this.http.post<CustomerLoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
       tap(res => this.storeAuth(res))
@@ -60,6 +65,9 @@ export class CustomerAuthService {
     localStorage.setItem('customer_token', res.token);
     localStorage.setItem('customer_id', res.customerId.toString());
     localStorage.setItem('customer_company_name', res.companyName);
+    if (res.contactPerson) {
+      localStorage.setItem('customer_contact_person', res.contactPerson);
+    }
     this.loggedIn$.next(true);
   }
 
@@ -67,6 +75,7 @@ export class CustomerAuthService {
     localStorage.removeItem('customer_token');
     localStorage.removeItem('customer_id');
     localStorage.removeItem('customer_company_name');
+    localStorage.removeItem('customer_contact_person');
     this.loggedIn$.next(false);
     this.router.navigate(['/klant/login']);
   }

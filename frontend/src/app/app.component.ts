@@ -24,9 +24,12 @@ import { Subscription } from 'rxjs';
         </ng-template>
         <ng-template #end>
           <div class="auth-buttons">
-            @if (customerAuth.isLoggedIn) {
-              <p-button icon="pi pi-building" [label]="customerAuth.companyName" [text]="true" size="small" routerLink="/klant/dashboard" />
-              <p-button icon="pi pi-sign-out" [text]="true" size="small" (onClick)="customerAuth.logout()" pTooltip="Klant uitloggen" />
+            @if (adminAuth.isLoggedIn) {
+              <span class="user-greeting"><i class="pi pi-cog"></i> {{ adminAuth.displayName }}</span>
+              <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="adminAuth.logout()" />
+            } @else if (customerAuth.isLoggedIn) {
+              <span class="user-greeting"><i class="pi pi-building"></i> {{ customerAuth.contactPerson || customerAuth.companyName }}</span>
+              <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="customerAuth.logout()" />
             } @else if (userAuth.isLoggedIn) {
               <span class="user-greeting">{{ userAuth.name }}</span>
               <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="userAuth.logout()" />
@@ -104,7 +107,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private subs: Subscription[] = [];
 
   constructor(
-    private adminAuth: AdminAuthService,
+    public adminAuth: AdminAuthService,
     private scannerAuth: AuthService,
     public userAuth: UserAuthService,
     public customerAuth: CustomerAuthService,
@@ -153,9 +156,7 @@ export class AppComponent implements OnInit, OnDestroy {
           { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/admin' },
           { label: 'Klanten', icon: 'pi pi-users', routerLink: '/admin/customers' },
           { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/admin/events' },
-          { label: 'Scanner Accounts', icon: 'pi pi-id-card', routerLink: '/admin/scanners' },
-          { separator: true },
-          { label: 'Uitloggen', icon: 'pi pi-sign-out', command: () => this.adminAuth.logout() }
+          { label: 'Scanner Accounts', icon: 'pi pi-id-card', routerLink: '/admin/scanners' }
         ]
       }] : [])
     ];

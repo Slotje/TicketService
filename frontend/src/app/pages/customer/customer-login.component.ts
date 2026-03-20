@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CustomerAuthService } from '../../services/customer-auth.service';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -12,7 +12,7 @@ import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-customer-login',
-  imports: [CommonModule, FormsModule, Card, Button, InputText, FloatLabel, Password, Message],
+  imports: [CommonModule, FormsModule, RouterLink, Card, Button, InputText, FloatLabel, Password, Message],
   template: `
     <div class="login-container">
       <p-card>
@@ -42,6 +42,10 @@ import { Message } from 'primeng/message';
 
           <p-button label="Inloggen" icon="pi pi-sign-in" (onClick)="login()"
                     [loading]="loading" styleClass="w-full" />
+
+          <div class="forgot-link">
+            <a routerLink="/klant/forgot-password" class="link">Wachtwoord vergeten?</a>
+          </div>
         </div>
       </p-card>
     </div>
@@ -67,6 +71,18 @@ import { Message } from 'primeng/message';
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+    }
+    .forgot-link {
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .link {
+      color: var(--p-primary-color);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
     }
   `]
 })
