@@ -4,6 +4,8 @@ import nl.ticketservice.entity.*;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EntityTest {
@@ -176,6 +178,52 @@ class EntityTest {
         user.prePersist();
 
         assertNotNull(user.createdAt);
+    }
+
+    // --- TicketOrder.prePersist generates orderNumber starting with ORD- ---
+
+    @Test
+    void testTicketOrderPrePersistGeneratesOrdPrefix() {
+        TicketOrder order = new TicketOrder();
+        order.prePersist();
+
+        assertNotNull(order.orderNumber);
+        assertTrue(order.orderNumber.startsWith("ORD-"), "orderNumber should start with ORD-");
+        assertEquals(12, order.orderNumber.length(), "ORD- plus 8 uppercase hex chars");
+    }
+
+    // --- Ticket.prePersist generates ticketCode starting with TKT- and qrCodeData is UUID ---
+
+    @Test
+    void testTicketPrePersistGeneratesTktPrefixAndUuidQr() {
+        Ticket ticket = new Ticket();
+        ticket.prePersist();
+
+        assertNotNull(ticket.ticketCode);
+        assertTrue(ticket.ticketCode.startsWith("TKT-"), "ticketCode should start with TKT-");
+        assertNotNull(ticket.qrCodeData);
+        // qrCodeData should be a valid UUID
+        assertDoesNotThrow(() -> UUID.fromString(ticket.qrCodeData), "qrCodeData should be a valid UUID");
+    }
+
+    // --- Event.prePersist sets default values ---
+
+    @Test
+    void testEventPrePersistSetsDefaults() {
+        Event event = new Event();
+        // Before prePersist, defaults are set by field initializers
+        assertEquals(0, event.ticketsSold);
+        assertEquals(0, event.ticketsReserved);
+        assertEquals(EventStatus.DRAFT, event.status);
+
+        event.prePersist();
+
+        // After prePersist, timestamps are set and defaults remain
+        assertNotNull(event.createdAt);
+        assertNotNull(event.updatedAt);
+        assertEquals(0, event.ticketsSold);
+        assertEquals(0, event.ticketsReserved);
+        assertEquals(EventStatus.DRAFT, event.status);
     }
 
     // --- Enum tests ---

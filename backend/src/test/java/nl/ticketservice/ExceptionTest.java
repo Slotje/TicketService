@@ -6,6 +6,7 @@ import nl.ticketservice.exception.TicketServiceException;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,32 @@ class ExceptionTest {
         @SuppressWarnings("unchecked")
         Map<String, String> body = (Map<String, String>) response.getEntity();
         assertEquals("Er is een interne fout opgetreden", body.get("error"));
+    }
+
+    @Test
+    void testGlobalExceptionHandlerWithGenericException() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        Exception ex = new Exception("Some generic error");
+
+        Response response = handler.toResponse(ex);
+
+        assertEquals(500, response.getStatus());
+        @SuppressWarnings("unchecked")
+        Map<String, String> body = (Map<String, String>) response.getEntity();
+        assertEquals("Er is een interne fout opgetreden", body.get("error"));
+    }
+
+    @Test
+    void testGlobalExceptionHandlerWithWebApplicationException() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        WebApplicationException ex = new WebApplicationException("Forbidden", 403);
+
+        Response response = handler.toResponse(ex);
+
+        assertEquals(403, response.getStatus());
+        @SuppressWarnings("unchecked")
+        Map<String, String> body = (Map<String, String>) response.getEntity();
+        assertEquals("Forbidden", body.get("error"));
     }
 
     // --- ConstraintViolationExceptionMapper tests ---

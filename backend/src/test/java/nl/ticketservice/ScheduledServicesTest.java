@@ -369,4 +369,27 @@ public class ScheduledServicesTest {
         boolean result = emailService.sendCustomerInvite(customer, "test-fallback-token");
         assertTrue(result);
     }
+
+    @Test
+    @Order(23)
+    @Transactional
+    void testEmailRetryMaxRetriesExceeded() {
+        // Set the confirmed order to emailSent=false and emailRetryCount=5 (MAX_RETRIES)
+        TicketOrder order = TicketOrder.findById(confirmedOrderId);
+        assertNotNull(order);
+        order.emailSent = false;
+        order.emailRetryCount = 5;
+        order.persist();
+        em.flush();
+
+        // Run retry - should NOT retry because retryCount >= MAX_RETRIES
+        emailRetryService.retryFailedEmails();
+
+        // Refresh entity from DB
+        em.clear();
+        TicketOrder reloaded = TicketOrder.findById(confirmedOrderId);
+        assertNotNull(reloaded);
+        assertEquals(5, reloaded.emailRetryCount, "Retry count should still be 5 (not retried)");
+        assertFalse(reloaded.emailSent, "Email should still not be sent");
+    }
 }

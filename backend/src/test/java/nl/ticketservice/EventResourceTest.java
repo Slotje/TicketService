@@ -558,4 +558,107 @@ public class EventResourceTest {
             .then()
                 .statusCode(204);
     }
+
+    // =========================================================================
+    // Additional coverage tests
+    // =========================================================================
+
+    @Test
+    @Order(30)
+    void testCreateEventForNonexistentCustomer() {
+        String body = "{" +
+                "\"name\":\"Orphan Event\"," +
+                "\"description\":\"Event for nonexistent customer\"," +
+                "\"eventDate\":\"2028-06-01T10:00:00\"," +
+                "\"endDate\":\"2028-06-01T22:00:00\"," +
+                "\"location\":\"Nowhere\"," +
+                "\"address\":\"Nowhere 1\"," +
+                "\"maxTickets\":100," +
+                "\"ticketPrice\":20.00," +
+                "\"serviceFee\":2.00," +
+                "\"maxTicketsPerOrder\":5," +
+                "\"customerId\":999999" +
+                "}";
+
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getAdminToken())
+                .body(body)
+            .when()
+                .post("/api/events")
+            .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(31)
+    void testUpdateNonexistentEvent() {
+        String body = "{" +
+                "\"name\":\"Ghost Event\"," +
+                "\"description\":\"Does not exist\"," +
+                "\"eventDate\":\"2028-06-01T10:00:00\"," +
+                "\"location\":\"Nowhere\"," +
+                "\"address\":\"Nowhere 1\"," +
+                "\"maxTickets\":100," +
+                "\"ticketPrice\":20.00," +
+                "\"serviceFee\":2.00," +
+                "\"maxTicketsPerOrder\":5," +
+                "\"customerId\":" + existingCustomerId +
+                "}";
+
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getAdminToken())
+                .body(body)
+            .when()
+                .put("/api/events/999999")
+            .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(32)
+    void testDeleteNonexistentEvent() {
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getAdminToken())
+            .when()
+                .delete("/api/events/999999")
+            .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @Order(33)
+    void testGetMyEventsWithoutAuth() {
+        given()
+            .when()
+                .get("/api/events/my")
+            .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @Order(34)
+    void testCreateMyEventWithoutAuth() {
+        String body = "{" +
+                "\"name\":\"Unauthorized Event\"," +
+                "\"description\":\"Should not work\"," +
+                "\"eventDate\":\"2028-06-01T10:00:00\"," +
+                "\"location\":\"Nowhere\"," +
+                "\"address\":\"Nowhere 1\"," +
+                "\"maxTickets\":100," +
+                "\"ticketPrice\":20.00," +
+                "\"serviceFee\":2.00," +
+                "\"maxTicketsPerOrder\":5," +
+                "\"customerId\":1" +
+                "}";
+
+        given()
+                .contentType(ContentType.JSON)
+            .when()
+                .post("/api/events/my")
+            .then()
+                .statusCode(401);
+    }
 }

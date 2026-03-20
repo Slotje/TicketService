@@ -130,4 +130,15 @@ class AdminAuthResourceTest {
             .then()
             .statusCode(401);
     }
+
+    @Test
+    @Order(9)
+    void verify_withExpiredOrMalformedToken_returnsUnauthorized() {
+        given()
+            .header("Authorization", "Bearer invalid-token-value")
+            .when()
+            .get("/api/admin/auth/verify")
+            .then()
+            .statusCode(401);
+    }
 }
