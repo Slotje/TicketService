@@ -90,7 +90,8 @@ public class ScheduledServicesTest {
                 .contentType(ContentType.JSON)
                 .body(Map.of(
                         "eventId", eventId,
-                        "buyerName", "Cleanup Test",
+                        "buyerFirstName", "Cleanup",
+                        "buyerLastName", "Test",
                         "buyerEmail", "cleanup@test.nl",
                         "quantity", 1))
             .when()
@@ -145,7 +146,8 @@ public class ScheduledServicesTest {
                 .contentType(ContentType.JSON)
                 .body(Map.of(
                         "eventId", eventId,
-                        "buyerName", "Email Test",
+                        "buyerFirstName", "Email",
+                        "buyerLastName", "Test",
                         "buyerEmail", "email@test.nl",
                         "quantity", 1))
             .when()
@@ -294,7 +296,8 @@ public class ScheduledServicesTest {
                 .contentType(ContentType.JSON)
                 .body(Map.of(
                         "eventId", noPrimaryColorCustomerEventId,
-                        "buyerName", "Default Color Buyer",
+                        "buyerFirstName", "Default",
+                        "buyerLastName", "Colorbuyer",
                         "buyerEmail", "defaultcolor@test.nl",
                         "quantity", 1))
             .when()

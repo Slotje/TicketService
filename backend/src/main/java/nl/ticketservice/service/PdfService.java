@@ -115,7 +115,7 @@ public class PdfService {
                         .setFontColor(new DeviceRgb(150, 150, 150))
                         .setBold()
                         .setMarginBottom(2));
-                leftCell.add(new Paragraph(order.buyerName)
+                leftCell.add(new Paragraph(order.buyerFirstName + " " + order.buyerLastName)
                         .setFontSize(14)
                         .setBold()
                         .setMarginBottom(2));
@@ -232,7 +232,7 @@ public class PdfService {
                 document.add(priceTable);
 
                 // === Footer ===
-                document.add(new Paragraph("Dit ticket is persoonlijk en op naam van " + order.buyerName + ". Neem een geldig legitimatiebewijs mee.")
+                document.add(new Paragraph("Dit ticket is persoonlijk en op naam van " + order.buyerFirstName + " " + order.buyerLastName + ". Neem een geldig legitimatiebewijs mee.")
                         .setFontSize(9)
                         .setFontColor(new DeviceRgb(150, 150, 150))
                         .setTextAlignment(TextAlignment.CENTER)

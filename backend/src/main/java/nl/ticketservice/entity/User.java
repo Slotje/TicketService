@@ -22,9 +22,17 @@ public class User extends PanacheEntity {
     public String passwordHash;
 
     @NotBlank
-    @Size(max = 200)
+    @Size(max = 100)
     @Column(nullable = false)
-    public String name;
+    public String firstName;
+
+    @NotBlank
+    @Size(max = 100)
+    @Column(nullable = false)
+    public String lastName;
+
+    @Size(max = 20)
+    public String phone;
 
     @Column(nullable = false, updatable = false)
     public LocalDateTime createdAt;
@@ -32,6 +40,10 @@ public class User extends PanacheEntity {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+    }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
 
     public static User findByEmail(String email) {

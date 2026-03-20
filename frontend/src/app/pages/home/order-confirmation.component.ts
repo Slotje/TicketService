@@ -53,7 +53,7 @@ import { Divider } from 'primeng/divider';
               </div>
               <div class="detail-item">
                 <label>Naam</label>
-                <span>{{ order.buyerName }}</span>
+                <span>{{ order.buyerFirstName }} {{ order.buyerLastName }}</span>
               </div>
               <div class="detail-item">
                 <label>E-mail</label>

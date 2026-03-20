@@ -30,7 +30,7 @@ class AdminAuthResourceTest {
     @Test
     @Order(2)
     void setup_whenAdminAlreadyExists_returnsBadRequest() {
-        RegisterDTO register = new RegisterDTO("admin2@ticketservice.nl", "password", "Admin 2");
+        RegisterDTO register = new RegisterDTO("admin2@ticketservice.nl", "password", "Admin", "Two", null);
 
         given()
             .contentType(ContentType.JSON)
@@ -56,7 +56,7 @@ class AdminAuthResourceTest {
             .statusCode(200)
             .body("token", notNullValue())
             .body("email", equalTo("admin@ticketservice.nl"))
-            .body("name", notNullValue());
+            .body("firstName", notNullValue());
     }
 
     @Test

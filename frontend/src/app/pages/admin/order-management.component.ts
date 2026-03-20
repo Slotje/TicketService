@@ -30,7 +30,7 @@ import { Card } from 'primeng/card';
       <ng-template #header>
         <tr>
           <th pSortableColumn="orderNumber">Bestelnr.</th>
-          <th pSortableColumn="buyerName">Naam</th>
+          <th pSortableColumn="buyerFirstName">Naam</th>
           <th>E-mail</th>
           <th>Aantal</th>
           <th>Totaal</th>
@@ -42,7 +42,7 @@ import { Card } from 'primeng/card';
       <ng-template #body let-order>
         <tr>
           <td data-label="Bestelnr."><code>{{ order.orderNumber }}</code></td>
-          <td data-label="Naam">{{ order.buyerName }}</td>
+          <td data-label="Naam">{{ order.buyerFirstName }} {{ order.buyerLastName }}</td>
           <td data-label="E-mail">{{ order.buyerEmail }}</td>
           <td data-label="Aantal">{{ order.quantity }}</td>
           <td data-label="Totaal">{{ order.totalPrice | number:'1.2-2' }}</td>

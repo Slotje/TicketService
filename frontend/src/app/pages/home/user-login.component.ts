@@ -33,11 +33,19 @@ import { Divider } from 'primeng/divider';
 
         <div class="login-form">
           @if (isRegister) {
-            <div class="form-field">
-              <p-floatlabel>
-                <input pInputText id="name" [(ngModel)]="name" class="w-full" />
-                <label for="name">Naam *</label>
-              </p-floatlabel>
+            <div class="name-row">
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="firstName" [(ngModel)]="firstName" class="w-full" />
+                  <label for="firstName">Voornaam *</label>
+                </p-floatlabel>
+              </div>
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="lastName" [(ngModel)]="lastName" class="w-full" />
+                  <label for="lastName">Achternaam *</label>
+                </p-floatlabel>
+              </div>
             </div>
           }
 
@@ -47,6 +55,15 @@ import { Divider } from 'primeng/divider';
               <label for="email">E-mailadres *</label>
             </p-floatlabel>
           </div>
+
+          @if (isRegister) {
+            <div class="form-field">
+              <p-floatlabel>
+                <input pInputText id="phone" [(ngModel)]="phone" class="w-full" />
+                <label for="phone">Telefoonnummer</label>
+              </p-floatlabel>
+            </div>
+          }
 
           <div class="form-field">
             <p-floatlabel>
@@ -88,6 +105,11 @@ import { Divider } from 'primeng/divider';
       flex-direction: column;
       gap: 1.25rem;
     }
+    .name-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
     .toggle-mode {
       text-align: center;
       font-size: 0.9rem;
@@ -102,7 +124,9 @@ import { Divider } from 'primeng/divider';
 export class UserLoginComponent {
   email = '';
   password = '';
-  name = '';
+  firstName = '';
+  lastName = '';
+  phone = '';
   isRegister = false;
   loading = false;
   errorMessage = '';
@@ -122,15 +146,15 @@ export class UserLoginComponent {
       return;
     }
 
-    if (this.isRegister && !this.name) {
-      this.errorMessage = 'Vul je naam in.';
+    if (this.isRegister && (!this.firstName || !this.lastName)) {
+      this.errorMessage = 'Vul je voor- en achternaam in.';
       return;
     }
 
     this.loading = true;
 
     const obs = this.isRegister
-      ? this.userAuth.register(this.email, this.password, this.name)
+      ? this.userAuth.register(this.email, this.password, this.firstName, this.lastName, this.phone || undefined)
       : this.userAuth.login(this.email, this.password);
 
     obs.subscribe({

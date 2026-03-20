@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { UserAuthService } from '../../services/user-auth.service';
 import { Event, OrderRequest } from '../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -95,14 +96,25 @@ import { Divider } from 'primeng/divider';
               }
 
               <div class="order-form">
-                <div class="form-field">
-                  <p-floatlabel>
-                    <input pInputText id="buyerName" [(ngModel)]="orderForm.buyerName" class="w-full" />
-                    <label for="buyerName">Naam *</label>
-                  </p-floatlabel>
-                  @if (submitted && !orderForm.buyerName) {
-                    <small class="error-text">Naam is verplicht</small>
-                  }
+                <div class="name-row">
+                  <div class="form-field">
+                    <p-floatlabel>
+                      <input pInputText id="buyerFirstName" [(ngModel)]="orderForm.buyerFirstName" class="w-full" />
+                      <label for="buyerFirstName">Voornaam *</label>
+                    </p-floatlabel>
+                    @if (submitted && !orderForm.buyerFirstName) {
+                      <small class="error-text">Voornaam is verplicht</small>
+                    }
+                  </div>
+                  <div class="form-field">
+                    <p-floatlabel>
+                      <input pInputText id="buyerLastName" [(ngModel)]="orderForm.buyerLastName" class="w-full" />
+                      <label for="buyerLastName">Achternaam *</label>
+                    </p-floatlabel>
+                    @if (submitted && !orderForm.buyerLastName) {
+                      <small class="error-text">Achternaam is verplicht</small>
+                    }
+                  </div>
                 </div>
 
                 <div class="form-field">
@@ -197,6 +209,11 @@ import { Divider } from 'primeng/divider';
       flex-direction: column;
       gap: 1.25rem;
     }
+    .name-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
     .form-field {
       .error-text { color: var(--p-red-500); font-size: 0.8rem; }
     }
@@ -228,7 +245,8 @@ export class EventDetailComponent implements OnInit {
 
   orderForm: OrderRequest = {
     eventId: 0,
-    buyerName: '',
+    buyerFirstName: '',
+    buyerLastName: '',
     buyerEmail: '',
     buyerPhone: '',
     quantity: 1
@@ -239,7 +257,12 @@ export class EventDetailComponent implements OnInit {
     return Math.min(this.event.maxTicketsPerOrder, this.event.availableTickets ?? 0);
   }
 
-  constructor(private api: ApiService, private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private userAuth: UserAuthService
+  ) {}
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -248,9 +271,19 @@ export class EventDetailComponent implements OnInit {
         this.event = event;
         this.orderForm.eventId = event.id!;
         this.loading = false;
+        this.prefillFromUser();
       },
       error: () => this.loading = false
     });
+  }
+
+  private prefillFromUser() {
+    if (this.userAuth.isLoggedIn) {
+      this.orderForm.buyerFirstName = this.userAuth.firstName || '';
+      this.orderForm.buyerLastName = this.userAuth.lastName || '';
+      this.orderForm.buyerEmail = this.userAuth.email || '';
+      this.orderForm.buyerPhone = this.userAuth.phone || '';
+    }
   }
 
   formatDate(dateStr: string): string {
@@ -272,7 +305,7 @@ export class EventDetailComponent implements OnInit {
     this.submitted = true;
     this.errorMessage = '';
 
-    if (!this.orderForm.buyerName || !this.isValidEmail(this.orderForm.buyerEmail)) {
+    if (!this.orderForm.buyerFirstName || !this.orderForm.buyerLastName || !this.isValidEmail(this.orderForm.buyerEmail)) {
       return;
     }
 

@@ -5,9 +5,12 @@ import jakarta.validation.constraints.*;
 public record OrderRequestDTO(
         @NotNull(message = "Event ID is verplicht")
         Long eventId,
-        @NotBlank(message = "Naam koper is verplicht")
-        @Size(min = 2, max = 100)
-        String buyerName,
+        @NotBlank(message = "Voornaam koper is verplicht")
+        @Size(min = 1, max = 100)
+        String buyerFirstName,
+        @NotBlank(message = "Achternaam koper is verplicht")
+        @Size(min = 1, max = 100)
+        String buyerLastName,
         @NotBlank(message = "E-mail koper is verplicht")
         @Email(message = "Ongeldig e-mailadres")
         String buyerEmail,

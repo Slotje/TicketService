@@ -6,7 +6,9 @@ import { Router } from '@angular/router';
 export interface UserAuthResponse {
   token: string | null;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
 }
 
 @Injectable({
@@ -34,12 +36,27 @@ export class UserAuthService {
     return localStorage.getItem('user_email');
   }
 
-  get name(): string | null {
-    return localStorage.getItem('user_name');
+  get firstName(): string | null {
+    return localStorage.getItem('user_first_name');
   }
 
-  register(email: string, password: string, name: string): Observable<UserAuthResponse> {
-    return this.http.post<UserAuthResponse>(`${this.baseUrl}/register`, { email, password, name }).pipe(
+  get lastName(): string | null {
+    return localStorage.getItem('user_last_name');
+  }
+
+  get name(): string | null {
+    const first = this.firstName;
+    const last = this.lastName;
+    if (first && last) return `${first} ${last}`;
+    return first || last;
+  }
+
+  get phone(): string | null {
+    return localStorage.getItem('user_phone');
+  }
+
+  register(email: string, password: string, firstName: string, lastName: string, phone?: string): Observable<UserAuthResponse> {
+    return this.http.post<UserAuthResponse>(`${this.baseUrl}/register`, { email, password, firstName, lastName, phone }).pipe(
       tap(res => this.storeAuth(res))
     );
   }
@@ -53,7 +70,9 @@ export class UserAuthService {
   logout() {
     localStorage.removeItem('user_token');
     localStorage.removeItem('user_email');
-    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_first_name');
+    localStorage.removeItem('user_last_name');
+    localStorage.removeItem('user_phone');
     this.loggedIn$.next(false);
     this.router.navigate(['/']);
   }
@@ -63,6 +82,7 @@ export class UserAuthService {
     return this.http.get<UserAuthResponse>(`${this.baseUrl}/verify`, {
       headers: { Authorization: `Bearer ${this.token}` }
     }).pipe(
+      tap(res => this.storeAuth(res)),
       map(() => true),
       catchError(() => {
         this.logout();
@@ -76,7 +96,11 @@ export class UserAuthService {
       localStorage.setItem('user_token', res.token);
     }
     localStorage.setItem('user_email', res.email);
-    localStorage.setItem('user_name', res.name);
+    localStorage.setItem('user_first_name', res.firstName);
+    localStorage.setItem('user_last_name', res.lastName);
+    if (res.phone) {
+      localStorage.setItem('user_phone', res.phone);
+    }
     this.loggedIn$.next(true);
   }
 

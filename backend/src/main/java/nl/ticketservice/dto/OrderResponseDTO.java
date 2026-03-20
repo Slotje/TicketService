@@ -7,7 +7,8 @@ import java.util.List;
 public record OrderResponseDTO(
         Long id,
         String orderNumber,
-        String buyerName,
+        String buyerFirstName,
+        String buyerLastName,
         String buyerEmail,
         String buyerPhone,
         Integer quantity,

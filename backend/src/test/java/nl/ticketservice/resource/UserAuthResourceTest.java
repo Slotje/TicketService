@@ -19,7 +19,7 @@ class UserAuthResourceTest {
     @Test
     @Order(1)
     void register_withValidData_returnsTokenAndUser() {
-        RegisterDTO register = new RegisterDTO("test@example.com", "test123456", "Test User");
+        RegisterDTO register = new RegisterDTO("test@example.com", "test123456", "Test", "User", null);
 
         given()
             .contentType(ContentType.JSON)
@@ -30,13 +30,14 @@ class UserAuthResourceTest {
             .statusCode(200)
             .body("token", notNullValue())
             .body("email", equalTo("test@example.com"))
-            .body("name", equalTo("Test User"));
+            .body("firstName", equalTo("Test"))
+            .body("lastName", equalTo("User"));
     }
 
     @Test
     @Order(2)
     void register_withDuplicateEmail_returnsBadRequest() {
-        RegisterDTO register = new RegisterDTO("test@example.com", "test123456", "Test User");
+        RegisterDTO register = new RegisterDTO("test@example.com", "test123456", "Test", "User", null);
 
         given()
             .contentType(ContentType.JSON)
@@ -61,7 +62,8 @@ class UserAuthResourceTest {
             .statusCode(200)
             .body("token", notNullValue())
             .body("email", equalTo("test@example.com"))
-            .body("name", equalTo("Test User"));
+            .body("firstName", equalTo("Test"))
+            .body("lastName", equalTo("User"));
     }
 
     @Test

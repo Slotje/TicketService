@@ -17,10 +17,15 @@ public class TicketOrder extends PanacheEntity {
     @Column(nullable = false, unique = true, updatable = false)
     public String orderNumber;
 
-    @NotBlank(message = "Naam koper is verplicht")
-    @Size(min = 2, max = 100)
+    @NotBlank(message = "Voornaam koper is verplicht")
+    @Size(min = 1, max = 100)
     @Column(nullable = false)
-    public String buyerName;
+    public String buyerFirstName;
+
+    @NotBlank(message = "Achternaam koper is verplicht")
+    @Size(min = 1, max = 100)
+    @Column(nullable = false)
+    public String buyerLastName;
 
     @NotBlank(message = "E-mail koper is verplicht")
     @Email(message = "Ongeldig e-mailadres")

@@ -34,7 +34,8 @@ export interface Event {
 
 export interface OrderRequest {
   eventId: number;
-  buyerName: string;
+  buyerFirstName: string;
+  buyerLastName: string;
   buyerEmail: string;
   buyerPhone?: string;
   quantity: number;
@@ -43,7 +44,8 @@ export interface OrderRequest {
 export interface Order {
   id: number;
   orderNumber: string;
-  buyerName: string;
+  buyerFirstName: string;
+  buyerLastName: string;
   buyerEmail: string;
   buyerPhone?: string;
   quantity: number;

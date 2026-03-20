@@ -134,7 +134,7 @@ public class AuthServiceCoverageTest {
     void adminSetup_whenAdminExists_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("email", "newadmin@test.nl", "password", "password123", "name", "New Admin"))
+                .body(Map.of("email", "newadmin@test.nl", "password", "password123", "firstName", "New", "lastName", "Admin"))
                 .when()
                 .post("/api/admin/auth/setup")
                 .then()
@@ -432,7 +432,7 @@ public class AuthServiceCoverageTest {
     void userRegister_missingEmail_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("password", "password123", "name", "Test"))
+                .body(Map.of("password", "password123", "firstName", "Test", "lastName", "User"))
                 .when()
                 .post("/api/user/auth/register")
                 .then()
@@ -444,7 +444,7 @@ public class AuthServiceCoverageTest {
     void userRegister_missingPassword_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("email", "missing-pw@test.com", "name", "Test"))
+                .body(Map.of("email", "missing-pw@test.com", "firstName", "Test", "lastName", "User"))
                 .when()
                 .post("/api/user/auth/register")
                 .then()
@@ -456,7 +456,7 @@ public class AuthServiceCoverageTest {
     void userRegister_missingName_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("email", "missing-name@test.com", "password", "password123"))
+                .body(Map.of("email", "missing-name@test.com", "password", "password123", "lastName", "User"))
                 .when()
                 .post("/api/user/auth/register")
                 .then()
@@ -468,7 +468,7 @@ public class AuthServiceCoverageTest {
     void userRegister_invalidEmail_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("email", "not-an-email", "password", "password123", "name", "Test"))
+                .body(Map.of("email", "not-an-email", "password", "password123", "firstName", "Test", "lastName", "User"))
                 .when()
                 .post("/api/user/auth/register")
                 .then()
@@ -480,7 +480,7 @@ public class AuthServiceCoverageTest {
     void userRegister_shortPassword_returns400() {
         given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("email", "shortpw@test.com", "password", "abc", "name", "Test"))
+                .body(Map.of("email", "shortpw@test.com", "password", "abc", "firstName", "Test", "lastName", "User"))
                 .when()
                 .post("/api/user/auth/register")
                 .then()

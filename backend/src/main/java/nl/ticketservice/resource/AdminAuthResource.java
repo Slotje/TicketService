@@ -31,9 +31,9 @@ public class AdminAuthResource {
         if (AdminUser.count() > 0) {
             throw new TicketServiceException("Er bestaat al een admin account. Gebruik /login.", 400);
         }
-        AdminUser user = adminAuthService.createUser(dto.email(), dto.password(), dto.name());
+        AdminUser user = adminAuthService.createUser(dto.email(), dto.password(), dto.firstName() + " " + dto.lastName());
         String token = adminAuthService.login(dto.email(), dto.password());
-        return new UserResponseDTO(token, user.email, user.displayName);
+        return new UserResponseDTO(token, user.email, user.displayName, null, null);
     }
 
     @POST
@@ -41,7 +41,7 @@ public class AdminAuthResource {
     public UserResponseDTO login(@Valid UserLoginDTO dto) {
         String token = adminAuthService.login(dto.email(), dto.password());
         AdminUser user = adminAuthService.validateToken(token);
-        return new UserResponseDTO(token, user.email, user.displayName);
+        return new UserResponseDTO(token, user.email, user.displayName, null, null);
     }
 
     @GET
@@ -50,6 +50,6 @@ public class AdminAuthResource {
         adminAuthService.requireAdmin(authHeader);
         String token = authHeader.substring(7);
         AdminUser user = adminAuthService.validateToken(token);
-        return new UserResponseDTO(token, user.email, user.displayName);
+        return new UserResponseDTO(token, user.email, user.displayName, null, null);
     }
 }

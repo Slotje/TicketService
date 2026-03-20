@@ -143,7 +143,7 @@ public class EmailService {
                 </body>
                 </html>
                 """.formatted(
-                order.buyerName,
+                order.buyerFirstName + " " + order.buyerLastName,
                 order.orderNumber,
                 eventName,
                 eventDate,

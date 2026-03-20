@@ -90,7 +90,8 @@ public class OrderService {
         event.ticketsReserved += dto.quantity();
 
         TicketOrder order = new TicketOrder();
-        order.buyerName = dto.buyerName();
+        order.buyerFirstName = dto.buyerFirstName();
+        order.buyerLastName = dto.buyerLastName();
         order.buyerEmail = dto.buyerEmail();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
@@ -221,7 +222,8 @@ public class OrderService {
                 .toList();
 
         return new OrderResponseDTO(
-                o.id, o.orderNumber, o.buyerName, o.buyerEmail, o.buyerPhone,
+                o.id, o.orderNumber, o.buyerFirstName, o.buyerLastName,
+                o.buyerEmail, o.buyerPhone,
                 o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
                 o.totalPrice, o.status.name(), o.event.name,
                 o.event.id, o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs

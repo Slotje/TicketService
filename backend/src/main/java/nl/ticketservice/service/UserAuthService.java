@@ -26,7 +26,7 @@ public class UserAuthService {
     int tokenExpiryHours;
 
     @Transactional
-    public User register(String email, String password, String name) {
+    public User register(String email, String password, String firstName, String lastName, String phone) {
         if (User.findByEmail(email) != null) {
             throw new TicketServiceException("Dit e-mailadres is al geregistreerd", 400);
         }
@@ -34,7 +34,9 @@ public class UserAuthService {
         User user = new User();
         user.email = email.toLowerCase().trim();
         user.passwordHash = hashPassword(password);
-        user.name = name;
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.phone = phone;
         user.persist();
         return user;
     }

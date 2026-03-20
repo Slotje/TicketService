@@ -76,7 +76,7 @@ public class OrderResourceTest {
 
         Response response = given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Jan Test\",\"buyerEmail\":\"jan@test.nl\",\"buyerPhone\":\"+31612345678\",\"quantity\":2}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Jan\",\"buyerLastName\":\"Test\",\"buyerEmail\":\"jan@test.nl\",\"buyerPhone\":\"+31612345678\",\"quantity\":2}")
             .when()
                 .post("/api/orders")
             .then()
@@ -85,7 +85,8 @@ public class OrderResourceTest {
                 .body("orderNumber", startsWith("ORD-"))
                 .body("quantity", equalTo(2))
                 .body("tickets.size()", equalTo(2))
-                .body("buyerName", equalTo("Jan Test"))
+                .body("buyerFirstName", equalTo("Jan"))
+                .body("buyerLastName", equalTo("Test"))
                 .body("buyerEmail", equalTo("jan@test.nl"))
                 .body("buyerPhone", equalTo("+31612345678"))
                 .body("eventId", equalTo(publishedEventId.intValue()))
@@ -110,7 +111,8 @@ public class OrderResourceTest {
                 .statusCode(200)
                 .body("id", equalTo(orderId.intValue()))
                 .body("orderNumber", equalTo(orderNumber))
-                .body("buyerName", equalTo("Jan Test"))
+                .body("buyerFirstName", equalTo("Jan"))
+                .body("buyerLastName", equalTo("Test"))
                 .body("buyerEmail", equalTo("jan@test.nl"))
                 .body("status", equalTo("RESERVED"))
                 .body("quantity", equalTo(2))
@@ -130,7 +132,8 @@ public class OrderResourceTest {
                 .statusCode(200)
                 .body("id", equalTo(orderId.intValue()))
                 .body("orderNumber", equalTo(orderNumber))
-                .body("buyerName", equalTo("Jan Test"));
+                .body("buyerFirstName", equalTo("Jan"))
+                .body("buyerLastName", equalTo("Test"));
     }
 
     // =========================================================================
@@ -303,7 +306,7 @@ public class OrderResourceTest {
     void testCreateOrderNonexistentEvent() {
         given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":999999,\"buyerName\":\"Nobody Test\",\"buyerEmail\":\"nobody@test.nl\",\"buyerPhone\":\"+31600000001\",\"quantity\":1}")
+                .body("{\"eventId\":999999,\"buyerFirstName\":\"Nobody\",\"buyerLastName\":\"Test\",\"buyerEmail\":\"nobody@test.nl\",\"buyerPhone\":\"+31600000001\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -318,7 +321,7 @@ public class OrderResourceTest {
     void testCreateOrderNonexistentEventId() {
         given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":888888,\"buyerName\":\"Test User\",\"buyerEmail\":\"test@test.nl\",\"buyerPhone\":\"+31600000002\",\"quantity\":1}")
+                .body("{\"eventId\":888888,\"buyerFirstName\":\"Test\",\"buyerLastName\":\"User\",\"buyerEmail\":\"test@test.nl\",\"buyerPhone\":\"+31600000002\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -388,7 +391,7 @@ public class OrderResourceTest {
     void testCreateOrderForExpiration() {
         Response response = given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Expired User\",\"buyerEmail\":\"expired@test.nl\",\"buyerPhone\":\"+31600000004\",\"quantity\":1}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Expired\",\"buyerLastName\":\"User\",\"buyerEmail\":\"expired@test.nl\",\"buyerPhone\":\"+31600000004\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -484,7 +487,7 @@ public class OrderResourceTest {
         // Try to create order for cancelled event → 400
         given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + cancelledEventId + ",\"buyerName\":\"Test Buyer\",\"buyerEmail\":\"cancelled@test.nl\",\"buyerPhone\":\"+31600000010\",\"quantity\":1}")
+                .body("{\"eventId\":" + cancelledEventId + ",\"buyerFirstName\":\"Test\",\"buyerLastName\":\"Buyer\",\"buyerEmail\":\"cancelled@test.nl\",\"buyerPhone\":\"+31600000010\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -501,7 +504,7 @@ public class OrderResourceTest {
         // Request quantity > 10 to exceed both the event and global max
         given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Greedy Buyer\",\"buyerEmail\":\"greedy@test.nl\",\"buyerPhone\":\"+31600000011\",\"quantity\":50}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Greedy\",\"buyerLastName\":\"Buyer\",\"buyerEmail\":\"greedy@test.nl\",\"buyerPhone\":\"+31600000011\",\"quantity\":50}")
             .when()
                 .post("/api/orders")
             .then()
@@ -519,7 +522,7 @@ public class OrderResourceTest {
         // Create a new order (will be RESERVED)
         Response response = given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Unconfirmed Buyer\",\"buyerEmail\":\"unconfirmed@test.nl\",\"buyerPhone\":\"+31600000012\",\"quantity\":1}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Unconfirmed\",\"buyerLastName\":\"Buyer\",\"buyerEmail\":\"unconfirmed@test.nl\",\"buyerPhone\":\"+31600000012\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -576,7 +579,7 @@ public class OrderResourceTest {
         // Create and confirm a new order to get a fresh unscanend ticket
         Response response = given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Event Scan Test\",\"buyerEmail\":\"eventscan@test.nl\",\"buyerPhone\":\"+31600000020\",\"quantity\":1}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Event\",\"buyerLastName\":\"Scantest\",\"buyerEmail\":\"eventscan@test.nl\",\"buyerPhone\":\"+31600000020\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
@@ -613,7 +616,7 @@ public class OrderResourceTest {
         // Create and confirm a new order
         Response response = given()
                 .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Wrong Event Test\",\"buyerEmail\":\"wrongevent@test.nl\",\"buyerPhone\":\"+31600000021\",\"quantity\":1}")
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerFirstName\":\"Wrong\",\"buyerLastName\":\"Eventtest\",\"buyerEmail\":\"wrongevent@test.nl\",\"buyerPhone\":\"+31600000021\",\"quantity\":1}")
             .when()
                 .post("/api/orders")
             .then()
