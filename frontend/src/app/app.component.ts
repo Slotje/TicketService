@@ -141,11 +141,11 @@ export class AppComponent implements OnInit, OnDestroy {
         icon: 'pi pi-building',
         routerLink: '/klant/dashboard'
       }] : []),
-      ...(isAdmin || isScanner ? [{
+      {
         label: 'Scanner',
         icon: 'pi pi-qrcode',
         routerLink: isScanner ? '/scan' : '/scan/login'
-      }] : []),
+      },
       ...(isAdmin ? [{
         label: 'Beheer',
         icon: 'pi pi-cog',

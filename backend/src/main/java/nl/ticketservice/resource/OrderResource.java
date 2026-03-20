@@ -74,12 +74,6 @@ public class OrderResource {
         return orderService.confirmOrder(id);
     }
 
-    @POST
-    @Path("/{id}/cancel")
-    public OrderResponseDTO cancel(@PathParam("id") Long id) {
-        return orderService.cancelOrder(id);
-    }
-
     @GET
     @Path("/{id}/pdf")
     @Produces("application/pdf")
@@ -107,6 +101,7 @@ public class OrderResource {
     @POST
     @Path("/scan/{qrCodeData}")
     public TicketDTO scanTicket(@PathParam("qrCodeData") String qrCodeData,
+                                @QueryParam("eventId") Long eventId,
                                 @HeaderParam("Authorization") String authHeader) {
         // Verify scanner user is authenticated
         String token = authHeader != null && authHeader.startsWith("Bearer ")
@@ -114,6 +109,6 @@ public class OrderResource {
         if (token == null || authService.validateToken(token) == null) {
             throw new TicketServiceException("Niet geautoriseerd. Log in als scanner gebruiker.", 401);
         }
-        return orderService.scanTicket(qrCodeData);
+        return orderService.scanTicket(qrCodeData, eventId);
     }
 }

@@ -99,13 +99,6 @@ import { Divider } from 'primeng/divider';
                 (onClick)="confirmOrder()"
                 [loading]="processing"
                 severity="success" />
-              <p-button
-                label="Annuleren"
-                icon="pi pi-times"
-                (onClick)="cancelOrder()"
-                [loading]="processing"
-                severity="danger"
-                [outlined]="true" />
             }
             @if (order.status === 'CONFIRMED') {
               <p-button
@@ -113,13 +106,6 @@ import { Divider } from 'primeng/divider';
                 icon="pi pi-download"
                 (onClick)="downloadPdf()"
                 severity="success" />
-              <p-button
-                label="Bestelling Annuleren"
-                icon="pi pi-times"
-                (onClick)="cancelOrder()"
-                [loading]="processing"
-                severity="danger"
-                [outlined]="true" />
             }
           </div>
         </p-card>
@@ -265,23 +251,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Fout bij bevestigen';
-        this.processing = false;
-      }
-    });
-  }
-
-  cancelOrder() {
-    this.processing = true;
-    this.errorMessage = '';
-    this.api.cancelOrder(this.order!.id).subscribe({
-      next: (order) => {
-        this.order = order;
-        this.processing = false;
-        this.successMessage = 'Bestelling is geannuleerd.';
-        clearInterval(this.timerInterval);
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.error || 'Fout bij annuleren';
         this.processing = false;
       }
     });

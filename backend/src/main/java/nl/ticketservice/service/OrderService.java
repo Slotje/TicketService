@@ -180,7 +180,7 @@ public class OrderService {
     }
 
     @Transactional
-    public TicketDTO scanTicket(String qrCodeData) {
+    public TicketDTO scanTicket(String qrCodeData, Long eventId) {
         // Verify HMAC signature if present
         if (qrCodeData.contains("|")) {
             if (!qrCodeService.verifyQrCode(qrCodeData)) {
@@ -196,6 +196,11 @@ public class OrderService {
 
         if (ticket.order.status != OrderStatus.CONFIRMED) {
             throw new TicketServiceException("Ticket behoort tot een niet-bevestigde bestelling", 400);
+        }
+
+        // Validate ticket belongs to the scanned event
+        if (eventId != null && !ticket.order.event.id.equals(eventId)) {
+            throw new TicketServiceException("Dit ticket hoort niet bij dit evenement", 400);
         }
 
         if (ticket.scanned) {

@@ -1,4 +1,4 @@
-package nl.ticketservice;
+package nl.ticketservice.resource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -27,9 +27,6 @@ public class OrderResourceTest {
     private static String orderNumber;
     private static String ticketQrCodeData;
     private static Long publishedEventId;
-    private static Long cancelOrderId;
-    private static Long soldOutEventId;
-    private static Long soldOutOrderId;
     private static Long expiredOrderId;
 
     private String getAdminToken() {
@@ -299,48 +296,6 @@ public class OrderResourceTest {
     }
 
     // =========================================================================
-    // Test 15: Create and cancel order
-    // =========================================================================
-    @Test
-    @Order(15)
-    void testCreateAndCancelOrder() {
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Piet Cancel\",\"buyerEmail\":\"piet@test.nl\",\"buyerPhone\":\"+31600000000\",\"quantity\":1}")
-            .when()
-                .post("/api/orders")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("RESERVED"))
-                .extract()
-                .response();
-
-        cancelOrderId = ((Number) response.path("id")).longValue();
-
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + cancelOrderId + "/cancel")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("CANCELLED"));
-    }
-
-    // =========================================================================
-    // Test 16: Cancel already cancelled order → 400
-    // =========================================================================
-    @Test
-    @Order(16)
-    void testCancelAlreadyCancelledOrder() {
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + cancelOrderId + "/cancel")
-            .then()
-                .statusCode(400);
-    }
-
-    // =========================================================================
     // Test 17: Create order for nonexistent event → 404
     // =========================================================================
     @Test
@@ -385,20 +340,6 @@ public class OrderResourceTest {
     }
 
     // =========================================================================
-    // Test 20: Cancel nonexistent order → 404
-    // =========================================================================
-    @Test
-    @Order(20)
-    void testCancelNonexistentOrder() {
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/999999/cancel")
-            .then()
-                .statusCode(404);
-    }
-
-    // =========================================================================
     // Test 21: Get order by nonexistent order number → 404
     // =========================================================================
     @Test
@@ -437,115 +378,6 @@ public class OrderResourceTest {
                 .post("/api/orders/scan/fake-ticket-data|invalidsignature")
             .then()
                 .statusCode(400);
-    }
-
-    // =========================================================================
-    // Test 24: Cancel a CONFIRMED order → should work
-    // =========================================================================
-    @Test
-    @Order(24)
-    void testCancelConfirmedOrder() {
-        // The order from test 1 (orderId) is already CONFIRMED
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + orderId + "/cancel")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("CANCELLED"));
-    }
-
-    // =========================================================================
-    // Test 25: Sold out flow - create event with maxTickets=2, fill it, cancel
-    // =========================================================================
-    @Test
-    @Order(25)
-    void testSoldOutFlow() {
-        String adminToken = getAdminToken();
-
-        // Get first customer ID from the published events
-        Number customerId = given()
-            .when()
-                .get("/api/events/published")
-            .then()
-                .statusCode(200)
-                .extract()
-                .path("[0].customerId");
-
-        // Create event with maxTickets=2
-        String eventBody = "{" +
-                "\"name\":\"Sold Out Test Event\"," +
-                "\"description\":\"Test event for sold out flow\"," +
-                "\"eventDate\":\"2026-12-01T20:00:00\"," +
-                "\"endDate\":\"2026-12-01T23:00:00\"," +
-                "\"location\":\"Test Location\"," +
-                "\"address\":\"Test Address 1\"," +
-                "\"maxTickets\":2," +
-                "\"ticketPrice\":10.00," +
-                "\"serviceFee\":1.00," +
-                "\"maxTicketsPerOrder\":2," +
-                "\"status\":\"PUBLISHED\"," +
-                "\"customerId\":" + customerId +
-                "}";
-
-        soldOutEventId = ((Number) given()
-                .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + adminToken)
-                .body(eventBody)
-            .when()
-                .post("/api/events")
-            .then()
-                .statusCode(201)
-                .extract()
-                .path("id")).longValue();
-
-        // Create order for all 2 tickets
-        Response orderResponse = given()
-                .contentType(ContentType.JSON)
-                .body("{\"eventId\":" + soldOutEventId + ",\"buyerName\":\"Sold Out Buyer\",\"buyerEmail\":\"soldout@test.nl\",\"buyerPhone\":\"+31600000003\",\"quantity\":2}")
-            .when()
-                .post("/api/orders")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("RESERVED"))
-                .extract()
-                .response();
-
-        soldOutOrderId = ((Number) orderResponse.path("id")).longValue();
-
-        // Confirm → event becomes SOLD_OUT
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + soldOutOrderId + "/confirm")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("CONFIRMED"));
-
-        // Verify event is SOLD_OUT
-        given()
-            .when()
-                .get("/api/events/" + soldOutEventId)
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("SOLD_OUT"));
-
-        // Cancel → event goes back to PUBLISHED
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + soldOutOrderId + "/cancel")
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("CANCELLED"));
-
-        // Verify event is PUBLISHED again
-        given()
-            .when()
-                .get("/api/events/" + soldOutEventId)
-            .then()
-                .statusCode(200)
-                .body("status", equalTo("PUBLISHED"));
     }
 
     // =========================================================================
@@ -733,5 +565,80 @@ public class OrderResourceTest {
                 .get("/api/orders/999999/pdf")
             .then()
                 .statusCode(404);
+    }
+
+    // =========================================================================
+    // Test 35: Scan ticket with correct eventId → 200
+    // =========================================================================
+    @Test
+    @Order(35)
+    void testScanTicketWithCorrectEventId() {
+        // Create and confirm a new order to get a fresh unscanend ticket
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Event Scan Test\",\"buyerEmail\":\"eventscan@test.nl\",\"buyerPhone\":\"+31600000020\",\"quantity\":1}")
+            .when()
+                .post("/api/orders")
+            .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        Long newOrderId = ((Number) response.path("id")).longValue();
+        String newQrCode = response.path("tickets[0].qrCodeData");
+
+        given()
+                .contentType(ContentType.JSON)
+            .when()
+                .post("/api/orders/" + newOrderId + "/confirm")
+            .then()
+                .statusCode(200);
+
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getScannerToken())
+            .when()
+                .post("/api/orders/scan/" + newQrCode + "?eventId=" + publishedEventId)
+            .then()
+                .statusCode(200)
+                .body("scanned", equalTo(true));
+    }
+
+    // =========================================================================
+    // Test 36: Scan ticket with wrong eventId → 400
+    // =========================================================================
+    @Test
+    @Order(36)
+    void testScanTicketWithWrongEventId() {
+        // Create and confirm a new order
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .body("{\"eventId\":" + publishedEventId + ",\"buyerName\":\"Wrong Event Test\",\"buyerEmail\":\"wrongevent@test.nl\",\"buyerPhone\":\"+31600000021\",\"quantity\":1}")
+            .when()
+                .post("/api/orders")
+            .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        Long newOrderId = ((Number) response.path("id")).longValue();
+        String newQrCode = response.path("tickets[0].qrCodeData");
+
+        given()
+                .contentType(ContentType.JSON)
+            .when()
+                .post("/api/orders/" + newOrderId + "/confirm")
+            .then()
+                .statusCode(200);
+
+        // Scan with a different eventId → should fail
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getScannerToken())
+            .when()
+                .post("/api/orders/scan/" + newQrCode + "?eventId=999999")
+            .then()
+                .statusCode(400)
+                .body("error", containsString("hoort niet bij dit evenement"));
     }
 }

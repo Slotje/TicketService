@@ -57,7 +57,6 @@ import { Card } from 'primeng/card';
               }
               @if (order.status === 'RESERVED') {
                 <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" (onClick)="confirmOrder(order)" />
-                <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" (onClick)="cancelOrder(order)" />
               }
             </div>
           </td>
@@ -94,10 +93,6 @@ export class OrderManagementComponent implements OnInit {
 
   confirmOrder(order: Order) {
     this.api.confirmOrder(order.id).subscribe(() => this.loadOrders());
-  }
-
-  cancelOrder(order: Order) {
-    this.api.cancelOrder(order.id).subscribe(() => this.loadOrders());
   }
 
   downloadPdf(order: Order) {

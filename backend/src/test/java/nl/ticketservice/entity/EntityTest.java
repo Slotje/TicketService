@@ -1,4 +1,4 @@
-package nl.ticketservice;
+package nl.ticketservice.entity;
 
 import nl.ticketservice.entity.*;
 

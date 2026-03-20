@@ -1,4 +1,4 @@
-package nl.ticketservice;
+package nl.ticketservice.service;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;

@@ -1,4 +1,4 @@
-package nl.ticketservice;
+package nl.ticketservice.exception;
 
 import nl.ticketservice.exception.ConstraintViolationExceptionMapper;
 import nl.ticketservice.exception.GlobalExceptionHandler;
