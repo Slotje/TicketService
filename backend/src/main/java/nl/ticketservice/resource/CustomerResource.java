@@ -58,4 +58,18 @@ public class CustomerResource {
         customerService.deleteCustomer(id);
         return Response.noContent().build();
     }
+
+    @POST
+    @Path("/{id}/resend-invite")
+    public Response resendInvite(@PathParam("id") Long id, @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
+        customerService.resendInvite(id);
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/slug/{slug}")
+    public CustomerDTO getBySlug(@PathParam("slug") String slug) {
+        return customerService.getCustomerBySlug(slug);
+    }
 }

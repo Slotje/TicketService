@@ -32,6 +32,35 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/customers/${id}`);
   }
 
+  resendCustomerInvite(id: number): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/customers/${id}/resend-invite`, {});
+  }
+
+  getCustomerBySlug(slug: string): Observable<Customer> {
+    return this.http.get<Customer>(`${this.baseUrl}/customers/slug/${slug}`);
+  }
+
+  // Customer's own events
+  getMyEvents(): Observable<Event[]> {
+    return this.http.get<Event[]>(`${this.baseUrl}/events/my`);
+  }
+
+  createMyEvent(event: Event): Observable<Event> {
+    return this.http.post<Event>(`${this.baseUrl}/events/my`, event);
+  }
+
+  updateMyEvent(id: number, event: Event): Observable<Event> {
+    return this.http.put<Event>(`${this.baseUrl}/events/my/${id}`, event);
+  }
+
+  updateMyEventStatus(id: number, status: string): Observable<Event> {
+    return this.http.patch<Event>(`${this.baseUrl}/events/my/${id}/status`, { status });
+  }
+
+  deleteMyEvent(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/events/my/${id}`);
+  }
+
   // Events
   getEvents(): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.baseUrl}/events`);

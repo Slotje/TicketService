@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { scannerAuthGuard } from './guards/scanner-auth.guard';
 import { adminAuthGuard } from './guards/admin-auth.guard';
 import { userAuthGuard } from './guards/user-auth.guard';
+import { customerAuthGuard } from './guards/customer-auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,25 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent),
     canActivate: [userAuthGuard]
   },
+  // Customer (klant) routes
+  {
+    path: 'klant/login',
+    loadComponent: () => import('./pages/customer/customer-login.component').then(m => m.CustomerLoginComponent)
+  },
+  {
+    path: 'klant/activeren/:token',
+    loadComponent: () => import('./pages/customer/customer-activate.component').then(m => m.CustomerActivateComponent)
+  },
+  {
+    path: 'klant/dashboard',
+    loadComponent: () => import('./pages/customer/customer-dashboard.component').then(m => m.CustomerDashboardComponent),
+    canActivate: [customerAuthGuard]
+  },
+  {
+    path: 'klant/:slug',
+    loadComponent: () => import('./pages/customer/customer-landing.component').then(m => m.CustomerLandingComponent)
+  },
+  // Scanner routes
   {
     path: 'scan/login',
     loadComponent: () => import('./pages/scanner/scanner-login.component').then(m => m.ScannerLoginComponent)
@@ -34,6 +54,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/scanner/ticket-scanner-camera.component').then(m => m.TicketScannerCameraComponent),
     canActivate: [scannerAuthGuard]
   },
+  // Admin routes
   {
     path: 'admin/login',
     loadComponent: () => import('./pages/admin/admin-login.component').then(m => m.AdminLoginComponent)

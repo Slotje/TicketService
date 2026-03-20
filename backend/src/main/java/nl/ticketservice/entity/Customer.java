@@ -44,6 +44,16 @@ public class Customer extends PanacheEntity {
     @Size(max = 200)
     public String website;
 
+    @Size(max = 100)
+    @Column(unique = true)
+    public String slug;
+
+    public String passwordHash;
+
+    public String inviteToken;
+
+    public LocalDateTime inviteTokenExpiry;
+
     @Column(nullable = false)
     public boolean active = true;
 
@@ -64,5 +74,17 @@ public class Customer extends PanacheEntity {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public static Customer findByEmail(String email) {
+        return find("email", email).firstResult();
+    }
+
+    public static Customer findBySlug(String slug) {
+        return find("slug", slug).firstResult();
+    }
+
+    public static Customer findByInviteToken(String token) {
+        return find("inviteToken", token).firstResult();
     }
 }

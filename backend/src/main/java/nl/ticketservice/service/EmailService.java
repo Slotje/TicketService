@@ -4,7 +4,9 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import nl.ticketservice.entity.Customer;
 import nl.ticketservice.entity.TicketOrder;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.time.format.DateTimeFormatter;
@@ -20,6 +22,9 @@ public class EmailService {
 
     @Inject
     PdfService pdfService;
+
+    @ConfigProperty(name = "ticket.app.base-url", defaultValue = "http://localhost:80")
+    String baseUrl;
 
     public boolean sendOrderConfirmation(TicketOrder order) {
         try {
@@ -41,6 +46,52 @@ public class EmailService {
         } catch (Exception e) {
             LOG.errorf(e, "Fout bij het versturen van bevestigingsmail naar %s voor bestelling %s",
                     order.buyerEmail, order.orderNumber);
+            return false;
+        }
+    }
+
+    public boolean sendCustomerInvite(Customer customer, String inviteToken) {
+        try {
+            String activateUrl = baseUrl + "/klant/activeren/" + inviteToken;
+            String subject = "Welkom bij TicketService - Activeer je account";
+            String body = """
+                    <html>
+                    <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                        <div style="background-color: #2980b9; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                            <h1 style="color: white; margin: 0;">TicketService</h1>
+                        </div>
+                        <div style="padding: 30px; background: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <h2 style="color: #2c3e50;">Welkom, %s!</h2>
+                            <p>Er is een account aangemaakt voor <strong>%s</strong> bij TicketService.</p>
+                            <p>Met dit account kun je:</p>
+                            <ul>
+                                <li>Je eigen evenementen aanmaken en beheren</li>
+                                <li>Evenementen live zetten voor ticketverkoop</li>
+                                <li>Je eigen gepersonaliseerde landingspagina gebruiken</li>
+                            </ul>
+                            <p>Klik op de onderstaande knop om je wachtwoord in te stellen en je account te activeren:</p>
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="%s"
+                                   style="background-color: #2980b9; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                                    Account activeren
+                                </a>
+                            </div>
+                            <p style="font-size: 13px; color: #888;">
+                                Deze link is 7 dagen geldig. Als de link is verlopen, neem dan contact op met de beheerder.
+                            </p>
+                            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                            <p style="font-size: 12px; color: #999;">TicketService - Ticket Service Platform</p>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(customer.contactPerson, customer.companyName, activateUrl);
+
+            Mail mail = Mail.withHtml(customer.email, subject, body);
+            mailer.send(mail);
+            LOG.infof("Uitnodigingsmail verstuurd naar %s (%s)", customer.email, customer.companyName);
+            return true;
+        } catch (Exception e) {
+            LOG.errorf(e, "Fout bij het versturen van uitnodigingsmail naar %s", customer.email);
             return false;
         }
     }

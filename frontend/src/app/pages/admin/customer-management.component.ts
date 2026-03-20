@@ -69,8 +69,9 @@ import { Tag } from 'primeng/tag';
           </td>
           <td data-label="Acties">
             <div class="flex gap-1">
-              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editCustomer(customer)" />
-              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteCustomer(customer)" />
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editCustomer(customer)" pTooltip="Bewerken" />
+              <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="info" (onClick)="resendInvite(customer)" pTooltip="Uitnodiging opnieuw versturen" />
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteCustomer(customer)" pTooltip="Verwijderen" />
             </div>
           </td>
         </tr>
@@ -247,6 +248,13 @@ export class CustomerManagementComponent implements OnInit {
         this.dialogError = err.error?.error || 'Fout bij opslaan';
         this.saving = false;
       }
+    });
+  }
+
+  resendInvite(customer: Customer) {
+    this.api.resendCustomerInvite(customer.id!).subscribe({
+      next: () => this.errorMessage = '',
+      error: (err) => this.errorMessage = err.error?.error || 'Fout bij versturen uitnodiging'
     });
   }
 

@@ -21,6 +21,7 @@ export interface Event {
   address?: string;
   maxTickets: number;
   ticketPrice: number;
+  serviceFee?: number;
   maxTicketsPerOrder: number;
   ticketsSold?: number;
   ticketsReserved?: number;

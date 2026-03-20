@@ -7,6 +7,7 @@ import { Button } from 'primeng/button';
 import { AdminAuthService } from './services/admin-auth.service';
 import { AuthService } from './services/auth.service';
 import { UserAuthService } from './services/user-auth.service';
+import { CustomerAuthService } from './services/customer-auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -97,6 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private adminAuth: AdminAuthService,
     private scannerAuth: AuthService,
     public userAuth: UserAuthService,
+    private customerAuth: CustomerAuthService,
     private router: Router
   ) {}
 
@@ -104,7 +106,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.adminAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
       this.scannerAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
-      this.userAuth.isLoggedIn$.subscribe(() => this.buildMenu())
+      this.userAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
+      this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu())
     );
   }
 
@@ -119,10 +122,16 @@ export class AppComponent implements OnInit, OnDestroy {
   private buildMenu() {
     const isAdmin = this.adminAuth.isLoggedIn;
     const isScanner = this.scannerAuth.isLoggedIn;
+    const isCustomer = this.customerAuth.isLoggedIn;
 
     this.menuItems = [
       { label: 'Evenementen', icon: 'pi pi-calendar', routerLink: '/' },
       { label: 'Mijn Tickets', icon: 'pi pi-ticket', routerLink: '/my-tickets' },
+      ...(isCustomer ? [{
+        label: 'Mijn Evenementen',
+        icon: 'pi pi-building',
+        routerLink: '/klant/dashboard'
+      }] : []),
       ...(isAdmin || isScanner ? [{
         label: 'Scanner',
         icon: 'pi pi-qrcode',

@@ -1,15 +1,23 @@
 package nl.ticketservice.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import nl.ticketservice.dto.CustomerDTO;
 import nl.ticketservice.entity.Customer;
 import nl.ticketservice.exception.TicketServiceException;
 
+import java.text.Normalizer;
 import java.util.List;
 
 @ApplicationScoped
 public class CustomerService {
+
+    @Inject
+    CustomerAuthService customerAuthService;
+
+    @Inject
+    EmailService emailService;
 
     public List<CustomerDTO> getAllCustomers() {
         return Customer.<Customer>listAll().stream()
@@ -25,6 +33,14 @@ public class CustomerService {
         return toDTO(customer);
     }
 
+    public CustomerDTO getCustomerBySlug(String slug) {
+        Customer customer = Customer.findBySlug(slug);
+        if (customer == null || !customer.active) {
+            throw new TicketServiceException("Klant niet gevonden", 404);
+        }
+        return toDTO(customer);
+    }
+
     @Transactional
     public CustomerDTO createCustomer(CustomerDTO dto) {
         if (Customer.find("email", dto.email()).firstResult() != null) {
@@ -33,7 +49,13 @@ public class CustomerService {
 
         Customer customer = new Customer();
         updateEntity(customer, dto);
+        customer.slug = generateSlug(dto.companyName());
         customer.persist();
+
+        // Generate invite token and send email
+        String inviteToken = customerAuthService.generateInviteToken(customer);
+        emailService.sendCustomerInvite(customer, inviteToken);
+
         return toDTO(customer);
     }
 
@@ -50,7 +72,26 @@ public class CustomerService {
         }
 
         updateEntity(customer, dto);
+
+        // Update slug if company name changed
+        if (!customer.companyName.equals(dto.companyName())) {
+            customer.slug = generateSlug(dto.companyName());
+        }
+
         return toDTO(customer);
+    }
+
+    @Transactional
+    public void resendInvite(Long id) {
+        Customer customer = Customer.findById(id);
+        if (customer == null) {
+            throw new TicketServiceException("Klant niet gevonden", 404);
+        }
+        if (customer.passwordHash != null) {
+            throw new TicketServiceException("Klant heeft al een wachtwoord ingesteld", 400);
+        }
+        String inviteToken = customerAuthService.generateInviteToken(customer);
+        emailService.sendCustomerInvite(customer, inviteToken);
     }
 
     @Transactional
@@ -75,6 +116,22 @@ public class CustomerService {
         customer.secondaryColor = dto.secondaryColor();
         customer.website = dto.website();
         customer.active = dto.active();
+    }
+
+    private String generateSlug(String companyName) {
+        String normalized = Normalizer.normalize(companyName, Normalizer.Form.NFD)
+                .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        String slug = normalized.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+
+        // Ensure uniqueness
+        String baseSlug = slug;
+        int counter = 1;
+        while (Customer.findBySlug(slug) != null) {
+            slug = baseSlug + "-" + counter++;
+        }
+        return slug;
     }
 
     private CustomerDTO toDTO(Customer c) {
