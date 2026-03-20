@@ -22,7 +22,7 @@ public class EmailRetryService {
 
     @Scheduled(every = "120s")
     @Transactional
-    void retryFailedEmails() {
+    public void retryFailedEmails() {
         List<TicketOrder> pendingEmails = TicketOrder.list(
                 "status = ?1 and emailSent = false and emailRetryCount < ?2",
                 OrderStatus.CONFIRMED, MAX_RETRIES);

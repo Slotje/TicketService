@@ -1,5 +1,6 @@
 package nl.ticketservice.exception;
 
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -16,6 +17,14 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             return Response.status(tse.getStatusCode())
                     .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity(Map.of("error", tse.getMessage()))
+                    .build();
+        }
+
+        if (exception instanceof WebApplicationException wae) {
+            int status = wae.getResponse().getStatus();
+            return Response.status(status)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .entity(Map.of("error", wae.getMessage()))
                     .build();
         }
 
