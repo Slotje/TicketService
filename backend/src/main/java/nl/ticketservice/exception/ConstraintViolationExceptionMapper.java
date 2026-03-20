@@ -1,6 +1,7 @@
 package nl.ticketservice.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -18,6 +19,7 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
                 .collect(Collectors.joining(", "));
 
         return Response.status(Response.Status.BAD_REQUEST)
+                .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(Map.of("error", message))
                 .build();
     }
