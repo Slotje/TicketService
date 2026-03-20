@@ -34,14 +34,22 @@ export class AdminAuthService {
     return localStorage.getItem('admin_display_name') || '';
   }
 
+  setup(email: string, password: string, name: string): Observable<AdminLoginResponse> {
+    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/setup`, { email, password, name }).pipe(
+      tap(res => this.storeAuth(res))
+    );
+  }
+
   login(email: string, password: string): Observable<AdminLoginResponse> {
     return this.http.post<AdminLoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
-      tap(res => {
-        localStorage.setItem('admin_token', res.token);
-        localStorage.setItem('admin_display_name', res.name || res.email);
-        this.loggedIn$.next(true);
-      })
+      tap(res => this.storeAuth(res))
     );
+  }
+
+  private storeAuth(res: AdminLoginResponse) {
+    localStorage.setItem('admin_token', res.token);
+    localStorage.setItem('admin_display_name', res.name || res.email);
+    this.loggedIn$.next(true);
   }
 
   logout() {
