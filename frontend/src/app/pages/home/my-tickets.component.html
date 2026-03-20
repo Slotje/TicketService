@@ -1,0 +1,62 @@
+<div class="my-tickets-page">
+  <p-card>
+    <ng-template #title>
+      <div class="flex align-center gap-1">
+        <i class="pi pi-ticket"></i>
+        <span>Mijn Tickets</span>
+      </div>
+    </ng-template>
+    <ng-template #subtitle>
+      Tickets voor {{ userAuth.email }}
+    </ng-template>
+
+    @if (loading) {
+      <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
+    }
+
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mt-2" />
+    }
+
+    @if (!loading && orders.length === 0 && !errorMessage) {
+      <p-message severity="info" text="Je hebt nog geen tickets. Koop tickets bij een evenement en ze verschijnen hier." [style]="{'width': '100%'}" class="mt-2" />
+    }
+
+    @if (orders.length > 0) {
+      <p-divider />
+      <div class="orders-list">
+        @for (order of orders; track order.id) {
+          <div class="order-card" (click)="openOrder(order.orderNumber)">
+            <div class="order-header">
+              <span class="order-number">{{ order.orderNumber }}</span>
+              <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
+            </div>
+            <div class="order-info">
+              <div class="info-item">
+                <i class="pi pi-calendar"></i>
+                <span>{{ order.eventName }}</span>
+              </div>
+              <div class="info-item">
+                <i class="pi pi-ticket"></i>
+                <span>{{ order.quantity }} ticket(s)</span>
+              </div>
+              <div class="info-item">
+                <i class="pi pi-euro"></i>
+                <span>{{ order.totalPrice | number:'1.2-2' }}</span>
+              </div>
+              <div class="info-item">
+                <i class="pi pi-clock"></i>
+                <span>{{ formatDate(order.createdAt) }}</span>
+              </div>
+            </div>
+            @if (order.status === 'CONFIRMED' && order.tickets) {
+              <div class="scan-status">
+                <span>{{ getScannedCount(order) }} van {{ order.tickets.length }} gescand</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </p-card>
+</div>

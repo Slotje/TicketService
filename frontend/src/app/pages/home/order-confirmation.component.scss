@@ -1,0 +1,49 @@
+.order-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+.detail-item {
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--p-text-muted-color);
+    margin-bottom: 0.25rem;
+  }
+  span { font-weight: 500; }
+}
+.total-price {
+  font-size: 1.25rem;
+  color: var(--p-primary-color);
+}
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.ticket-card {
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid var(--p-surface-300);
+  border-radius: var(--p-border-radius);
+  background: var(--p-surface-50);
+}
+.ticket-code {
+  font-family: monospace;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.qr-image {
+  width: 150px;
+  height: 150px;
+}
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

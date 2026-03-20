@@ -14,85 +14,8 @@ import { Password } from 'primeng/password';
 @Component({
   selector: 'app-admin-login',
   imports: [CommonModule, FormsModule, Card, Button, InputText, FloatLabel, Message, Password],
-  template: `
-    <div class="login-page">
-      <p-card>
-        <ng-template #header>
-          <div class="login-header">
-            <i [class]="isSetup ? 'pi pi-user-plus' : 'pi pi-lock'"></i>
-          </div>
-        </ng-template>
-        <ng-template #title>{{ isSetup ? 'Admin Account Aanmaken' : 'Beheer Login' }}</ng-template>
-        <ng-template #subtitle>{{ isSetup ? 'Maak het eerste admin account aan.' : 'Log in om het beheerpaneel te openen' }}</ng-template>
-
-        @if (errorMessage) {
-          <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
-        }
-
-        <div class="login-form">
-          @if (isSetup) {
-            <div class="form-field">
-              <p-floatlabel>
-                <input pInputText id="name" [(ngModel)]="name" class="w-full"
-                       (keyup.enter)="submit()" />
-                <label for="name">Naam</label>
-              </p-floatlabel>
-            </div>
-          }
-
-          <div class="form-field">
-            <p-floatlabel>
-              <input pInputText id="email" [(ngModel)]="email" type="email" class="w-full"
-                     (keyup.enter)="submit()" autocomplete="email" />
-              <label for="email">E-mailadres</label>
-            </p-floatlabel>
-          </div>
-          <div class="form-field">
-            <p-floatlabel>
-              <p-password id="password" [(ngModel)]="password" [toggleMask]="true"
-                          [feedback]="isSetup" styleClass="w-full" inputStyleClass="w-full"
-                          (keyup.enter)="submit()" autocomplete="current-password" />
-              <label for="password">Wachtwoord</label>
-            </p-floatlabel>
-          </div>
-          <p-button [label]="isSetup ? 'Account Aanmaken' : 'Inloggen'"
-                    [icon]="isSetup ? 'pi pi-user-plus' : 'pi pi-sign-in'"
-                    (onClick)="submit()"
-                    [loading]="loading" [style]="{'width': '100%'}" />
-        </div>
-      </p-card>
-    </div>
-  `,
-  styles: [`
-    .login-page {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 60vh;
-    }
-    .login-page p-card {
-      width: 100%;
-      max-width: 400px;
-    }
-    .login-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100px;
-      background: var(--p-primary-100);
-      border-radius: var(--p-border-radius) var(--p-border-radius) 0 0;
-      i {
-        font-size: 3rem;
-        color: var(--p-primary-color);
-      }
-    }
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      margin-top: 1rem;
-    }
-  `]
+  templateUrl: './admin-login.component.html',
+  styleUrl: './admin-login.component.scss'
 })
 export class AdminLoginComponent implements OnInit {
   email = '';

@@ -1,0 +1,32 @@
+.scanner-page { max-width: 600px; margin: 0 auto; }
+.description { color: var(--p-text-muted-color); margin-bottom: 1.5rem; }
+.scan-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+.scan-input { font-size: 1.1rem; }
+.result-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: var(--p-border-radius);
+  i { font-size: 2rem; }
+  &.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 2px solid #4caf50;
+  }
+  &.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 2px solid #f44336;
+  }
+}
+.ticket-info {
+  background: var(--p-surface-100);
+  padding: 1rem;
+  border-radius: var(--p-border-radius);
+  div { margin-bottom: 0.25rem; }
+}

@@ -1,0 +1,140 @@
+<div class="dashboard-header mb-2">
+  <div>
+    <h1>Mijn Evenementen</h1>
+    <p class="subtitle">{{ customerAuth.companyName }}</p>
+  </div>
+  <div class="flex gap-1">
+    <p-button label="Nieuw Evenement" icon="pi pi-plus" (onClick)="openNew()" />
+    <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="customerAuth.logout()" />
+  </div>
+</div>
+
+@if (errorMessage) {
+  <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+}
+@if (successMessage) {
+  <p-message severity="success" [text]="successMessage" [style]="{'width': '100%'}" class="mb-2" />
+}
+
+<p-table
+  [value]="events"
+  [paginator]="true"
+  [rows]="10"
+  [loading]="loading"
+  styleClass="p-datatable-striped">
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name">Naam</th>
+      <th>Datum</th>
+      <th>Locatie</th>
+      <th>Tickets</th>
+      <th>Prijs</th>
+      <th>Status</th>
+      <th>Acties</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-event>
+    <tr>
+      <td data-label="Naam">{{ event.name }}</td>
+      <td data-label="Datum">{{ formatDate(event.eventDate) }}</td>
+      <td data-label="Locatie">{{ event.location }}</td>
+      <td data-label="Tickets">{{ event.ticketsSold }}/{{ event.maxTickets }}</td>
+      <td data-label="Prijs">&euro; {{ event.ticketPrice | number:'1.2-2' }}</td>
+      <td data-label="Status">
+        <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
+      </td>
+      <td data-label="Acties">
+        <div class="flex gap-1">
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editEvent(event)" pTooltip="Bewerken" />
+          @if (event.status === 'DRAFT') {
+            <p-button icon="pi pi-play" [rounded]="true" [text]="true" severity="success" (onClick)="publishEvent(event)" pTooltip="Live zetten" />
+          }
+          @if (event.status === 'PUBLISHED') {
+            <p-button icon="pi pi-pause" [rounded]="true" [text]="true" severity="warn" (onClick)="unpublishEvent(event)" pTooltip="Offline halen" />
+          }
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteEvent(event)" pTooltip="Verwijderen" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="7" class="text-center" style="padding: 2rem;">
+        <i class="pi pi-calendar" style="font-size: 2rem; color: var(--p-text-muted-color)"></i>
+        <p>Je hebt nog geen evenementen. Maak je eerste evenement aan!</p>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [header]="editMode ? 'Evenement Bewerken' : 'Nieuw Evenement'"
+  [modal]="true"
+  [style]="{'width': '700px'}"
+  [closable]="true">
+
+  @if (dialogError) {
+    <p-message severity="error" [text]="dialogError" [style]="{'width': '100%'}" class="mb-2" />
+  }
+
+  <div class="form-grid">
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <input pInputText id="eventName" [(ngModel)]="eventForm.name" class="w-full" />
+        <label for="eventName">Naam *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <textarea pTextarea id="description" [(ngModel)]="eventForm.description" [rows]="3" class="w-full"></textarea>
+        <label for="description">Beschrijving</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Startdatum *</label>
+      <p-datePicker [(ngModel)]="eventDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Einddatum</label>
+      <p-datePicker [(ngModel)]="endDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="location" [(ngModel)]="eventForm.location" class="w-full" />
+        <label for="location">Locatie *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="address" [(ngModel)]="eventForm.address" class="w-full" />
+        <label for="address">Adres</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Max Tickets *</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTickets" [min]="1" [max]="100000" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Ticketprijs (EUR) *</label>
+      <p-inputNumber [(ngModel)]="eventForm.ticketPrice" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Max per bestelling</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="imageUrl" [(ngModel)]="eventForm.imageUrl" class="w-full" />
+        <label for="imageUrl">Afbeelding URL</label>
+      </p-floatlabel>
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Annuleren" icon="pi pi-times" (onClick)="dialogVisible = false" [text]="true" />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveEvent()" [loading]="saving" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog />

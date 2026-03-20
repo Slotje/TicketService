@@ -1,0 +1,28 @@
+.login-page {
+  max-width: 450px;
+  margin: 2rem auto;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.forgot-link {
+  text-align: right;
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+}
+.toggle-mode {
+  text-align: center;
+  font-size: 0.9rem;
+}
+.link {
+  color: var(--p-primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+}

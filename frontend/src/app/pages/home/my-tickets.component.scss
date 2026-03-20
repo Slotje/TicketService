@@ -1,0 +1,50 @@
+.my-tickets-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.order-card {
+  padding: 1rem;
+  border: 1px solid var(--p-surface-300);
+  border-radius: var(--p-border-radius);
+  background: var(--p-surface-50);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  &:hover {
+    border-color: var(--p-primary-color);
+  }
+}
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.order-number {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.order-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+  i { font-size: 0.85rem; }
+}
+.scan-status {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--p-text-muted-color);
+}

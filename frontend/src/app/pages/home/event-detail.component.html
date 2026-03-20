@@ -1,0 +1,156 @@
+@if (loading) {
+  <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
+}
+
+@if (event) {
+  <div class="event-detail-layout">
+    <div class="event-info-section">
+      <p-card>
+        <ng-template #title>
+          <h1>{{ event.name }}</h1>
+        </ng-template>
+        <ng-template #subtitle>
+          Georganiseerd door {{ event.customerName }}
+        </ng-template>
+
+        <p class="event-description">{{ event.description }}</p>
+
+        <p-divider />
+
+        <div class="event-meta">
+          <div class="meta-item">
+            <i class="pi pi-calendar"></i>
+            <div>
+              <strong>Datum</strong>
+              <p>{{ formatDate(event.eventDate) }}</p>
+              @if (event.endDate) {
+                <p>tot {{ formatDate(event.endDate) }}</p>
+              }
+            </div>
+          </div>
+          <div class="meta-item">
+            <i class="pi pi-map-marker"></i>
+            <div>
+              <strong>Locatie</strong>
+              <p>{{ event.location }}</p>
+              @if (event.address) {
+                <p class="text-muted">{{ event.address }}</p>
+              }
+            </div>
+          </div>
+          <div class="meta-item">
+            <i class="pi pi-euro"></i>
+            <div>
+              <strong>Prijs</strong>
+              <p>{{ event.ticketPrice | number:'1.2-2' }} per ticket</p>
+            </div>
+          </div>
+          <div class="meta-item">
+            <i class="pi pi-ticket"></i>
+            <div>
+              <strong>Beschikbaarheid</strong>
+              <p>{{ event.availableTickets }} van {{ event.maxTickets }} tickets beschikbaar</p>
+              <p class="text-muted">Max {{ event.maxTicketsPerOrder }} per bestelling</p>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="order-section">
+      <p-card>
+        <ng-template #title>
+          <i class="pi pi-shopping-cart"></i> Tickets Bestellen
+        </ng-template>
+
+        @if (event.availableTickets === 0) {
+          <p-message severity="warn" text="Dit evenement is uitverkocht" [style]="{'width': '100%'}" />
+        } @else if (orderPlaced) {
+          <p-message severity="success" text="Bestelling geplaatst! Je wordt doorgestuurd..." [style]="{'width': '100%'}" />
+        } @else {
+          @if (errorMessage) {
+            <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+          }
+
+          <div class="order-form">
+            <div class="name-row">
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="buyerFirstName" [(ngModel)]="orderForm.buyerFirstName" class="w-full" />
+                  <label for="buyerFirstName">Voornaam *</label>
+                </p-floatlabel>
+                @if (submitted && !orderForm.buyerFirstName) {
+                  <small class="error-text">Voornaam is verplicht</small>
+                }
+              </div>
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="buyerLastName" [(ngModel)]="orderForm.buyerLastName" class="w-full" />
+                  <label for="buyerLastName">Achternaam *</label>
+                </p-floatlabel>
+                @if (submitted && !orderForm.buyerLastName) {
+                  <small class="error-text">Achternaam is verplicht</small>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <p-floatlabel>
+                <input pInputText id="buyerEmail" [(ngModel)]="orderForm.buyerEmail" type="email" class="w-full" />
+                <label for="buyerEmail">E-mail *</label>
+              </p-floatlabel>
+              @if (submitted && !isValidEmail(orderForm.buyerEmail)) {
+                <small class="error-text">Geldig e-mailadres is verplicht</small>
+              }
+            </div>
+
+            <div class="form-field">
+              <p-floatlabel>
+                <input pInputText id="buyerPhone" [(ngModel)]="orderForm.buyerPhone" class="w-full" />
+                <label for="buyerPhone">Telefoon</label>
+              </p-floatlabel>
+            </div>
+
+            <div class="form-field">
+              <p-floatlabel>
+                <p-inputNumber
+                  id="quantity"
+                  [(ngModel)]="orderForm.quantity"
+                  [min]="1"
+                  [max]="maxTickets"
+                  [showButtons]="true"
+                  class="w-full" />
+                <label for="quantity">Aantal tickets *</label>
+              </p-floatlabel>
+              <small class="text-muted">Max {{ maxTickets }} tickets</small>
+            </div>
+
+            <p-divider />
+
+            <div class="order-summary">
+              <div class="summary-row">
+                <span>{{ orderForm.quantity }}x ticket</span>
+                <span>{{ event.ticketPrice | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row total">
+                <strong>Totaal</strong>
+                <strong>EUR {{ getTotalPrice() | number:'1.2-2' }}</strong>
+              </div>
+            </div>
+
+            <p-message severity="info" text="Na bestellen heb je 10 minuten om te bevestigen. Tickets worden gereserveerd." [style]="{'width': '100%'}" />
+
+            <p-button
+              label="Bestelling Plaatsen"
+              icon="pi pi-check"
+              (onClick)="placeOrder()"
+              [loading]="submitting"
+              [disabled]="submitting"
+              class="w-full mt-2"
+              [style]="{'width': '100%'}" />
+          </div>
+        }
+      </p-card>
+    </div>
+  </div>
+}

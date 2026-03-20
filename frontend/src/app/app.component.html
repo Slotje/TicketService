@@ -1,0 +1,34 @@
+<div class="layout-wrapper">
+  <p-menubar [model]="menuItems">
+    <ng-template #start>
+      <a routerLink="/" class="app-logo">
+        <i class="pi pi-ticket" style="font-size: 1.5rem; margin-right: 0.5rem"></i>
+        <span class="app-name">TicketService</span>
+      </a>
+    </ng-template>
+    <ng-template #end>
+      <div class="auth-buttons">
+        @if (adminAuth.isLoggedIn) {
+          <span class="user-greeting"><i class="pi pi-cog"></i> {{ adminAuth.displayName }}</span>
+          <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="adminAuth.logout()" />
+        } @else if (customerAuth.isLoggedIn) {
+          <span class="user-greeting"><i class="pi pi-building"></i> {{ customerAuth.contactPerson || customerAuth.companyName }}</span>
+          <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="customerAuth.logout()" />
+        } @else if (userAuth.isLoggedIn) {
+          <span class="user-greeting">{{ userAuth.name }}</span>
+          <p-button icon="pi pi-sign-out" label="Uitloggen" [text]="true" size="small" (onClick)="userAuth.logout()" />
+        } @else {
+          <p-button icon="pi pi-sign-in" label="Inloggen" [text]="true" size="small" (onClick)="goToLogin()" />
+          <span class="auth-divider">|</span>
+          <p-button icon="pi pi-building" label="Klantportaal" [text]="true" size="small" routerLink="/klant/login" />
+        }
+      </div>
+    </ng-template>
+  </p-menubar>
+  <div class="layout-content">
+    <router-outlet />
+  </div>
+  <footer class="layout-footer">
+    <span>TicketService &copy; 2026 - Alle rechten voorbehouden</span>
+  </footer>
+</div>

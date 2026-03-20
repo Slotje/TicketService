@@ -1,0 +1,115 @@
+<div class="scanner-page">
+  <div class="scanner-header">
+    <div class="flex justify-between align-center">
+      <h2><i class="pi pi-qrcode"></i> Ticket Scanner</h2>
+      <div class="flex align-center gap-1">
+        <p-tag [value]="auth.displayName" icon="pi pi-user" severity="info" />
+        <p-button icon="pi pi-sign-out" [rounded]="true" [text]="true" severity="danger"
+                  (onClick)="logout()" pTooltip="Uitloggen" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Selection -->
+  <p-card class="mb-2">
+    <ng-template #title>
+      <div class="flex align-center gap-1">
+        <i class="pi pi-calendar"></i>
+        <span>Selecteer Evenement</span>
+      </div>
+    </ng-template>
+    <p-select
+      [options]="events"
+      [(ngModel)]="selectedEventId"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Kies een evenement om te scannen"
+      [style]="{'width': '100%'}"
+      [filter]="true"
+      filterPlaceholder="Zoek evenement..."
+      [showClear]="true">
+      <ng-template #selectedItem let-selected>
+        <span>{{ selected.name }} - {{ selected.location }}</span>
+      </ng-template>
+      <ng-template #item let-event>
+        <div>
+          <div><strong>{{ event.name }}</strong></div>
+          <div class="text-sm text-muted">{{ event.location }} - {{ formatEventDate(event.eventDate) }}</div>
+        </div>
+      </ng-template>
+    </p-select>
+    @if (!selectedEventId) {
+      <p-message severity="warn" text="Selecteer eerst een evenement voordat je tickets kunt scannen." [style]="{'width': '100%', 'margin-top': '0.75rem'}" />
+    }
+  </p-card>
+
+  @if (selectedEventId) {
+    <p-card>
+      <div class="camera-section">
+        <div id="qr-reader" #qrReader></div>
+
+        @if (!cameraActive) {
+          <p-button label="Camera starten" icon="pi pi-camera" (onClick)="startCamera()"
+                    [style]="{'width': '100%'}" class="mt-1" />
+        } @else {
+          <p-button label="Camera stoppen" icon="pi pi-stop" (onClick)="stopCamera()"
+                    severity="secondary" [style]="{'width': '100%'}" class="mt-1" />
+        }
+      </div>
+
+      <div class="manual-section mt-2">
+        <p class="or-divider">of voer handmatig in</p>
+        <div class="scan-form">
+          <p-floatlabel>
+            <input pInputText id="qrData" [(ngModel)]="qrCodeData" class="w-full"
+                   (keyup.enter)="scanTicket()" />
+            <label for="qrData">QR Code Data</label>
+          </p-floatlabel>
+          <p-button label="Scan" icon="pi pi-search" (onClick)="scanTicket()" [loading]="scanning" />
+        </div>
+      </div>
+    </p-card>
+  }
+
+  <!-- Scan Result Popup Overlay -->
+  @if (showPopup) {
+    <div class="scan-popup-overlay" (click)="dismissPopup()">
+      <div class="scan-popup" [class.success]="popupType === 'success'"
+           [class.error]="popupType === 'error'" [class.warning]="popupType === 'warning'">
+        @if (popupType === 'success') {
+          <i class="pi pi-check-circle popup-icon"></i>
+          <h2>Geldig!</h2>
+        }
+        @if (popupType === 'warning') {
+          <i class="pi pi-exclamation-circle popup-icon"></i>
+          <h2>Al Gescand!</h2>
+        }
+        @if (popupType === 'error') {
+          <i class="pi pi-times-circle popup-icon"></i>
+          <h2>Ongeldig!</h2>
+        }
+        <p class="popup-message">{{ popupMessage }}</p>
+        @if (scannedTicket && popupType === 'success') {
+          <div class="popup-ticket-info">
+            <span>{{ scannedTicket.ticketCode }}</span>
+          </div>
+        }
+        <p class="popup-dismiss">Tik om door te gaan</p>
+      </div>
+    </div>
+  }
+
+  <div class="scan-history mt-2">
+    <h3>Scan Geschiedenis</h3>
+    @if (scanHistory.length === 0) {
+      <p class="text-muted">Nog geen tickets gescand in deze sessie.</p>
+    }
+    @for (scan of scanHistory; track $index) {
+      <div class="history-item" [class.valid]="scan.valid" [class.invalid]="!scan.valid">
+        <i [class]="scan.valid ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+        <span class="history-code">{{ scan.ticketCode || scan.rawData }}</span>
+        <span class="history-time">{{ scan.time }}</span>
+      </div>
+    }
+  </div>
+</div>

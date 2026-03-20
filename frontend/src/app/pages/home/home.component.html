@@ -1,0 +1,76 @@
+<div class="home-container">
+  <div class="hero-section">
+    <h1>Beschikbare Evenementen</h1>
+    <p>Bekijk onze evenementen en bestel je tickets online</p>
+  </div>
+
+  @if (loading) {
+    <div class="text-center mt-3">
+      <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
+    </div>
+  }
+
+  @if (!loading && events.length === 0) {
+    <div class="text-center mt-3">
+      <p>Er zijn momenteel geen evenementen beschikbaar.</p>
+    </div>
+  }
+
+  <div class="grid grid-3 mt-2">
+    @for (event of events; track event.id) {
+      <p-card>
+        <ng-template #header>
+          <div class="event-card-header" [style.background-color]="'var(--p-primary-100)'">
+            <i class="pi pi-calendar" style="font-size: 2rem; color: var(--p-primary-color)"></i>
+            @if (event.availableTickets === 0) {
+              <div class="sold-out-banner">Uitverkocht</div>
+            }
+          </div>
+        </ng-template>
+        <ng-template #title>
+          {{ event.name }}
+        </ng-template>
+        <ng-template #subtitle>
+          <div class="flex align-center gap-1">
+            <i class="pi pi-map-marker"></i>
+            <span>{{ event.location }}</span>
+          </div>
+        </ng-template>
+        <p class="event-description">{{ event.description }}</p>
+        <div class="event-details mt-2">
+          <div class="detail-row">
+            <i class="pi pi-clock"></i>
+            <span>{{ formatDate(event.eventDate) }}</span>
+          </div>
+          <div class="detail-row">
+            <i class="pi pi-euro"></i>
+            <span>{{ event.ticketPrice | number:'1.2-2' }} per ticket</span>
+          </div>
+          <div class="detail-row">
+            <i class="pi pi-ticket"></i>
+            <span>{{ event.availableTickets }} van {{ event.maxTickets }} beschikbaar</span>
+          </div>
+          <div class="availability-bar mt-1">
+            <p-progressBar
+              [value]="getAvailabilityPercentage(event)"
+              [showValue]="false"
+              [style]="{'height': '8px'}" />
+          </div>
+        </div>
+        <ng-template #footer>
+          <div class="flex justify-between align-center">
+            <p-tag
+              [value]="getStatusLabel(event)"
+              [severity]="getStatusSeverity(event)" />
+            <p-button
+              label="Tickets bestellen"
+              icon="pi pi-shopping-cart"
+              [routerLink]="'/event/' + event.id"
+              [disabled]="event.availableTickets === 0"
+              size="small" />
+          </div>
+        </ng-template>
+      </p-card>
+    }
+  </div>
+</div>

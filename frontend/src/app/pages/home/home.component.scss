@@ -1,0 +1,55 @@
+.hero-section {
+  text-align: center;
+  padding: 2rem 0;
+  h1 {
+    font-size: 2rem;
+    color: var(--p-primary-color);
+    margin: 0 0 0.5rem 0;
+  }
+  p {
+    color: var(--p-text-muted-color);
+    font-size: 1.1rem;
+  }
+}
+.event-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  border-radius: var(--p-border-radius) var(--p-border-radius) 0 0;
+  position: relative;
+}
+.sold-out-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: var(--p-border-radius) var(--p-border-radius) 0 0;
+}
+.event-description {
+  color: var(--p-text-muted-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  i { color: var(--p-primary-color); font-size: 0.85rem; }
+}

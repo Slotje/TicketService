@@ -13,81 +13,8 @@ import { ProgressBar } from 'primeng/progressbar';
 @Component({
   selector: 'app-customer-activate',
   imports: [CommonModule, FormsModule, Card, Button, Password, FloatLabel, Message, ProgressBar],
-  template: `
-    <div class="activate-container">
-      <p-card>
-        <ng-template #header>
-          <div class="activate-header">
-            <i class="pi pi-lock" style="font-size: 2.5rem; color: var(--p-primary-color)"></i>
-            <h2>Account Activeren</h2>
-            @if (companyName) {
-              <p>Welkom bij <strong>{{ companyName }}</strong></p>
-            }
-          </div>
-        </ng-template>
-
-        @if (verifying) {
-          <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
-        }
-
-        @if (errorMessage) {
-          <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
-        }
-
-        @if (!verifying && !errorMessage) {
-          <p style="text-align: center; color: var(--p-text-muted-color); margin-bottom: 1rem;">
-            Stel een wachtwoord in voor <strong>{{ email }}</strong>
-          </p>
-
-          <div class="form-stack">
-            <p-floatlabel>
-              <p-password id="password" [(ngModel)]="password" [toggleMask]="true"
-                          styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="activate()" />
-              <label for="password">Wachtwoord</label>
-            </p-floatlabel>
-
-            <p-floatlabel>
-              <p-password id="confirmPassword" [(ngModel)]="confirmPassword" [toggleMask]="true" [feedback]="false"
-                          styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="activate()" />
-              <label for="confirmPassword">Wachtwoord bevestigen</label>
-            </p-floatlabel>
-
-            <p-button label="Account Activeren" icon="pi pi-check" (onClick)="activate()"
-                      [loading]="loading" styleClass="w-full" />
-          </div>
-        }
-
-        @if (errorMessage && !verifying) {
-          <div style="text-align: center; margin-top: 1rem;">
-            <p-button label="Naar inloggen" icon="pi pi-sign-in" [text]="true" routerLink="/klant/login" />
-          </div>
-        }
-      </p-card>
-    </div>
-  `,
-  styles: [`
-    .activate-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 60vh;
-    }
-    :host ::ng-deep .p-card {
-      width: 450px;
-      max-width: 95vw;
-    }
-    .activate-header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-      h2 { color: var(--p-primary-color); margin: 0.5rem 0 0.25rem; }
-      p { color: var(--p-text-muted-color); margin: 0; font-size: 0.95rem; }
-    }
-    .form-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-  `]
+  templateUrl: './customer-activate.component.html',
+  styleUrl: './customer-activate.component.scss'
 })
 export class CustomerActivateComponent implements OnInit {
   inviteToken = '';

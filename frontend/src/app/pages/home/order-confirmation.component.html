@@ -1,0 +1,97 @@
+@if (loading) {
+  <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" />
+}
+
+@if (order) {
+  <div class="order-page">
+    <p-card>
+      <ng-template #title>
+        <div class="flex align-center gap-1">
+          <i class="pi pi-shopping-bag"></i>
+          <span>Bestelling {{ order.orderNumber }}</span>
+          <p-tag [value]="getStatusLabel()" [severity]="getStatusSeverity()" />
+        </div>
+      </ng-template>
+
+      @if (order.status === 'RESERVED') {
+        <p-message severity="warn" [style]="{'width': '100%'}">
+          <ng-template #detail>
+            Reservering verloopt over <strong>{{ remainingTime }}</strong>.
+            Bevestig je bestelling om je tickets veilig te stellen.
+          </ng-template>
+        </p-message>
+      }
+
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+      }
+      @if (successMessage) {
+        <p-message severity="success" [text]="successMessage" [style]="{'width': '100%'}" class="mb-2" />
+      }
+
+      <div class="order-details mt-2">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Evenement</label>
+            <span>{{ order.eventName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Naam</label>
+            <span>{{ order.buyerFirstName }} {{ order.buyerLastName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>E-mail</label>
+            <span>{{ order.buyerEmail }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Aantal tickets</label>
+            <span>{{ order.quantity }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Totaalprijs</label>
+            <span class="total-price">EUR {{ order.totalPrice | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Besteld op</label>
+            <span>{{ formatDate(order.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p-divider />
+
+      @if (order.status === 'CONFIRMED') {
+        <h3>Tickets</h3>
+        <div class="tickets-grid">
+          @for (ticket of order.tickets; track ticket.id) {
+            <div class="ticket-card">
+              <div class="ticket-code">{{ ticket.ticketCode }}</div>
+              <img [src]="api.getQrCodeUrl(ticket.qrCodeData)" alt="QR Code" class="qr-image" />
+              @if (ticket.scanned) {
+                <p-tag value="Gescand" severity="info" />
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="action-buttons mt-2">
+        @if (order.status === 'RESERVED') {
+          <p-button
+            label="Bestelling Bevestigen"
+            icon="pi pi-check"
+            (onClick)="confirmOrder()"
+            [loading]="processing"
+            severity="success" />
+        }
+        @if (order.status === 'CONFIRMED') {
+          <p-button
+            label="Download PDF Tickets"
+            icon="pi pi-download"
+            (onClick)="downloadPdf()"
+            severity="success" />
+        }
+      </div>
+    </p-card>
+  </div>
+}
