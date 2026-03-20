@@ -26,14 +26,22 @@ public class EmailService {
     @ConfigProperty(name = "ticket.app.base-url", defaultValue = "http://localhost:80")
     String baseUrl;
 
+    @ConfigProperty(name = "ticket.mail.domain", defaultValue = "ticketing.lockitree.com")
+    String mailDomain;
+
+    @ConfigProperty(name = "ticket.mail.fallback-from", defaultValue = "noreply@ticketing.lockitree.com")
+    String fallbackFrom;
+
     public boolean sendOrderConfirmation(TicketOrder order) {
         try {
             byte[] pdfBytes = pdfService.generateOrderPdf(order);
 
             String subject = "Je tickets voor " + order.event.name + " - " + order.orderNumber;
             String body = buildEmailBody(order);
+            String from = buildCustomerFrom(order.event.customer.companyName);
 
             Mail mail = Mail.withHtml(order.buyerEmail, subject, body)
+                    .setFrom(from)
                     .addAttachment(
                             "tickets-" + order.orderNumber + ".pdf",
                             pdfBytes,
@@ -41,7 +49,8 @@ public class EmailService {
                     );
 
             mailer.send(mail);
-            LOG.infof("Bevestigingsmail verstuurd naar %s voor bestelling %s", order.buyerEmail, order.orderNumber);
+            LOG.infof("Bevestigingsmail verstuurd vanaf %s naar %s voor bestelling %s",
+                    from, order.buyerEmail, order.orderNumber);
             return true;
         } catch (Exception e) {
             LOG.errorf(e, "Fout bij het versturen van bevestigingsmail naar %s voor bestelling %s",
@@ -94,6 +103,19 @@ public class EmailService {
             LOG.errorf(e, "Fout bij het versturen van uitnodigingsmail naar %s", customer.email);
             return false;
         }
+    }
+
+    /**
+     * Generates a from address like "Test Bedrijf <testbedrijf@ticketing.lockitree.com>"
+     */
+    private String buildCustomerFrom(String companyName) {
+        String localPart = companyName.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "")
+                .replaceAll("^-|-$", "");
+        if (localPart.isEmpty()) {
+            return fallbackFrom;
+        }
+        return companyName + " <" + localPart + "@" + mailDomain + ">";
     }
 
     private String buildEmailBody(TicketOrder order) {

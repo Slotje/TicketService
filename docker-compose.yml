@@ -41,6 +41,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:80}
+      MAIL_TICKET_DOMAIN: ${MAIL_TICKET_DOMAIN:-ticketing.lockitree.com}
     depends_on:
       postgres:
         condition: service_healthy
