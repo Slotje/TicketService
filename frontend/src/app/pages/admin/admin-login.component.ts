@@ -20,7 +20,8 @@ import { Password } from 'primeng/password';
 export class AdminLoginComponent implements OnInit {
   email = '';
   password = '';
-  name = '';
+  firstName = '';
+  lastName = '';
   loading = false;
   errorMessage = '';
   isSetup = false;
@@ -46,8 +47,8 @@ export class AdminLoginComponent implements OnInit {
       this.errorMessage = 'Vul alle velden in';
       return;
     }
-    if (this.isSetup && !this.name) {
-      this.errorMessage = 'Vul je naam in';
+    if (this.isSetup && (!this.firstName || !this.lastName)) {
+      this.errorMessage = 'Vul je voor- en achternaam in';
       return;
     }
 
@@ -55,7 +56,7 @@ export class AdminLoginComponent implements OnInit {
     this.errorMessage = '';
 
     const obs = this.isSetup
-      ? this.adminAuth.setup(this.email, this.password, this.name)
+      ? this.adminAuth.setup(this.email, this.password, this.firstName, this.lastName)
       : this.adminAuth.login(this.email, this.password);
 
     obs.subscribe({

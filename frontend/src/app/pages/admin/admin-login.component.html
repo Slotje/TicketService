@@ -16,9 +16,16 @@
       @if (isSetup) {
         <div class="form-field">
           <p-floatlabel>
-            <input pInputText id="name" [(ngModel)]="name" class="w-full"
+            <input pInputText id="firstName" [(ngModel)]="firstName" class="w-full"
                    (keyup.enter)="submit()" />
-            <label for="name">Naam</label>
+            <label for="firstName">Voornaam</label>
+          </p-floatlabel>
+        </div>
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="lastName" [(ngModel)]="lastName" class="w-full"
+                   (keyup.enter)="submit()" />
+            <label for="lastName">Achternaam</label>
           </p-floatlabel>
         </div>
       }

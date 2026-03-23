@@ -34,8 +34,8 @@ export class AdminAuthService {
     return localStorage.getItem('admin_display_name') || '';
   }
 
-  setup(email: string, password: string, name: string): Observable<AdminLoginResponse> {
-    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/setup`, { email, password, name }).pipe(
+  setup(email: string, password: string, firstName: string, lastName: string): Observable<AdminLoginResponse> {
+    return this.http.post<AdminLoginResponse>(`${this.baseUrl}/setup`, { email, password, firstName, lastName }).pipe(
       tap(res => this.storeAuth(res))
     );
   }

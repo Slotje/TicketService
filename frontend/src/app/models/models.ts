@@ -60,6 +60,9 @@ export interface Order {
   buyerPostalCode?: string;
   buyerCity?: string;
   quantity: number;
+  ticketPrice: number;
+  serviceFeePerTicket: number;
+  totalServiceFee: number;
   totalPrice: number;
   status: string;
   eventName: string;

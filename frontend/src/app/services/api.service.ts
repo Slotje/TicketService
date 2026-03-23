@@ -183,7 +183,7 @@ export class ApiService {
     return `${this.baseUrl}/orders/ticket/${qrCodeData}/qr`;
   }
 
-  scanTicket(qrCodeData: string): Observable<Ticket> {
-    return this.http.post<Ticket>(`${this.baseUrl}/orders/scan/${qrCodeData}`, {});
+  scanTicket(qrCodeData: string, eventId: number): Observable<Ticket> {
+    return this.http.post<Ticket>(`${this.baseUrl}/orders/scan/${encodeURIComponent(qrCodeData)}?eventId=${eventId}`, {});
   }
 }
