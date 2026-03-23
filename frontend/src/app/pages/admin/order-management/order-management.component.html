@@ -1,0 +1,51 @@
+@if (event) {
+  <div class="flex justify-between align-center mb-2">
+    <div>
+      <h1>{{ event.name }} - Bestellingen</h1>
+      <p class="text-muted">{{ event.ticketsSold }} verkocht / {{ event.maxTickets }} totaal</p>
+    </div>
+  </div>
+}
+
+<p-table
+  [value]="orders"
+  [paginator]="true"
+  [rows]="15"
+  [loading]="loading"
+  styleClass="p-datatable-striped">
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="orderNumber">Bestelnr.</th>
+      <th pSortableColumn="buyerFirstName">Naam</th>
+      <th>E-mail</th>
+      <th>Aantal</th>
+      <th>Totaal</th>
+      <th pSortableColumn="status">Status</th>
+      <th>Besteld op</th>
+      <th>Acties</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-order>
+    <tr>
+      <td data-label="Bestelnr."><code>{{ order.orderNumber }}</code></td>
+      <td data-label="Naam">{{ order.buyerFirstName }} {{ order.buyerLastName }}</td>
+      <td data-label="E-mail">{{ order.buyerEmail }}</td>
+      <td data-label="Aantal">{{ order.quantity }}</td>
+      <td data-label="Totaal">{{ order.totalPrice | number:'1.2-2' }}</td>
+      <td data-label="Status">
+        <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
+      </td>
+      <td data-label="Besteld op">{{ formatDate(order.createdAt) }}</td>
+      <td data-label="Acties">
+        <div class="flex gap-1">
+          @if (order.status === 'CONFIRMED') {
+            <p-button icon="pi pi-download" [rounded]="true" [text]="true" (onClick)="downloadPdf(order)" pTooltip="Download PDF" />
+          }
+          @if (order.status === 'RESERVED') {
+            <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" (onClick)="confirmOrder(order)" />
+          }
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

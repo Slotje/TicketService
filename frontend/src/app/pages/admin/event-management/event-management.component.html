@@ -1,0 +1,172 @@
+<div class="flex justify-between align-center mb-2">
+  <h1>Evenementenbeheer</h1>
+  <p-button label="Nieuw Evenement" icon="pi pi-plus" (onClick)="openNew()" />
+</div>
+
+@if (errorMessage) {
+  <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+}
+
+<p-table
+  [value]="events"
+  [paginator]="true"
+  [rows]="10"
+  [loading]="loading"
+  styleClass="p-datatable-striped">
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name">Naam</th>
+      <th pSortableColumn="customerName">Klant</th>
+      <th>Datum</th>
+      <th>Locatie</th>
+      <th>Online</th>
+      <th>Fysiek</th>
+      <th>Totaal</th>
+      <th>Prijs</th>
+      <th>Status</th>
+      <th>Acties</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-event>
+    <tr>
+      <td data-label="Naam">{{ event.name }}</td>
+      <td data-label="Klant">{{ event.customerName }}</td>
+      <td data-label="Datum">{{ formatDate(event.eventDate) }}</td>
+      <td data-label="Locatie">{{ event.location }}</td>
+      <td data-label="Online">{{ event.ticketsSold }}/{{ event.onlineTickets || event.maxTickets }}</td>
+      <td data-label="Fysiek">
+        @if (event.physicalTickets > 0) {
+          {{ event.physicalTicketsSold }}/{{ event.physicalTickets }}
+        } @else {
+          -
+        }
+      </td>
+      <td data-label="Totaal">{{ event.totalSold || event.ticketsSold }}/{{ event.maxTickets }}</td>
+      <td data-label="Prijs">{{ event.ticketPrice | number:'1.2-2' }}</td>
+      <td data-label="Status">
+        <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
+        @if (isPastEvent(event)) {
+          <p-tag value="Verlopen" severity="secondary" class="ml-1" />
+        }
+      </td>
+      <td data-label="Acties">
+        <div class="flex gap-1">
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editEvent(event)" />
+          <p-button icon="pi pi-list" [rounded]="true" [text]="true" severity="info" [routerLink]="'/admin/orders/' + event.id" pTooltip="Bestellingen" />
+          @if (event.status === 'DRAFT') {
+            <p-button icon="pi pi-play" [rounded]="true" [text]="true" severity="success" (onClick)="publishEvent(event)" />
+          }
+          @if (event.physicalTickets > 0 && !event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="help" (onClick)="generatePhysicalTickets(event)" pTooltip="Fysieke tickets genereren" />
+          }
+          @if (event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="help" (onClick)="downloadPhysicalTickets(event)" pTooltip="Fysieke tickets downloaden" />
+          }
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteEvent(event)" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [header]="editMode ? 'Evenement Bewerken' : 'Nieuw Evenement'"
+  [modal]="true"
+  [style]="{'width': '700px'}"
+  [closable]="true">
+
+  @if (dialogError) {
+    <p-message severity="error" [text]="dialogError" [style]="{'width': '100%'}" class="mb-2" />
+  }
+
+  <div class="form-grid">
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <input pInputText id="eventName" [(ngModel)]="eventForm.name" class="w-full" />
+        <label for="eventName">Naam *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <textarea pTextarea id="description" [(ngModel)]="eventForm.description" [rows]="3" class="w-full"></textarea>
+        <label for="description">Beschrijving</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Klant *</label>
+      <p-select
+        [options]="customerOptions"
+        [(ngModel)]="eventForm.customerId"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecteer klant"
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Status</label>
+      <p-select
+        [options]="statusOptions"
+        [(ngModel)]="eventForm.status"
+        optionLabel="label"
+        optionValue="value"
+        class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Startdatum *</label>
+      <p-datePicker [(ngModel)]="eventDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Einddatum</label>
+      <p-datePicker [(ngModel)]="endDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="location" [(ngModel)]="eventForm.location" class="w-full" />
+        <label for="location">Locatie *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="address" [(ngModel)]="eventForm.address" class="w-full" />
+        <label for="address">Adres</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Totaal Tickets *</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTickets" [min]="1" [max]="100000" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Waarvan fysiek</label>
+      <p-inputNumber [(ngModel)]="eventForm.physicalTickets" [min]="0" [max]="eventForm.maxTickets" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Ticketprijs (EUR) *</label>
+      <p-inputNumber [(ngModel)]="eventForm.ticketPrice" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Max per bestelling</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
+    </div>
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <input pInputText id="imageUrl" [(ngModel)]="eventForm.imageUrl" class="w-full" />
+        <label for="imageUrl">Afbeelding URL</label>
+      </p-floatlabel>
+    </div>
+    @if (eventForm.physicalTickets && eventForm.physicalTickets > 0) {
+      <div class="form-field span-2">
+        <p-message severity="info" [style]="{'width': '100%'}">
+          <span>Online: {{ eventForm.maxTickets - (eventForm.physicalTickets || 0) }} &bull; Fysiek: {{ eventForm.physicalTickets }}</span>
+        </p-message>
+      </div>
+    }
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Annuleren" icon="pi pi-times" (onClick)="dialogVisible = false" [text]="true" />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveEvent()" [loading]="saving" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog />

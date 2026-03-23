@@ -1,0 +1,183 @@
+<div class="layout-wrapper">
+  <!-- Premium Navbar -->
+  <header class="premium-navbar glass-effect">
+    <div class="navbar-inner">
+      <a routerLink="/" class="app-logo">
+        <div class="logo-icon">
+          <i class="pi pi-ticket"></i>
+        </div>
+        <span class="app-name">TicketService</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="nav-links">
+        @for (item of menuItems; track item.label) {
+          @if (item.items) {
+            <div class="nav-dropdown">
+              <button class="nav-link" (click)="adminMenuVisible = !adminMenuVisible">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+                <i class="pi pi-chevron-down dropdown-arrow"></i>
+              </button>
+              @if (adminMenuVisible) {
+                <div class="dropdown-panel" (mouseleave)="adminMenuVisible = false">
+                  @for (sub of item.items; track sub.label) {
+                    <a [routerLink]="sub.routerLink" class="dropdown-item" (click)="adminMenuVisible = false">
+                      <i [class]="sub.icon"></i>
+                      <span>{{ sub.label }}</span>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <a [routerLink]="item.routerLink" class="nav-link">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        }
+      </nav>
+
+      <!-- Auth Section -->
+      <div class="auth-section">
+        @if (adminAuth.isLoggedIn) {
+          <div class="user-badge">
+            <i class="pi pi-cog"></i>
+            <span>{{ adminAuth.displayName }}</span>
+          </div>
+          <button class="btn-logout" (click)="adminAuth.logout()">
+            <i class="pi pi-sign-out"></i>
+            <span class="logout-text">Uitloggen</span>
+          </button>
+        } @else if (customerAuth.isLoggedIn) {
+          <div class="user-badge">
+            <i class="pi pi-building"></i>
+            <span>{{ customerAuth.contactPerson || customerAuth.companyName }}</span>
+          </div>
+          <button class="btn-logout" (click)="customerAuth.logout()">
+            <i class="pi pi-sign-out"></i>
+            <span class="logout-text">Uitloggen</span>
+          </button>
+        } @else if (userAuth.isLoggedIn) {
+          <div class="user-badge">
+            <i class="pi pi-user"></i>
+            <span>{{ userAuth.name }}</span>
+          </div>
+          <button class="btn-logout" (click)="userAuth.logout()">
+            <i class="pi pi-sign-out"></i>
+            <span class="logout-text">Uitloggen</span>
+          </button>
+        } @else {
+          <button class="btn-auth" (click)="goToLogin()">
+            <i class="pi pi-sign-in"></i>
+            <span>Inloggen</span>
+          </button>
+          <a routerLink="/klant/login" class="btn-auth btn-auth-outline">
+            <i class="pi pi-building"></i>
+            <span>Klantportaal</span>
+          </a>
+        }
+
+        <!-- Mobile Hamburger -->
+        <button class="mobile-menu-btn" (click)="mobileMenuVisible = true">
+          <i class="pi pi-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-separator"></div>
+
+  <!-- Mobile Drawer -->
+  <p-drawer [(visible)]="mobileMenuVisible" [modal]="true" position="right" [style]="{'width': '280px'}" styleClass="mobile-drawer">
+    <ng-template #header>
+      <div class="drawer-header">
+        <div class="logo-icon">
+          <i class="pi pi-ticket"></i>
+        </div>
+        <span class="app-name">TicketService</span>
+      </div>
+    </ng-template>
+
+    <div class="drawer-nav">
+      @for (item of menuItems; track item.label) {
+        @if (item.items) {
+          <div class="drawer-group-label">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </div>
+          @for (sub of item.items; track sub.label) {
+            <a [routerLink]="sub.routerLink" class="drawer-link drawer-sub" (click)="mobileMenuVisible = false">
+              <i [class]="sub.icon"></i>
+              <span>{{ sub.label }}</span>
+            </a>
+          }
+        } @else {
+          <a [routerLink]="item.routerLink" class="drawer-link" (click)="mobileMenuVisible = false">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      }
+
+      <div class="drawer-divider"></div>
+
+      @if (adminAuth.isLoggedIn) {
+        <div class="drawer-user">
+          <i class="pi pi-cog"></i>
+          <span>{{ adminAuth.displayName }}</span>
+        </div>
+        <a class="drawer-link" (click)="adminAuth.logout(); mobileMenuVisible = false">
+          <i class="pi pi-sign-out"></i>
+          <span>Uitloggen</span>
+        </a>
+      } @else if (customerAuth.isLoggedIn) {
+        <div class="drawer-user">
+          <i class="pi pi-building"></i>
+          <span>{{ customerAuth.contactPerson || customerAuth.companyName }}</span>
+        </div>
+        <a class="drawer-link" (click)="customerAuth.logout(); mobileMenuVisible = false">
+          <i class="pi pi-sign-out"></i>
+          <span>Uitloggen</span>
+        </a>
+      } @else if (userAuth.isLoggedIn) {
+        <div class="drawer-user">
+          <i class="pi pi-user"></i>
+          <span>{{ userAuth.name }}</span>
+        </div>
+        <a class="drawer-link" (click)="userAuth.logout(); mobileMenuVisible = false">
+          <i class="pi pi-sign-out"></i>
+          <span>Uitloggen</span>
+        </a>
+      } @else {
+        <a class="drawer-link" routerLink="/login" (click)="mobileMenuVisible = false">
+          <i class="pi pi-sign-in"></i>
+          <span>Inloggen</span>
+        </a>
+        <a class="drawer-link" routerLink="/klant/login" (click)="mobileMenuVisible = false">
+          <i class="pi pi-building"></i>
+          <span>Klantportaal</span>
+        </a>
+      }
+    </div>
+  </p-drawer>
+
+  <!-- Main Content -->
+  <main class="layout-content">
+    <router-outlet />
+  </main>
+
+  <!-- Premium Footer -->
+  <footer class="layout-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo-icon logo-icon-light">
+          <i class="pi pi-ticket"></i>
+        </div>
+        <span class="footer-name">TicketService</span>
+      </div>
+      <span class="footer-copy">&copy; 2026 &mdash; Alle rechten voorbehouden</span>
+    </div>
+  </footer>
+</div>

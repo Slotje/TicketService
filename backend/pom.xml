@@ -104,11 +104,13 @@
             <type>pom</type>
         </dependency>
 
-        <!-- Container image for OpenShift -->
+        <!-- Email -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-container-image-jib</artifactId>
+            <artifactId>quarkus-mailer</artifactId>
         </dependency>
+
+        <!-- Container image for OpenShift -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-openshift</artifactId>
@@ -123,6 +125,16 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jacoco</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

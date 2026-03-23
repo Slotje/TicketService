@@ -5,14 +5,16 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import nl.ticketservice.dto.BuyerDetailsDTO;
 import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
+import nl.ticketservice.exception.TicketServiceException;
+import nl.ticketservice.service.AdminAuthService;
 import nl.ticketservice.service.OrderService;
 import nl.ticketservice.service.PdfService;
 import nl.ticketservice.service.QrCodeService;
 import nl.ticketservice.entity.TicketOrder;
-import nl.ticketservice.exception.TicketServiceException;
 
 import java.util.List;
 
@@ -30,9 +32,17 @@ public class OrderResource {
     @Inject
     QrCodeService qrCodeService;
 
+    @Inject
+    nl.ticketservice.service.AuthService authService;
+
+    @Inject
+    AdminAuthService adminAuthService;
+
     @GET
     @Path("/event/{eventId}")
-    public List<OrderResponseDTO> getByEvent(@PathParam("eventId") Long eventId) {
+    public List<OrderResponseDTO> getByEvent(@PathParam("eventId") Long eventId,
+                                             @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
         return orderService.getOrdersByEvent(eventId);
     }
 
@@ -48,22 +58,27 @@ public class OrderResource {
         return orderService.getOrderByNumber(orderNumber);
     }
 
+    @GET
+    @Path("/email/{email}")
+    public List<OrderResponseDTO> getByEmail(@PathParam("email") String email) {
+        return orderService.getOrdersByEmail(email);
+    }
+
     @POST
-    public Response create(@Valid OrderRequestDTO dto) {
-        OrderResponseDTO created = orderService.createOrder(dto);
-        return Response.status(Response.Status.CREATED).entity(created).build();
+    public OrderResponseDTO create(@Valid OrderRequestDTO dto) {
+        return orderService.createOrder(dto);
+    }
+
+    @PUT
+    @Path("/{id}/details")
+    public OrderResponseDTO updateDetails(@PathParam("id") Long id, @Valid BuyerDetailsDTO dto) {
+        return orderService.updateBuyerDetails(id, dto);
     }
 
     @POST
     @Path("/{id}/confirm")
     public OrderResponseDTO confirm(@PathParam("id") Long id) {
         return orderService.confirmOrder(id);
-    }
-
-    @POST
-    @Path("/{id}/cancel")
-    public OrderResponseDTO cancel(@PathParam("id") Long id) {
-        return orderService.cancelOrder(id);
     }
 
     @GET
@@ -92,7 +107,15 @@ public class OrderResource {
 
     @POST
     @Path("/scan/{qrCodeData}")
-    public TicketDTO scanTicket(@PathParam("qrCodeData") String qrCodeData) {
-        return orderService.scanTicket(qrCodeData);
+    public TicketDTO scanTicket(@PathParam("qrCodeData") String qrCodeData,
+                                @QueryParam("eventId") Long eventId,
+                                @HeaderParam("Authorization") String authHeader) {
+        // Verify scanner user is authenticated
+        String token = authHeader != null && authHeader.startsWith("Bearer ")
+                ? authHeader.substring(7) : null;
+        if (token == null || authService.validateToken(token) == null) {
+            throw new TicketServiceException("Niet geautoriseerd. Log in als scanner gebruiker.", 401);
+        }
+        return orderService.scanTicket(qrCodeData, eventId);
     }
 }

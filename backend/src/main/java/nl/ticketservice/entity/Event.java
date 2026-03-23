@@ -42,10 +42,19 @@ public class Event extends PanacheEntity {
     @Column(nullable = false)
     public Integer maxTickets;
 
+    @Min(value = 0, message = "Fysieke tickets mag niet negatief zijn")
+    @Column(nullable = false)
+    public Integer physicalTickets = 0;
+
     @NotNull(message = "Prijs is verplicht")
     @DecimalMin(value = "0.00", message = "Prijs mag niet negatief zijn")
     @Column(nullable = false, precision = 10, scale = 2)
     public BigDecimal ticketPrice;
+
+    @NotNull(message = "Servicekosten zijn verplicht")
+    @DecimalMin(value = "0.00", message = "Servicekosten mogen niet negatief zijn")
+    @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal serviceFee = BigDecimal.ZERO;
 
     @Min(value = 1)
     @Max(value = 10)
@@ -57,6 +66,12 @@ public class Event extends PanacheEntity {
 
     @Column(nullable = false)
     public Integer ticketsReserved = 0;
+
+    @Column(nullable = false)
+    public Integer physicalTicketsSold = 0;
+
+    @Column(nullable = false)
+    public boolean physicalTicketsGenerated = false;
 
     @Size(max = 500)
     public String imageUrl;
@@ -88,11 +103,39 @@ public class Event extends PanacheEntity {
         updatedAt = LocalDateTime.now();
     }
 
+    public int getOnlineTickets() {
+        return maxTickets - physicalTickets;
+    }
+
     public int getAvailableTickets() {
-        return maxTickets - ticketsSold - ticketsReserved;
+        return getOnlineTickets() - ticketsSold - ticketsReserved;
     }
 
     public boolean hasAvailableTickets(int quantity) {
         return getAvailableTickets() >= quantity;
+    }
+
+    public int getAvailablePhysicalTickets() {
+        return physicalTickets - physicalTicketsSold;
+    }
+
+    public int getTotalSold() {
+        return ticketsSold + physicalTicketsSold;
+    }
+
+    /**
+     * Calculate the effective service fee per online ticket.
+     * Total service revenue = serviceFee * maxTickets, spread over online tickets only.
+     * Physical tickets have no service fee (included in the printing/distribution).
+     */
+    public BigDecimal getEffectiveOnlineServiceFee() {
+        int onlineTickets = getOnlineTickets();
+        if (onlineTickets <= 0 || serviceFee.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        // totalServiceRevenue = serviceFee * maxTickets
+        // effectiveFeePerOnlineTicket = totalServiceRevenue / onlineTickets
+        BigDecimal totalServiceRevenue = serviceFee.multiply(BigDecimal.valueOf(maxTickets));
+        return totalServiceRevenue.divide(BigDecimal.valueOf(onlineTickets), 2, java.math.RoundingMode.HALF_UP);
     }
 }

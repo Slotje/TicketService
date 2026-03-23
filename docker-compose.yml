@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
+      TZ: Europe/Amsterdam
       POSTGRES_DB: ticketservice
       POSTGRES_USER: ticketservice
       POSTGRES_PASSWORD: ticketservice
@@ -22,12 +23,25 @@ services:
     ports:
       - "8080:8080"
     environment:
+      TZ: Europe/Amsterdam
+      QUARKUS_PROFILE: prod
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ticketservice
       DB_USERNAME: ticketservice
       DB_PASSWORD: ticketservice
-      QUARKUS_PROFILE: prod
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      QR_SECRET: ${QR_SECRET:-change-me-in-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:80,http://localhost}
+      MAIL_FROM: ${MAIL_FROM:-noreply@ticketservice.nl}
+      MAIL_HOST: ${MAIL_HOST:-smtp.example.com}
+      MAIL_PORT: ${MAIL_PORT:-465}
+      MAIL_SSL: ${MAIL_SSL:-true}
+      MAIL_START_TLS: ${MAIL_START_TLS:-DISABLED}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:80}
+      MAIL_TICKET_DOMAIN: ${MAIL_TICKET_DOMAIN:-tickets.lockitree.com}
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,6 +52,14 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

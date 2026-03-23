@@ -1,0 +1,51 @@
+<div class="login-page">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <div class="auth-icon">
+        <i [class]="isSetup ? 'pi pi-user-plus' : 'pi pi-shield'"></i>
+      </div>
+      <h2>{{ isSetup ? 'Admin Account Aanmaken' : 'Beheer Login' }}</h2>
+      <p>{{ isSetup ? 'Maak het eerste admin account aan.' : 'Log in om het beheerpaneel te openen' }}</p>
+    </div>
+
+    <div class="auth-card-body">
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+      }
+
+      <div class="login-form">
+        @if (isSetup) {
+          <div class="form-field">
+            <p-floatlabel>
+              <input pInputText id="firstName" [(ngModel)]="firstName" class="w-full" (keyup.enter)="submit()" />
+              <label for="firstName">Voornaam</label>
+            </p-floatlabel>
+          </div>
+          <div class="form-field">
+            <p-floatlabel>
+              <input pInputText id="lastName" [(ngModel)]="lastName" class="w-full" (keyup.enter)="submit()" />
+              <label for="lastName">Achternaam</label>
+            </p-floatlabel>
+          </div>
+        }
+
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="email" [(ngModel)]="email" type="email" class="w-full" (keyup.enter)="submit()" autocomplete="email" />
+            <label for="email">E-mailadres</label>
+          </p-floatlabel>
+        </div>
+        <div class="form-field">
+          <p-floatlabel>
+            <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="isSetup" styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="submit()" autocomplete="current-password" />
+            <label for="password">Wachtwoord</label>
+          </p-floatlabel>
+        </div>
+        <p-button [label]="isSetup ? 'Account Aanmaken' : 'Inloggen'"
+                  [icon]="isSetup ? 'pi pi-user-plus' : 'pi pi-sign-in'"
+                  (onClick)="submit()"
+                  [loading]="loading" [style]="{'width': '100%'}" />
+      </div>
+    </div>
+  </div>
+</div>

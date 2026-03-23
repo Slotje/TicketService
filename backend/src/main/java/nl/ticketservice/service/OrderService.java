@@ -3,6 +3,7 @@ package nl.ticketservice.service;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import nl.ticketservice.dto.BuyerDetailsDTO;
 import nl.ticketservice.dto.OrderRequestDTO;
 import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
@@ -27,6 +28,9 @@ public class OrderService {
     @Inject
     QrCodeService qrCodeService;
 
+    @Inject
+    EmailService emailService;
+
     public List<OrderResponseDTO> getOrdersByEvent(Long eventId) {
         return TicketOrder.<TicketOrder>list("event.id", eventId).stream()
                 .map(this::toDTO)
@@ -47,6 +51,12 @@ public class OrderService {
             throw new TicketServiceException("Bestelling niet gevonden", 404);
         }
         return toDTO(order);
+    }
+
+    public List<OrderResponseDTO> getOrdersByEmail(String email) {
+        return TicketOrder.<TicketOrder>list("buyerEmail", email).stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     @Transactional
@@ -77,27 +87,57 @@ public class OrderService {
             );
         }
 
-        // Reserve tickets
+        // Reserve tickets (online only - physical are handled separately)
         event.ticketsReserved += dto.quantity();
 
         TicketOrder order = new TicketOrder();
-        order.buyerName = dto.buyerName();
+        order.buyerFirstName = dto.buyerFirstName();
+        order.buyerLastName = dto.buyerLastName();
         order.buyerEmail = dto.buyerEmail();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
-        order.totalPrice = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
+        // Use effective online service fee (total service cost spread over online tickets only)
+        BigDecimal effectiveFee = event.getEffectiveOnlineServiceFee();
+        order.serviceFeePerTicket = effectiveFee;
+        order.totalServiceFee = effectiveFee.multiply(BigDecimal.valueOf(dto.quantity()));
+        BigDecimal ticketTotal = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
+        order.totalPrice = ticketTotal.add(order.totalServiceFee);
         order.status = OrderStatus.RESERVED;
         order.event = event;
         order.expiresAt = LocalDateTime.now().plusMinutes(reservationTimeoutMinutes);
         order.persist();
 
-        // Generate tickets
+        // Generate tickets (online type, sold through webshop)
         for (int i = 0; i < dto.quantity(); i++) {
             Ticket ticket = new Ticket();
             ticket.order = order;
+            ticket.event = event;
+            ticket.ticketType = nl.ticketservice.entity.TicketType.ONLINE;
             ticket.persist();
             order.tickets.add(ticket);
         }
+
+        return toDTO(order);
+    }
+
+    @Transactional
+    public OrderResponseDTO updateBuyerDetails(Long orderId, BuyerDetailsDTO dto) {
+        TicketOrder order = TicketOrder.findById(orderId);
+        if (order == null) {
+            throw new TicketServiceException("Bestelling niet gevonden", 404);
+        }
+        if (order.status != OrderStatus.RESERVED) {
+            throw new TicketServiceException("Gegevens kunnen alleen worden bijgewerkt bij een gereserveerde bestelling", 400);
+        }
+        if (order.expiresAt != null && order.expiresAt.isBefore(LocalDateTime.now())) {
+            cancelExpiredOrder(order);
+            throw new TicketServiceException("Reservering is verlopen. Plaats een nieuwe bestelling.", 400);
+        }
+
+        order.buyerStreet = dto.buyerStreet();
+        order.buyerHouseNumber = dto.buyerHouseNumber();
+        order.buyerPostalCode = dto.buyerPostalCode();
+        order.buyerCity = dto.buyerCity();
 
         return toDTO(order);
     }
@@ -118,6 +158,11 @@ public class OrderService {
             throw new TicketServiceException("Reservering is verlopen. Plaats een nieuwe bestelling.", 400);
         }
 
+        if (isBlank(order.buyerStreet) || isBlank(order.buyerHouseNumber)
+                || isBlank(order.buyerPostalCode) || isBlank(order.buyerCity)) {
+            throw new TicketServiceException("Vul eerst je adresgegevens in voordat je de bestelling bevestigt", 400);
+        }
+
         order.status = OrderStatus.CONFIRMED;
         order.confirmedAt = LocalDateTime.now();
         order.expiresAt = null;
@@ -129,6 +174,11 @@ public class OrderService {
         if (event.getAvailableTickets() <= 0) {
             event.status = EventStatus.SOLD_OUT;
         }
+
+        order.lastEmailAttempt = LocalDateTime.now();
+        order.emailRetryCount = 1;
+        boolean emailSuccess = emailService.sendOrderConfirmation(order);
+        order.emailSent = emailSuccess;
 
         return toDTO(order);
     }
@@ -163,7 +213,15 @@ public class OrderService {
     }
 
     @Transactional
-    public TicketDTO scanTicket(String qrCodeData) {
+    public TicketDTO scanTicket(String qrCodeData, Long eventId) {
+        // Verify HMAC signature if present
+        if (qrCodeData.contains("|")) {
+            if (!qrCodeService.verifyQrCode(qrCodeData)) {
+                throw new TicketServiceException("Ongeldige QR code: handtekening komt niet overeen", 400);
+            }
+            qrCodeData = qrCodeService.extractTicketData(qrCodeData);
+        }
+
         Ticket ticket = Ticket.find("qrCodeData", qrCodeData).firstResult();
         if (ticket == null) {
             throw new TicketServiceException("Ticket niet gevonden", 404);
@@ -171,6 +229,11 @@ public class OrderService {
 
         if (ticket.order.status != OrderStatus.CONFIRMED) {
             throw new TicketServiceException("Ticket behoort tot een niet-bevestigde bestelling", 400);
+        }
+
+        // Validate ticket belongs to the scanned event
+        if (eventId != null && !ticket.order.event.id.equals(eventId)) {
+            throw new TicketServiceException("Dit ticket hoort niet bij dit evenement", 400);
         }
 
         if (ticket.scanned) {
@@ -191,13 +254,20 @@ public class OrderService {
                 .toList();
 
         return new OrderResponseDTO(
-                o.id, o.orderNumber, o.buyerName, o.buyerEmail, o.buyerPhone,
-                o.quantity, o.totalPrice, o.status.name(), o.event.name,
+                o.id, o.orderNumber, o.buyerFirstName, o.buyerLastName,
+                o.buyerEmail, o.buyerPhone,
+                o.buyerStreet, o.buyerHouseNumber, o.buyerPostalCode, o.buyerCity,
+                o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
+                o.totalPrice, o.status.name(), o.event.name,
                 o.event.id, o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
         );
     }
 
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
+
     private TicketDTO toTicketDTO(Ticket t) {
-        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.scanned, t.scannedAt, t.createdAt);
+        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.ticketType.name(), t.scanned, t.scannedAt, t.createdAt);
     }
 }

@@ -17,10 +17,15 @@ public class TicketOrder extends PanacheEntity {
     @Column(nullable = false, unique = true, updatable = false)
     public String orderNumber;
 
-    @NotBlank(message = "Naam koper is verplicht")
-    @Size(min = 2, max = 100)
+    @NotBlank(message = "Voornaam koper is verplicht")
+    @Size(min = 1, max = 100)
     @Column(nullable = false)
-    public String buyerName;
+    public String buyerFirstName;
+
+    @NotBlank(message = "Achternaam koper is verplicht")
+    @Size(min = 1, max = 100)
+    @Column(nullable = false)
+    public String buyerLastName;
 
     @NotBlank(message = "E-mail koper is verplicht")
     @Email(message = "Ongeldig e-mailadres")
@@ -30,11 +35,29 @@ public class TicketOrder extends PanacheEntity {
     @Size(max = 20)
     public String buyerPhone;
 
+    @Size(max = 200)
+    public String buyerStreet;
+
+    @Size(max = 10)
+    public String buyerHouseNumber;
+
+    @Size(max = 10)
+    public String buyerPostalCode;
+
+    @Size(max = 100)
+    public String buyerCity;
+
     @NotNull
     @Min(value = 1, message = "Minimaal 1 ticket per bestelling")
     @Max(value = 10, message = "Maximaal 10 tickets per bestelling")
     @Column(nullable = false)
     public Integer quantity;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal serviceFeePerTicket = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    public BigDecimal totalServiceFee = BigDecimal.ZERO;
 
     @Column(nullable = false, precision = 10, scale = 2)
     public BigDecimal totalPrice;
@@ -56,6 +79,14 @@ public class TicketOrder extends PanacheEntity {
     public LocalDateTime confirmedAt;
 
     public LocalDateTime expiresAt;
+
+    @Column(nullable = false)
+    public boolean emailSent = false;
+
+    @Column(nullable = false)
+    public int emailRetryCount = 0;
+
+    public LocalDateTime lastEmailAttempt;
 
     @PrePersist
     public void prePersist() {

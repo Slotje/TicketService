@@ -1,0 +1,27 @@
+.admin-dashboard { animation: fadeInUp 0.4s ease-out; }
+
+h1 { color: var(--ts-navy-950); margin: 0 0 1.5rem; }
+
+.dashboard-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border-radius: var(--ts-radius);
+  padding: 1.5rem;
+  box-shadow: var(--ts-card-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-icon { width: 3rem; height: 3rem; flex-shrink: 0; }
+
+.card-content {
+  flex: 1;
+  h3 { margin: 0 0 0.25rem; font-size: 1.05rem; color: var(--ts-navy-950); }
+  p { margin: 0; color: var(--ts-navy-600); font-size: 0.85rem; line-height: 1.4; }
+}
+
+.card-arrow { color: var(--ts-gold); font-size: 0.9rem; flex-shrink: 0; }

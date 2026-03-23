@@ -21,14 +21,24 @@ public record EventDTO(
         @NotNull(message = "Maximaal aantal tickets is verplicht")
         @Min(1) @Max(100000)
         Integer maxTickets,
+        @Min(0)
+        Integer physicalTickets,
         @NotNull(message = "Prijs is verplicht")
         @DecimalMin("0.00")
         BigDecimal ticketPrice,
+        @DecimalMin("0.00")
+        BigDecimal serviceFee,
+        BigDecimal effectiveOnlineServiceFee,
         @Min(1) @Max(10)
         Integer maxTicketsPerOrder,
+        Integer onlineTickets,
         Integer ticketsSold,
         Integer ticketsReserved,
         Integer availableTickets,
+        Integer physicalTicketsSold,
+        Integer availablePhysicalTickets,
+        Integer totalSold,
+        boolean physicalTicketsGenerated,
         String imageUrl,
         String status,
         Long customerId,

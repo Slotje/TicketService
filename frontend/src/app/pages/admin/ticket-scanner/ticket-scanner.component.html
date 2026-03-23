@@ -1,0 +1,51 @@
+<div class="scanner-page">
+  <p-card>
+    <ng-template #title>
+      <i class="pi pi-qrcode"></i> Ticket Scanner
+    </ng-template>
+
+    <p class="description">Voer de QR code data in of scan de QR code om een ticket te valideren.</p>
+
+    <div class="form-field mb-2">
+      <p-select [options]="events" [(ngModel)]="selectedEventId"
+                optionLabel="name" optionValue="id"
+                placeholder="Selecteer evenement" class="w-full" />
+    </div>
+
+    <div class="scan-form">
+      <p-floatlabel>
+        <input pInputText id="qrData" [(ngModel)]="qrCodeData" class="w-full scan-input"
+               (keyup.enter)="scanTicket()" />
+        <label for="qrData">QR Code Data</label>
+      </p-floatlabel>
+      <p-button label="Scan" icon="pi pi-search" (onClick)="scanTicket()" [loading]="scanning" />
+    </div>
+
+    @if (successMessage) {
+      <div class="result-card success mt-2">
+        <i class="pi pi-check-circle"></i>
+        <div>
+          <strong>Ticket geldig!</strong>
+          <p>{{ successMessage }}</p>
+        </div>
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="result-card error mt-2">
+        <i class="pi pi-times-circle"></i>
+        <div>
+          <strong>Ongeldig!</strong>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+    }
+
+    @if (scannedTicket) {
+      <div class="ticket-info mt-2">
+        <div><strong>Ticketcode:</strong> {{ scannedTicket.ticketCode }}</div>
+        <div><strong>Gescand op:</strong> {{ formatDate(scannedTicket.scannedAt!) }}</div>
+      </div>
+    }
+  </p-card>
+</div>

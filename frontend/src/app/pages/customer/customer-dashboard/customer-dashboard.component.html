@@ -1,0 +1,272 @@
+<div class="dashboard-header mb-2">
+  <div>
+    <h1>Mijn Evenementen</h1>
+    <p class="subtitle">{{ customerAuth.companyName }}</p>
+  </div>
+  <div class="flex gap-1">
+    <p-button label="Nieuw Evenement" icon="pi pi-plus" (onClick)="openNew()" />
+    <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="customerAuth.logout()" />
+  </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="stats-grid mb-2">
+  <div class="stat-card">
+    <div class="stat-icon icon-circle-gold">
+      <i class="pi pi-calendar" style="font-size: 1rem;"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ events.length }}</span>
+      <span class="stat-label">Evenementen</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon icon-circle-gold">
+      <i class="pi pi-ticket" style="font-size: 1rem;"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">{{ getTotalTicketsSold() }}</span>
+      <span class="stat-label">Tickets verkocht</span>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon icon-circle-gold">
+      <i class="pi pi-euro" style="font-size: 1rem;"></i>
+    </div>
+    <div class="stat-info">
+      <span class="stat-value">&euro; {{ getEstimatedRevenue() | number:'1.0-0' }}</span>
+      <span class="stat-label">Geschatte omzet</span>
+    </div>
+  </div>
+</div>
+
+@if (errorMessage) {
+  <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+}
+@if (successMessage) {
+  <p-message severity="success" [text]="successMessage" [style]="{'width': '100%'}" class="mb-2" />
+}
+
+<p-table
+  [value]="events"
+  [paginator]="true"
+  [rows]="10"
+  [loading]="loading"
+  styleClass="p-datatable-striped">
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name">Naam</th>
+      <th>Datum</th>
+      <th>Locatie</th>
+      <th>Online</th>
+      <th>Fysiek</th>
+      <th>Totaal</th>
+      <th>Prijs</th>
+      <th>Status</th>
+      <th>Acties</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-event>
+    <tr>
+      <td data-label="Naam">{{ event.name }}</td>
+      <td data-label="Datum">{{ formatDate(event.eventDate) }}</td>
+      <td data-label="Locatie">{{ event.location }}</td>
+      <td data-label="Online">{{ event.ticketsSold }}/{{ event.onlineTickets || event.maxTickets }}</td>
+      <td data-label="Fysiek">
+        @if (event.physicalTickets > 0) {
+          {{ event.physicalTicketsSold }}/{{ event.physicalTickets }}
+        } @else {
+          -
+        }
+      </td>
+      <td data-label="Totaal">{{ event.totalSold || event.ticketsSold }}/{{ event.maxTickets }}</td>
+      <td data-label="Prijs">&euro; {{ event.ticketPrice | number:'1.2-2' }}</td>
+      <td data-label="Status">
+        <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event.status)" />
+      </td>
+      <td data-label="Acties">
+        <div class="flex gap-1">
+          <p-button icon="pi pi-chart-bar" [rounded]="true" [text]="true" severity="info" (onClick)="openSalesDialog(event)" pTooltip="Verkoop inzicht" />
+          <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (onClick)="editEvent(event)" pTooltip="Bewerken" />
+          @if (event.status === 'DRAFT') {
+            <p-button icon="pi pi-play" [rounded]="true" [text]="true" severity="success" (onClick)="publishEvent(event)" pTooltip="Live zetten" />
+          }
+          @if (event.status === 'PUBLISHED') {
+            <p-button icon="pi pi-pause" [rounded]="true" [text]="true" severity="warn" (onClick)="unpublishEvent(event)" pTooltip="Offline halen" />
+          }
+          @if (event.physicalTickets > 0 && !event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="help" (onClick)="generatePhysicalTickets(event)" pTooltip="Fysieke tickets genereren" />
+          }
+          @if (event.physicalTicketsGenerated) {
+            <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="help" (onClick)="downloadPhysicalTickets(event)" pTooltip="Fysieke tickets downloaden" />
+          }
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteEvent(event)" pTooltip="Verwijderen" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="9" class="text-center" style="padding: 2.5rem;">
+        <div class="icon-circle-gold" style="width:3rem;height:3rem;margin:0 auto 0.75rem;">
+          <i class="pi pi-calendar" style="font-size:1.1rem;"></i>
+        </div>
+        <p style="margin:0;">Je hebt nog geen evenementen. Maak je eerste evenement aan!</p>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<!-- Create/Edit Event Dialog -->
+<p-dialog
+  [(visible)]="dialogVisible"
+  [header]="editMode ? 'Evenement Bewerken' : 'Nieuw Evenement'"
+  [modal]="true"
+  [style]="{'width': '700px'}"
+  [closable]="true">
+
+  @if (dialogError) {
+    <p-message severity="error" [text]="dialogError" [style]="{'width': '100%'}" class="mb-2" />
+  }
+
+  <div class="form-grid">
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <input pInputText id="eventName" [(ngModel)]="eventForm.name" class="w-full" />
+        <label for="eventName">Naam *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <textarea pTextarea id="description" [(ngModel)]="eventForm.description" [rows]="3" class="w-full"></textarea>
+        <label for="description">Beschrijving</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Startdatum *</label>
+      <p-datePicker [(ngModel)]="eventDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Einddatum</label>
+      <p-datePicker [(ngModel)]="endDateValue" [showTime]="true" dateFormat="dd-mm-yy" class="w-full" />
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="location" [(ngModel)]="eventForm.location" class="w-full" />
+        <label for="location">Locatie *</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <p-floatlabel>
+        <input pInputText id="address" [(ngModel)]="eventForm.address" class="w-full" />
+        <label for="address">Adres</label>
+      </p-floatlabel>
+    </div>
+    <div class="form-field">
+      <label>Totaal Tickets *</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTickets" [min]="1" [max]="100000" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Waarvan fysiek</label>
+      <p-inputNumber [(ngModel)]="eventForm.physicalTickets" [min]="0" [max]="eventForm.maxTickets" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Ticketprijs (EUR) *</label>
+      <p-inputNumber [(ngModel)]="eventForm.ticketPrice" [min]="0" [minFractionDigits]="2" [maxFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" class="w-full" />
+    </div>
+    <div class="form-field">
+      <label>Max per bestelling</label>
+      <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
+    </div>
+    <div class="form-field span-2">
+      <p-floatlabel>
+        <input pInputText id="imageUrl" [(ngModel)]="eventForm.imageUrl" class="w-full" />
+        <label for="imageUrl">Afbeelding URL</label>
+      </p-floatlabel>
+    </div>
+    @if (eventForm.physicalTickets && eventForm.physicalTickets > 0) {
+      <div class="form-field span-2">
+        <p-message severity="info" [style]="{'width': '100%'}">
+          <span>Online tickets: {{ eventForm.maxTickets - (eventForm.physicalTickets || 0) }} &bull; Fysieke tickets: {{ eventForm.physicalTickets }}</span>
+        </p-message>
+      </div>
+    }
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Annuleren" icon="pi pi-times" (onClick)="dialogVisible = false" [text]="true" />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveEvent()" [loading]="saving" />
+  </ng-template>
+</p-dialog>
+
+<!-- Sales Insight Dialog -->
+<p-dialog
+  [(visible)]="salesDialogVisible"
+  header="Verkoop Inzicht"
+  [modal]="true"
+  [style]="{'width': '600px'}"
+  [closable]="true">
+
+  @if (salesLoading) {
+    <div class="skeleton" style="height: 200px;"></div>
+  }
+
+  @if (salesData) {
+    <h3 class="sales-event-name">{{ salesData.eventName }}</h3>
+
+    <div class="sales-grid">
+      <div class="sales-card">
+        <span class="sales-label">Totaal verkocht</span>
+        <span class="sales-value">{{ salesData.totalSold }} / {{ salesData.maxTickets }}</span>
+        <div class="availability-bar" style="height:6px;">
+          <div class="availability-fill" [style.width.%]="(salesData.totalSold / salesData.maxTickets) * 100"></div>
+        </div>
+      </div>
+
+      <div class="sales-card">
+        <span class="sales-label">Online verkocht</span>
+        <span class="sales-value">{{ salesData.onlineSold }} / {{ salesData.onlineTickets }}</span>
+        @if (salesData.onlineReserved > 0) {
+          <small class="text-muted">{{ salesData.onlineReserved }} gereserveerd</small>
+        }
+      </div>
+
+      @if (salesData.physicalTickets > 0) {
+        <div class="sales-card">
+          <span class="sales-label">Fysiek verkocht</span>
+          <span class="sales-value">{{ salesData.physicalSold }} / {{ salesData.physicalTickets }}</span>
+          @if (!salesData.physicalTicketsGenerated) {
+            <small class="text-warn">Nog niet gegenereerd</small>
+          }
+        </div>
+
+        <div class="sales-card">
+          <span class="sales-label">Fysiek registreren</span>
+          <div class="flex gap-1 align-center">
+            <p-inputNumber [(ngModel)]="physicalSellQuantity" [min]="1" [max]="salesData.physicalAvailable" [showButtons]="true" class="w-full" />
+            <p-button label="Verkocht" icon="pi pi-check" (onClick)="markPhysicalSold()" [disabled]="salesData.physicalAvailable <= 0" />
+          </div>
+        </div>
+      }
+
+      <div class="sales-card span-2">
+        <span class="sales-label">Omzet</span>
+        <table class="revenue-table">
+          <tr><td>Online ticketverkoop</td><td>&euro; {{ salesData.totalOnlineRevenue | number:'1.2-2' }}</td></tr>
+          @if (salesData.physicalTickets > 0) {
+            <tr><td>Fysieke ticketverkoop</td><td>&euro; {{ salesData.totalPhysicalRevenue | number:'1.2-2' }}</td></tr>
+          }
+          <tr><td>Servicekosten</td><td>&euro; {{ salesData.totalServiceFeeRevenue | number:'1.2-2' }}</td></tr>
+          <tr class="total-row"><td>Totaal</td><td>&euro; {{ salesData.totalRevenue | number:'1.2-2' }}</td></tr>
+        </table>
+      </div>
+
+      <div class="sales-card">
+        <span class="sales-label">Gescand</span>
+        <span class="sales-value">{{ salesData.ticketsScanned }} / {{ salesData.ticketsScanned + salesData.ticketsNotScanned }}</span>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<p-confirmDialog />

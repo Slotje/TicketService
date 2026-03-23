@@ -1,0 +1,52 @@
+<div class="activate-container">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <div class="auth-icon">
+        <i class="pi pi-lock"></i>
+      </div>
+      <h2>Account Activeren</h2>
+      @if (companyName) {
+        <p>Welkom bij <strong>{{ companyName }}</strong></p>
+      }
+    </div>
+
+    <div class="auth-card-body">
+      @if (verifying) {
+        <div class="skeleton" style="height: 120px;"></div>
+      }
+
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+      }
+
+      @if (!verifying && !errorMessage) {
+        <p class="activate-hint">
+          Stel een wachtwoord in voor <strong>{{ email }}</strong>
+        </p>
+
+        <div class="form-stack">
+          <p-floatlabel>
+            <p-password id="password" [(ngModel)]="password" [toggleMask]="true"
+                        styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="activate()" />
+            <label for="password">Wachtwoord</label>
+          </p-floatlabel>
+
+          <p-floatlabel>
+            <p-password id="confirmPassword" [(ngModel)]="confirmPassword" [toggleMask]="true" [feedback]="false"
+                        styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="activate()" />
+            <label for="confirmPassword">Wachtwoord bevestigen</label>
+          </p-floatlabel>
+
+          <p-button label="Account Activeren" icon="pi pi-check" (onClick)="activate()"
+                    [loading]="loading" styleClass="w-full" />
+        </div>
+      }
+
+      @if (errorMessage && !verifying) {
+        <div class="back-link mt-2">
+          <p-button label="Naar inloggen" icon="pi pi-sign-in" [text]="true" routerLink="/klant/login" />
+        </div>
+      }
+    </div>
+  </div>
+</div>
