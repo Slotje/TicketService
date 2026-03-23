@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 const ADMIN_API_PATHS = ['/api/customers', '/api/events', '/api/orders/event', '/api/auth/users'];
-const CUSTOMER_API_PATHS = ['/api/events/my', '/api/customer/auth/verify'];
+const CUSTOMER_API_PATHS = ['/api/events/my', '/api/customer/auth/verify', '/api/customer/auth/branding'];
 
 export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
   // Customer token for customer-specific endpoints
@@ -44,6 +44,14 @@ function isAdminApiCall(url: string, method: string): boolean {
   }
   // Customer slug lookup is public
   if (method === 'GET' && url.includes('/api/customers/slug/')) {
+    return false;
+  }
+  // Image serving is public
+  if (method === 'GET' && url.includes('/api/images/')) {
+    return false;
+  }
+  // Image upload adds its own auth header manually
+  if (method === 'POST' && url.includes('/api/images/upload')) {
     return false;
   }
 

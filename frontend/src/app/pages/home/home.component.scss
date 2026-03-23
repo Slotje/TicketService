@@ -337,3 +337,103 @@
   color: var(--ts-navy-600);
   font-weight: 500;
 }
+
+// --- Hero Particles ---
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--ts-gold);
+  border-radius: 50%;
+  animation: particleDrift 8s ease-in-out infinite;
+
+  &:nth-child(even) {
+    width: 3px;
+    height: 3px;
+    animation-duration: 12s;
+  }
+
+  &:nth-child(3n) {
+    width: 5px;
+    height: 5px;
+    background: rgba(240, 221, 180, 0.6);
+    animation-duration: 10s;
+  }
+}
+
+// --- Stats Counter Bar ---
+.stats-counter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 2.5rem 2rem;
+  background: #ffffff;
+  margin: -1.5rem 2rem 0;
+  border-radius: var(--ts-radius-xl);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.04);
+  position: relative;
+  z-index: 5;
+
+  @media (max-width: 768px) {
+    margin: -1rem 0.5rem 0;
+    gap: 1.5rem;
+    padding: 1.5rem 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.counter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.counter-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--ts-navy-950);
+  letter-spacing: -0.03em;
+  line-height: 1;
+
+  @media (max-width: 768px) { font-size: 1.75rem; }
+}
+
+.counter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ts-navy-600);
+}
+
+.counter-divider {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(180deg, transparent, rgba(212, 168, 83, 0.3), transparent);
+
+  @media (max-width: 768px) { height: 30px; }
+}
+
+// --- Enhanced event card hover effects ---
+.event-card {
+  &:hover {
+    .event-card-price {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(212, 168, 83, 0.4);
+    }
+  }
+}
+
+.event-card-price {
+  transition: all 0.3s ease;
+}

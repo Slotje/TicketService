@@ -1,102 +1,170 @@
 @if (loading) {
-  <div class="skeleton" style="height: 250px; margin: -2rem -1.5rem 0; border-radius: 0;"></div>
-  <div class="grid grid-3 mt-3">
-    @for (i of [1,2,3]; track i) {
-      <div class="skeleton" style="height: 280px;"></div>
-    }
-  </div>
-}
-
-@if (!loading && !customer) {
-  <div class="empty-state mt-3">
-    <div class="icon-circle-gold" style="width:3.5rem;height:3.5rem;margin:0 auto 1rem;">
-      <i class="pi pi-building" style="font-size:1.25rem;"></i>
-    </div>
-    <h2>Pagina niet gevonden</h2>
-    <p>Deze organisatie bestaat niet of is niet actief.</p>
-  </div>
-}
-
-@if (customer) {
-  <!-- Hero with customer branding -->
-  <div class="hero" [style.background]="'linear-gradient(135deg, ' + (customer.primaryColor || '#0f172a') + ' 0%, ' + (customer.secondaryColor || customer.primaryColor || '#1e293b') + ' 100%)'">
-    <div class="hero-overlay"></div>
-    <div class="hero-floating-shapes">
-      <div class="floating-shape shape-1"></div>
-      <div class="floating-shape shape-2"></div>
-      <div class="floating-shape shape-3"></div>
-    </div>
-    <div class="hero-content" data-aos="fade-up">
-      @if (customer.logoUrl) {
-        <img [src]="customer.logoUrl" [alt]="customer.companyName" class="hero-logo" />
-      }
-      <h1 class="hero-title">{{ customer.companyName }}</h1>
-      @if (customer.website) {
-        <a [href]="customer.website" target="_blank" class="hero-website">
-          <i class="pi pi-external-link"></i> {{ customer.website }}
-        </a>
-      }
-    </div>
-  </div>
-
-  <!-- Events -->
-  <div class="events-section">
-    <h2>Evenementen</h2>
-    <div class="section-divider" [style.background]="'linear-gradient(90deg, transparent, ' + (customer.primaryColor || 'var(--ts-gold)') + ', transparent)'"></div>
-
-    @if (events.length === 0) {
-      <div class="empty-state mt-3">
-        <p>Er zijn momenteel geen evenementen beschikbaar.</p>
-      </div>
-    }
-
-    <div class="grid grid-3 mt-2">
-      @for (event of events; track event.id; let i = $index) {
-        <div class="event-card hover-lift" [routerLink]="'/event/' + event.id" data-aos="fade-up" [attr.data-aos-delay]="i * 100">
-          <div class="event-card-image" [style.background-image]="event.imageUrl ? 'url(' + event.imageUrl + ')' : 'none'" [style.background-color]="customer.primaryColor || 'var(--ts-navy-950)'">
-            @if (!event.imageUrl) {
-              <div class="event-card-placeholder">
-                <i class="pi pi-calendar"></i>
-              </div>
-            }
-            @if (event.availableTickets === 0) {
-              <div class="sold-out-ribbon"><span>Uitverkocht</span></div>
-            }
-            <div class="event-card-price" [style.background]="customer.primaryColor || 'var(--ts-gold-gradient)'"
-                 [style.color]="'#ffffff'">
-              &euro; {{ event.ticketPrice | number:'1.2-2' }}
-            </div>
-          </div>
-          <div class="event-card-body">
-            <h3 class="event-card-title">{{ event.name }}</h3>
-            @if (event.description) {
-              <p class="event-card-description">{{ event.description }}</p>
-            }
-            <div class="event-card-meta">
-              <div class="meta-row">
-                <i class="pi pi-map-marker" [style.color]="customer.primaryColor"></i>
-                <span>{{ event.location }}</span>
-              </div>
-              <div class="meta-row">
-                <i class="pi pi-clock" [style.color]="customer.primaryColor"></i>
-                <span>{{ formatDate(event.eventDate) }}</span>
-              </div>
-              <div class="meta-row">
-                <i class="pi pi-ticket" [style.color]="customer.primaryColor"></i>
-                <span>{{ event.availableTickets }} beschikbaar</span>
-              </div>
-            </div>
-            <div class="event-card-footer">
-              <p-tag [value]="getStatusLabel(event)" [severity]="getStatusSeverity(event)" />
-            </div>
+  <div class="landing-loading">
+    <div class="skeleton skeleton-hero-landing"></div>
+    <div class="skeleton-events-grid mt-3">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton-card-landing">
+          <div class="skeleton skeleton-img-landing"></div>
+          <div class="skeleton-body-landing">
+            <div class="skeleton skeleton-title-landing"></div>
+            <div class="skeleton skeleton-text-landing"></div>
           </div>
         </div>
       }
     </div>
   </div>
+}
 
-  <!-- Footer -->
-  <div class="landing-footer">
-    <p>&copy; {{ currentYear }} {{ customer.companyName }}</p>
+@if (!loading && !customer) {
+  <div class="not-found-page">
+    <div class="not-found-content" data-aos="fade-up">
+      <div class="not-found-icon">
+        <i class="pi pi-building"></i>
+      </div>
+      <h2>Pagina niet gevonden</h2>
+      <p>Deze organisatie bestaat niet of is niet actief.</p>
+      <a routerLink="/" class="back-link">
+        <i class="pi pi-arrow-left"></i>
+        <span>Terug naar evenementen</span>
+      </a>
+    </div>
+  </div>
+}
+
+@if (customer) {
+  <div class="landing-page" [class.has-hero-image]="!!customer.logoUrl">
+    <!-- Immersive Hero -->
+    <div class="landing-hero"
+         [style.background]="'linear-gradient(135deg, ' + (customer.primaryColor || '#0f172a') + ' 0%, ' + (customer.secondaryColor || customer.primaryColor || '#1e293b') + ' 100%)'">
+      <div class="hero-overlay"></div>
+      <div class="hero-pattern"></div>
+      <div class="hero-floating-shapes">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+      </div>
+      <div class="hero-particles-landing">
+        <div class="particle-landing" style="left:10%;top:20%;animation-delay:0s;"></div>
+        <div class="particle-landing" style="left:30%;top:65%;animation-delay:1.5s;"></div>
+        <div class="particle-landing" style="left:50%;top:25%;animation-delay:3s;"></div>
+        <div class="particle-landing" style="left:70%;top:70%;animation-delay:0.8s;"></div>
+        <div class="particle-landing" style="left:85%;top:35%;animation-delay:2.2s;"></div>
+        <div class="particle-landing" style="left:15%;top:80%;animation-delay:4s;"></div>
+      </div>
+      <div class="hero-content" data-aos="fade-up">
+        @if (customer.logoUrl) {
+          <img [src]="customer.logoUrl" [alt]="customer.companyName" class="hero-logo" data-aos="zoom-in" data-aos-delay="100" />
+        } @else {
+          <div class="hero-icon-placeholder" data-aos="zoom-in" data-aos-delay="100">
+            <i class="pi pi-building"></i>
+          </div>
+        }
+        <h1 class="hero-title" data-aos="fade-up" data-aos-delay="200">{{ customer.companyName }}</h1>
+        @if (customer.website) {
+          <a [href]="customer.website" target="_blank" class="hero-website" data-aos="fade-up" data-aos-delay="300">
+            <i class="pi pi-external-link"></i>
+            <span>{{ customer.website }}</span>
+          </a>
+        }
+        @if (events.length > 0) {
+          <a href="#events" class="hero-cta-landing" data-aos="fade-up" data-aos-delay="400"
+             [style.background]="'rgba(255,255,255,0.15)'"
+             [style.border]="'1.5px solid rgba(255,255,255,0.3)'">
+            <span>Bekijk evenementen</span>
+            <i class="pi pi-arrow-down"></i>
+          </a>
+        }
+      </div>
+      <div class="scroll-indicator-landing">
+        <i class="pi pi-chevron-down"></i>
+      </div>
+    </div>
+
+    <!-- Events Section -->
+    <section class="landing-events-section" id="events">
+      <div class="section-header-landing" data-aos="fade-up">
+        <h2>Evenementen</h2>
+        <div class="section-line" [style.background]="'linear-gradient(90deg, transparent, ' + (customer.primaryColor || 'var(--ts-gold)') + ', transparent)'"></div>
+        @if (events.length > 0) {
+          <p class="section-subtitle-landing">{{ events.length }} evenement{{ events.length > 1 ? 'en' : '' }} beschikbaar</p>
+        }
+      </div>
+
+      @if (events.length === 0) {
+        <div class="empty-landing" data-aos="fade-up">
+          <div class="empty-icon-landing" [style.background]="(customer.primaryColor || 'var(--ts-gold)') + '15'">
+            <i class="pi pi-calendar" [style.color]="customer.primaryColor || 'var(--ts-gold)'"></i>
+          </div>
+          <h3>Geen evenementen beschikbaar</h3>
+          <p>Er zijn momenteel geen evenementen. Kom later terug!</p>
+        </div>
+      }
+
+      <div class="events-grid-landing">
+        @for (event of events; track event.id; let i = $index) {
+          <div class="event-card-landing card-premium" [routerLink]="'/event/' + event.id" data-aos="fade-up" [attr.data-aos-delay]="i * 80">
+            <div class="card-image-landing"
+                 [style.background-image]="event.imageUrl ? 'url(' + event.imageUrl + ')' : 'none'"
+                 [style.background-color]="customer.primaryColor || 'var(--ts-navy-950)'">
+              @if (!event.imageUrl) {
+                <div class="card-image-placeholder">
+                  <i class="pi pi-calendar"></i>
+                </div>
+              }
+              @if (event.availableTickets === 0) {
+                <div class="sold-out-badge">Uitverkocht</div>
+              }
+              <div class="card-price-badge"
+                   [style.background]="customer.primaryColor || 'var(--ts-gold)'"
+                   [style.color]="'#ffffff'">
+                &euro; {{ event.ticketPrice | number:'1.2-2' }}
+              </div>
+              <div class="card-image-overlay"></div>
+            </div>
+            <div class="card-content-landing">
+              <h3 class="card-title-landing">{{ event.name }}</h3>
+              @if (event.description) {
+                <p class="card-description-landing">{{ event.description }}</p>
+              }
+              <div class="card-meta-landing">
+                <div class="meta-item-landing">
+                  <i class="pi pi-map-marker" [style.color]="customer.primaryColor || 'var(--ts-gold-dark)'"></i>
+                  <span>{{ event.location }}</span>
+                </div>
+                <div class="meta-item-landing">
+                  <i class="pi pi-clock" [style.color]="customer.primaryColor || 'var(--ts-gold-dark)'"></i>
+                  <span>{{ formatDate(event.eventDate) }}</span>
+                </div>
+              </div>
+              <div class="card-footer-landing">
+                <div class="tickets-left">
+                  <span class="tickets-count" [style.color]="customer.primaryColor || 'var(--ts-gold-dark)'">{{ event.availableTickets }}</span>
+                  <span class="tickets-label">beschikbaar</span>
+                </div>
+                <div class="card-cta"
+                     [style.background]="customer.primaryColor || 'var(--ts-gold)'"
+                     [style.color]="'#ffffff'">
+                  <span>Tickets</span>
+                  <i class="pi pi-arrow-right"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="landing-footer-section">
+      <div class="landing-footer-line" [style.background]="'linear-gradient(90deg, transparent, ' + (customer.primaryColor || 'var(--ts-gold)') + ', transparent)'"></div>
+      <div class="landing-footer-content">
+        @if (customer.logoUrl) {
+          <img [src]="customer.logoUrl" class="footer-logo-landing" />
+        }
+        <p>&copy; {{ currentYear }} {{ customer.companyName }}</p>
+        <p class="powered-by">Powered by <a routerLink="/">TicketService</a></p>
+      </div>
+    </div>
   </div>
 }

@@ -50,4 +50,12 @@ export class HomeComponent implements OnInit {
     if ((event.availableTickets ?? 0) < event.maxTickets * 0.1) return 'warn';
     return 'success';
   }
+
+  getTotalTickets(): number {
+    return this.events.reduce((sum, e) => sum + (e.availableTickets ?? 0), 0);
+  }
+
+  getUniqueLocations(): number {
+    return new Set(this.events.map(e => e.location)).size;
+  }
 }

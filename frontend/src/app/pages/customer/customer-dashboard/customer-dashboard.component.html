@@ -4,6 +4,7 @@
     <p class="subtitle">{{ customerAuth.companyName }}</p>
   </div>
   <div class="flex gap-1">
+    <p-button label="Branding" icon="pi pi-palette" [outlined]="true" (onClick)="openBranding()" />
     <p-button label="Nieuw Evenement" icon="pi pi-plus" (onClick)="openNew()" />
     <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="customerAuth.logout()" />
   </div>
@@ -179,10 +180,25 @@
       <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
     </div>
     <div class="form-field span-2">
-      <p-floatlabel>
-        <input pInputText id="imageUrl" [(ngModel)]="eventForm.imageUrl" class="w-full" />
-        <label for="imageUrl">Afbeelding URL</label>
-      </p-floatlabel>
+      <label>Afbeelding</label>
+      <div class="image-upload-area" [class.dragging]="false">
+        @if (eventForm.imageUrl) {
+          <img [src]="eventForm.imageUrl" class="upload-preview" />
+          <div class="upload-change">Klik om te wijzigen</div>
+        } @else {
+          <div class="upload-icon">
+            <i class="pi pi-image"></i>
+          </div>
+          <div class="upload-text">
+            <strong>Klik om afbeelding te uploaden</strong>
+          </div>
+          <div class="upload-hint">JPEG, PNG, GIF of WebP - max 5MB</div>
+        }
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="uploadImage($event)" />
+        @if (uploadingImage) {
+          <p-progressBar mode="indeterminate" [style]="{'height': '4px', 'margin-top': '0.5rem'}" />
+        }
+      </div>
     </div>
     @if (eventForm.physicalTickets && eventForm.physicalTickets > 0) {
       <div class="form-field span-2">
@@ -267,6 +283,108 @@
       </div>
     </div>
   }
+</p-dialog>
+
+<!-- Branding Dialog -->
+<p-dialog
+  [(visible)]="brandingDialogVisible"
+  header="Pagina Branding"
+  [modal]="true"
+  [style]="{'width': '700px'}"
+  [closable]="true">
+
+  @if (brandingError) {
+    <p-message severity="error" [text]="brandingError" [style]="{'width': '100%'}" class="mb-2" />
+  }
+  @if (brandingSuccess) {
+    <p-message severity="success" [text]="brandingSuccess" [style]="{'width': '100%'}" class="mb-2" />
+  }
+
+  <div class="branding-layout">
+    <div class="branding-form-section">
+      <h3 style="margin: 0 0 1.25rem;">Personalisatie</h3>
+
+      <div class="form-field mb-2">
+        <label>Logo</label>
+        <div class="image-upload-area" style="padding: 1.25rem;">
+          @if (brandingForm.logoUrl) {
+            <img [src]="brandingForm.logoUrl" class="upload-preview" style="max-height: 80px; width: auto;" />
+            <div class="upload-change">Wijzig logo</div>
+          } @else {
+            <div class="upload-icon">
+              <i class="pi pi-image"></i>
+            </div>
+            <div class="upload-text"><strong>Upload logo</strong></div>
+            <div class="upload-hint">Transparante PNG aanbevolen</div>
+          }
+          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="uploadLogo($event)" />
+        </div>
+      </div>
+
+      <div class="form-field mb-2">
+        <label>Primaire kleur</label>
+        <div class="color-picker-row">
+          <input type="color" [(ngModel)]="brandingForm.primaryColor" class="color-input" />
+          <input pInputText [(ngModel)]="brandingForm.primaryColor" class="color-hex-input" maxlength="7" />
+        </div>
+        <div class="color-swatch-group mt-1">
+          @for (color of colorPresets; track color) {
+            <div class="color-swatch" [style.background]="color"
+                 [class.active]="brandingForm.primaryColor === color"
+                 (click)="selectColor(color, 'primary')"></div>
+          }
+        </div>
+      </div>
+
+      <div class="form-field mb-2">
+        <label>Secundaire kleur</label>
+        <div class="color-picker-row">
+          <input type="color" [(ngModel)]="brandingForm.secondaryColor" class="color-input" />
+          <input pInputText [(ngModel)]="brandingForm.secondaryColor" class="color-hex-input" maxlength="7" />
+        </div>
+        <div class="color-swatch-group mt-1">
+          @for (color of colorPresets; track color) {
+            <div class="color-swatch" [style.background]="color"
+                 [class.active]="brandingForm.secondaryColor === color"
+                 (click)="selectColor(color, 'secondary')"></div>
+          }
+        </div>
+      </div>
+
+      <div class="form-field mb-2">
+        <p-floatlabel>
+          <input pInputText id="brandWebsite" [(ngModel)]="brandingForm.website" class="w-full" />
+          <label for="brandWebsite">Website</label>
+        </p-floatlabel>
+      </div>
+    </div>
+
+    <div class="branding-preview-section">
+      <h3 style="margin: 0 0 1.25rem;">Voorbeeld</h3>
+      <div class="branding-preview">
+        <div class="preview-header" [style.background]="'linear-gradient(135deg, ' + brandingForm.primaryColor + ' 0%, ' + brandingForm.secondaryColor + ' 100%)'">
+          @if (brandingForm.logoUrl) {
+            <img [src]="brandingForm.logoUrl" class="preview-logo" />
+          }
+          <h4>{{ customerAuth.companyName }}</h4>
+        </div>
+        <div class="preview-body">
+          <div class="preview-event-card">
+            <div class="preview-img" [style.background]="brandingForm.primaryColor"></div>
+            <div class="preview-text">
+              <div class="preview-title">Voorbeeld Evenement</div>
+              <div class="preview-date">Za 15 maart 2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Annuleren" icon="pi pi-times" (onClick)="brandingDialogVisible = false" [text]="true" />
+    <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveBranding()" [loading]="savingBranding" />
+  </ng-template>
 </p-dialog>
 
 <p-confirmDialog />

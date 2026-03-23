@@ -189,3 +189,53 @@
   .span-2 { grid-column: span 1; }
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+// --- Branding Dialog ---
+.branding-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 2rem;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.branding-form-section h3,
+.branding-preview-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ts-navy-950);
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-input {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  &::-webkit-color-swatch-wrapper { padding: 0; }
+  &::-webkit-color-swatch { border: 2px solid rgba(15,23,42,0.1); border-radius: 0.5rem; }
+}
+
+.color-hex-input {
+  width: 100px;
+  font-family: 'Inter', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+// --- Image upload in dialog ---
+.image-upload-area {
+  .p-progressbar {
+    border-radius: 0.25rem;
+  }
+}
