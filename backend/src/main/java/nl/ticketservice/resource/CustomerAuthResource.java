@@ -1,8 +1,10 @@
 package nl.ticketservice.resource;
 
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import nl.ticketservice.entity.Customer;
 import nl.ticketservice.service.CustomerAuthService;
 import nl.ticketservice.service.EmailService;
@@ -110,5 +112,33 @@ public class CustomerAuthResource {
         String password = body.get("password");
         customerAuthService.resetPassword(token, password);
         return Map.of("message", "Wachtwoord is succesvol gewijzigd. Je kunt nu inloggen.");
+    }
+
+    @PUT
+    @Path("/branding")
+    @Transactional
+    public Response updateBranding(Map<String, String> body, @HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+
+        if (body.containsKey("logoUrl")) {
+            customer.logoUrl = body.get("logoUrl");
+        }
+        if (body.containsKey("primaryColor")) {
+            String color = body.get("primaryColor");
+            if (color != null && color.matches("^#[0-9a-fA-F]{6}$")) {
+                customer.primaryColor = color;
+            }
+        }
+        if (body.containsKey("secondaryColor")) {
+            String color = body.get("secondaryColor");
+            if (color != null && color.matches("^#[0-9a-fA-F]{6}$")) {
+                customer.secondaryColor = color;
+            }
+        }
+        if (body.containsKey("website")) {
+            customer.website = body.get("website");
+        }
+
+        return Response.ok(Map.of("success", true)).build();
     }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../../services/api.service';
 import { CustomerAuthService } from '../../../services/customer-auth.service';
 import { Event, TicketSales } from '../../../models/models';
@@ -18,13 +19,14 @@ import { Message } from 'primeng/message';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ProgressBar } from 'primeng/progressbar';
 import { ConfirmationService } from 'primeng/api';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-customer-dashboard',
   imports: [
     CommonModule, FormsModule, TableModule, Button, Dialog,
     InputText, InputNumber, Textarea, FloatLabel, Select, DatePicker,
-    Tag, Message, ConfirmDialog, ProgressBar
+    Tag, Message, ConfirmDialog, ProgressBar, Tooltip
   ],
   providers: [ConfirmationService],
   templateUrl: './customer-dashboard.component.html',
@@ -50,10 +52,30 @@ export class CustomerDashboardComponent implements OnInit {
 
   eventForm: Event = this.emptyForm();
 
+  uploadingImage = false;
+  brandingDialogVisible = false;
+  brandingForm: any = {
+    logoUrl: '',
+    primaryColor: '#0f172a',
+    secondaryColor: '#1e293b',
+    website: ''
+  };
+  savingBranding = false;
+  brandingError = '';
+  brandingSuccess = '';
+
+  colorPresets = [
+    '#0f172a', '#1e3a5f', '#1a365d', '#1e40af',
+    '#7c3aed', '#be123c', '#9f1239', '#dc2626',
+    '#ea580c', '#d97706', '#d4a853', '#16a34a',
+    '#059669', '#0d9488', '#0891b2', '#6366f1'
+  ];
+
   constructor(
     private api: ApiService,
     public customerAuth: CustomerAuthService,
-    private confirmService: ConfirmationService
+    private confirmService: ConfirmationService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -250,5 +272,97 @@ export class CustomerDashboardComponent implements OnInit {
       CANCELLED: 'danger', COMPLETED: 'info'
     };
     return map[status] ?? 'info';
+  }
+
+  uploadImage(event: any) {
+    const file = event.target?.files?.[0] || event;
+    if (!file) return;
+
+    this.uploadingImage = true;
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('customer_token');
+    const headers: any = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    this.http.post<{url: string}>('/api/images/upload', formData, { headers }).subscribe({
+      next: (res) => {
+        this.eventForm.imageUrl = res.url;
+        this.uploadingImage = false;
+      },
+      error: (err) => {
+        this.dialogError = err.error?.error || 'Fout bij uploaden afbeelding';
+        this.uploadingImage = false;
+      }
+    });
+  }
+
+  openBranding() {
+    this.brandingDialogVisible = true;
+    this.brandingError = '';
+    this.brandingSuccess = '';
+    // Load current branding from localStorage or API
+    const customerId = localStorage.getItem('customer_id');
+    if (customerId) {
+      this.http.get<any>('/api/customers/slug/' + (localStorage.getItem('customer_slug') || '')).subscribe({
+        next: (customer) => {
+          this.brandingForm = {
+            logoUrl: customer.logoUrl || '',
+            primaryColor: customer.primaryColor || '#0f172a',
+            secondaryColor: customer.secondaryColor || '#1e293b',
+            website: customer.website || ''
+          };
+        },
+        error: () => {} // Ignore, use defaults
+      });
+    }
+  }
+
+  uploadLogo(event: any) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('customer_token');
+    const headers: any = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    this.http.post<{url: string}>('/api/images/upload', formData, { headers }).subscribe({
+      next: (res) => {
+        this.brandingForm.logoUrl = res.url;
+      },
+      error: (err) => {
+        this.brandingError = err.error?.error || 'Fout bij uploaden logo';
+      }
+    });
+  }
+
+  saveBranding() {
+    this.savingBranding = true;
+    this.brandingError = '';
+
+    const token = localStorage.getItem('customer_token');
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    this.http.put<any>('/api/customer/auth/branding', this.brandingForm, { headers }).subscribe({
+      next: () => {
+        this.brandingSuccess = 'Branding opgeslagen!';
+        this.savingBranding = false;
+        setTimeout(() => this.brandingSuccess = '', 3000);
+      },
+      error: (err) => {
+        this.brandingError = err.error?.error || 'Fout bij opslaan branding';
+        this.savingBranding = false;
+      }
+    });
+  }
+
+  selectColor(color: string, target: 'primary' | 'secondary') {
+    if (target === 'primary') this.brandingForm.primaryColor = color;
+    else this.brandingForm.secondaryColor = color;
   }
 }

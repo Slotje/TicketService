@@ -18,6 +18,7 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@primeng/themes": "^21.0.4",
+    "aos": "^2.3.4",
     "html5-qrcode": "^2.3.8",
     "primeicons": "^7.0.0",
     "primeng": "^19.1.4",

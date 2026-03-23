@@ -1,5 +1,10 @@
+// ============================================================
+// Event Management — Immersive Layout
+// ============================================================
+
 h1 { color: var(--ts-navy-950); margin: 0; }
 
+// --- Form Grid (Dialog) ---
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -16,6 +21,27 @@ h1 { color: var(--ts-navy-950); margin: 0; }
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--ts-navy-600);
+}
+
+// --- Table wrapper enhancements ---
+:host ::ng-deep .p-datatable {
+  border-radius: var(--ts-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ts-card-shadow);
+  transition: box-shadow var(--ts-transition);
+
+  &:hover {
+    box-shadow: var(--ts-card-shadow-hover);
+  }
+}
+
+// --- Action buttons hover polish ---
+:host ::ng-deep .p-button-rounded {
+  transition: all var(--ts-transition);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
 @media (max-width: 600px) {

@@ -1,13 +1,14 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { Drawer } from 'primeng/drawer';
 import { AdminAuthService } from './services/admin-auth.service';
 import { AuthService } from './services/auth.service';
 import { UserAuthService } from './services/user-auth.service';
 import { CustomerAuthService } from './services/customer-auth.service';
-import { Subscription } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
+import * as AOS from 'aos';
 
 @Component({
   selector: 'app-root',
@@ -19,22 +20,53 @@ export class AppComponent implements OnInit, OnDestroy {
   menuItems: MenuItem[] = [];
   mobileMenuVisible = false;
   adminMenuVisible = false;
+  navbarScrolled = false;
   private subs: Subscription[] = [];
+  private isBrowser: boolean;
 
   constructor(
     public adminAuth: AdminAuthService,
     private scannerAuth: AuthService,
     public userAuth: UserAuthService,
     public customerAuth: CustomerAuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    this.navbarScrolled = window.scrollY > 60;
+  }
 
   ngOnInit() {
+    if (this.isBrowser) {
+      AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 60,
+        delay: 0
+      });
+    }
+
     this.subs.push(
       this.adminAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
       this.scannerAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
       this.userAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
       this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu())
+    );
+
+    // Refresh AOS on route change
+    this.subs.push(
+      this.router.events.pipe(
+        filter(e => e instanceof NavigationEnd)
+      ).subscribe(() => {
+        if (this.isBrowser) {
+          setTimeout(() => AOS.refresh(), 100);
+        }
+      })
     );
   }
 

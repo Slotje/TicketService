@@ -1,35 +1,52 @@
-<div class="login-container">
-  <div class="auth-card">
-    <div class="auth-card-header">
-      <div class="auth-icon">
+<div class="auth-page">
+  <div class="auth-decoration">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="decoration-content">
+      <div class="decoration-icon">
         <i class="pi pi-building"></i>
       </div>
       <h2>Klantportaal</h2>
-      <p>Log in om je evenementen te beheren</p>
+      <p>Beheer je evenementen, bekijk verkoopcijfers en genereer tickets voor je klanten.</p>
     </div>
+  </div>
 
-    <div class="auth-card-body">
-      @if (errorMessage) {
-        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
-      }
+  <div class="auth-form-side">
+    <div class="auth-card" data-aos="fade-up">
+      <div class="auth-card-header">
+        <div class="auth-icon">
+          <i class="pi pi-building"></i>
+        </div>
+        <h2>Klantportaal</h2>
+        <p>Log in om je evenementen te beheren</p>
+      </div>
 
-      <div class="form-stack">
-        <p-floatlabel>
-          <input pInputText id="email" [(ngModel)]="email" class="w-full" (keyup.enter)="login()" />
-          <label for="email">E-mailadres</label>
-        </p-floatlabel>
+      <div class="auth-card-body">
+        @if (errorMessage) {
+          <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+        }
 
-        <p-floatlabel>
-          <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="false"
-                      styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="login()" />
-          <label for="password">Wachtwoord</label>
-        </p-floatlabel>
+        <div class="form-stack">
+          <p-floatlabel>
+            <input pInputText id="email" [(ngModel)]="email" class="w-full" (keyup.enter)="login()" />
+            <label for="email">E-mailadres</label>
+          </p-floatlabel>
 
-        <p-button label="Inloggen" icon="pi pi-sign-in" (onClick)="login()"
-                  [loading]="loading" styleClass="w-full" />
+          <p-floatlabel>
+            <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="false"
+                        styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="login()" />
+            <label for="password">Wachtwoord</label>
+          </p-floatlabel>
 
-        <div class="forgot-link">
-          <a routerLink="/klant/forgot-password" class="link">Wachtwoord vergeten?</a>
+          <p-button label="Inloggen" icon="pi pi-sign-in" (onClick)="login()"
+                    [loading]="loading" styleClass="w-full" />
+
+          <div class="forgot-link">
+            <a routerLink="/klant/forgot-password" class="link">Wachtwoord vergeten?</a>
+          </div>
         </div>
       </div>
     </div>

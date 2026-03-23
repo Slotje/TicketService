@@ -9,18 +9,33 @@
 }
 
 @if (event) {
-  <!-- Hero Banner -->
-  <div class="event-hero" [style.background-image]="event.imageUrl ? 'linear-gradient(to bottom, rgba(15,23,42,0.3), rgba(15,23,42,0.85)), url(' + event.imageUrl + ')' : 'none'">
-    <div class="hero-content">
+  <!-- Cinematic Hero Banner -->
+  <div class="event-hero section-wave" [style.background-image]="event.imageUrl ? 'url(' + event.imageUrl + ')' : 'none'">
+    <div class="hero-overlay"></div>
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+    </div>
+    <div class="hero-content" data-aos="fade-up">
       <p-tag value="Evenement" severity="warn" styleClass="hero-tag" />
       <h1 class="hero-title">{{ event.name }}</h1>
       <p class="hero-organizer">Georganiseerd door <strong>{{ event.customerName }}</strong></p>
+      <div class="hero-meta">
+        <span class="hero-meta-item">
+          <i class="pi pi-calendar"></i>
+          {{ formatDate(event.eventDate) }}
+        </span>
+        <span class="hero-meta-item">
+          <i class="pi pi-map-marker"></i>
+          {{ event.location }}
+        </span>
+      </div>
     </div>
   </div>
 
   <div class="event-detail-layout">
     <!-- Event Info -->
-    <div class="event-info-section">
+    <div class="event-info-section" data-aos="fade-right">
       <div class="info-card">
         @if (event.description) {
           <p class="event-description">{{ event.description }}</p>
@@ -29,7 +44,7 @@
 
         <div class="event-meta">
           <div class="meta-item">
-            <div class="icon-circle-gold">
+            <div class="meta-icon-lg">
               <i class="pi pi-calendar"></i>
             </div>
             <div class="meta-text">
@@ -41,7 +56,7 @@
             </div>
           </div>
           <div class="meta-item">
-            <div class="icon-circle-gold">
+            <div class="meta-icon-lg">
               <i class="pi pi-map-marker"></i>
             </div>
             <div class="meta-text">
@@ -53,7 +68,7 @@
             </div>
           </div>
           <div class="meta-item">
-            <div class="icon-circle-gold">
+            <div class="meta-icon-lg">
               <i class="pi pi-euro"></i>
             </div>
             <div class="meta-text">
@@ -62,13 +77,15 @@
             </div>
           </div>
           <div class="meta-item">
-            <div class="icon-circle-gold">
+            <div class="meta-icon-lg">
               <i class="pi pi-ticket"></i>
             </div>
             <div class="meta-text">
               <strong>Beschikbaarheid</strong>
               <p>{{ event.availableTickets }} van {{ event.maxTickets }} tickets beschikbaar</p>
-              <p class="text-muted">Max {{ event.maxTicketsPerOrder }} per bestelling</p>
+              <div class="availability-bar-wide">
+                <div class="availability-fill-wide" [style.width.%]="(event.availableTickets ?? 0) / event.maxTickets * 100"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -76,7 +93,7 @@
     </div>
 
     <!-- Order Form -->
-    <div class="order-section">
+    <div class="order-section" data-aos="fade-left">
       <div class="order-card">
         <div class="order-card-header">
           <i class="pi pi-shopping-cart"></i>
