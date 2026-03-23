@@ -21,7 +21,12 @@
   <!-- Hero with customer branding -->
   <div class="hero" [style.background]="'linear-gradient(135deg, ' + (customer.primaryColor || '#0f172a') + ' 0%, ' + (customer.secondaryColor || customer.primaryColor || '#1e293b') + ' 100%)'">
     <div class="hero-overlay"></div>
-    <div class="hero-content">
+    <div class="hero-floating-shapes">
+      <div class="floating-shape shape-1"></div>
+      <div class="floating-shape shape-2"></div>
+      <div class="floating-shape shape-3"></div>
+    </div>
+    <div class="hero-content" data-aos="fade-up">
       @if (customer.logoUrl) {
         <img [src]="customer.logoUrl" [alt]="customer.companyName" class="hero-logo" />
       }
@@ -46,8 +51,8 @@
     }
 
     <div class="grid grid-3 mt-2">
-      @for (event of events; track event.id) {
-        <div class="event-card hover-lift" [routerLink]="'/event/' + event.id">
+      @for (event of events; track event.id; let i = $index) {
+        <div class="event-card hover-lift" [routerLink]="'/event/' + event.id" data-aos="fade-up" [attr.data-aos-delay]="i * 100">
           <div class="event-card-image" [style.background-image]="event.imageUrl ? 'url(' + event.imageUrl + ')' : 'none'" [style.background-color]="customer.primaryColor || 'var(--ts-navy-950)'">
             @if (!event.imageUrl) {
               <div class="event-card-placeholder">

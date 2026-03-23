@@ -1,7 +1,33 @@
+// ============================================================
+// Scanner Management — Immersive Layout
+// ============================================================
+
 h1 { color: var(--ts-navy-950); margin: 0; }
 
+// --- Form Column (Dialog) ---
 .form-column {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+// --- Table wrapper enhancements ---
+:host ::ng-deep .p-datatable {
+  border-radius: var(--ts-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ts-card-shadow);
+  transition: box-shadow var(--ts-transition);
+
+  &:hover {
+    box-shadow: var(--ts-card-shadow-hover);
+  }
+}
+
+// --- Action buttons hover polish ---
+:host ::ng-deep .p-button-rounded {
+  transition: all var(--ts-transition);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 }

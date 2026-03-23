@@ -1,6 +1,6 @@
 <div class="layout-wrapper">
   <!-- Premium Navbar -->
-  <header class="premium-navbar glass-effect">
+  <header class="premium-navbar" [class.navbar-scrolled]="navbarScrolled" [class.glass-effect]="navbarScrolled">
     <div class="navbar-inner">
       <a routerLink="/" class="app-logo">
         <div class="logo-icon">
@@ -87,10 +87,8 @@
     </div>
   </header>
 
-  <div class="nav-separator"></div>
-
   <!-- Mobile Drawer -->
-  <p-drawer [(visible)]="mobileMenuVisible" [modal]="true" position="right" [style]="{'width': '280px'}" styleClass="mobile-drawer">
+  <p-drawer [(visible)]="mobileMenuVisible" [modal]="true" position="right" [style]="{'width': '300px'}" styleClass="mobile-drawer">
     <ng-template #header>
       <div class="drawer-header">
         <div class="logo-icon">
@@ -170,14 +168,38 @@
 
   <!-- Premium Footer -->
   <footer class="layout-footer">
+    <div class="footer-gradient-line"></div>
     <div class="footer-inner">
-      <div class="footer-brand">
-        <div class="logo-icon logo-icon-light">
-          <i class="pi pi-ticket"></i>
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="logo-icon logo-icon-light">
+            <i class="pi pi-ticket"></i>
+          </div>
+          <div class="footer-brand-text">
+            <span class="footer-name">TicketService</span>
+            <span class="footer-tagline">Het platform voor evenementen</span>
+          </div>
         </div>
-        <span class="footer-name">TicketService</span>
+
+        <div class="footer-links">
+          <a routerLink="/" class="footer-link">
+            <i class="pi pi-calendar"></i>
+            <span>Evenementen</span>
+          </a>
+          <a routerLink="/login" class="footer-link">
+            <i class="pi pi-user"></i>
+            <span>Inloggen</span>
+          </a>
+          <a routerLink="/klant/login" class="footer-link">
+            <i class="pi pi-building"></i>
+            <span>Klantportaal</span>
+          </a>
+        </div>
       </div>
-      <span class="footer-copy">&copy; 2026 &mdash; Alle rechten voorbehouden</span>
+
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; 2026 TicketService &mdash; Alle rechten voorbehouden</span>
+      </div>
     </div>
   </footer>
 </div>

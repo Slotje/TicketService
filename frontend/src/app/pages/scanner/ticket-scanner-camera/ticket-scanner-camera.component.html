@@ -20,7 +20,7 @@
   </div>
 
   <!-- Event Selection -->
-  <div class="event-select-card mb-2">
+  <div class="event-select-card mb-2" data-aos="fade-up">
     <div class="card-label">
       <i class="pi pi-calendar"></i>
       <span>Selecteer Evenement</span>
@@ -52,7 +52,7 @@
 
   @if (selectedEventId) {
     <!-- Camera Section -->
-    <div class="camera-card">
+    <div class="camera-card" data-aos="fade-up" data-aos-delay="100">
       <div id="qr-reader" #qrReader></div>
 
       @if (!cameraActive) {
@@ -107,7 +107,7 @@
   }
 
   <!-- Scan History -->
-  <div class="scan-history mt-2">
+  <div class="scan-history mt-2" data-aos="fade-up" data-aos-delay="200">
     <h3>Scan Geschiedenis</h3>
     @if (scanHistory.length === 0) {
       <p class="empty-history">Nog geen tickets gescand in deze sessie.</p>

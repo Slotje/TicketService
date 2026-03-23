@@ -1,86 +1,99 @@
-<div class="login-page">
-  <div class="auth-card">
-    <div class="auth-card-header">
-      <div class="auth-icon">
-        <i class="pi pi-user"></i>
-      </div>
-      <h2>{{ isRegister ? 'Account Aanmaken' : 'Inloggen' }}</h2>
-      <p>{{ isRegister ? 'Maak een account aan om je tickets te beheren.' : 'Log in om je tickets te bekijken.' }}</p>
+<div class="auth-page">
+  <div class="auth-decoration">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
     </div>
+    <div class="decoration-content">
+      <div class="decoration-icon">
+        <i class="pi pi-ticket"></i>
+      </div>
+      <h2>TicketService</h2>
+      <p>Beheer je evenementen, bestel tickets en houd alles bij op één plek.</p>
+    </div>
+  </div>
 
-    <div class="auth-card-body">
-      @if (errorMessage) {
-        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
-      }
+  <div class="auth-form-side">
+    <div class="auth-card" data-aos="fade-up">
+      <div class="auth-card-header">
+        <div class="auth-icon">
+          <i [class]="isRegister ? 'pi pi-user-plus' : 'pi pi-user'"></i>
+        </div>
+        <h2>{{ isRegister ? 'Account Aanmaken' : 'Inloggen' }}</h2>
+        <p>{{ isRegister ? 'Maak een account aan om je tickets te beheren.' : 'Log in om je tickets te bekijken.' }}</p>
+      </div>
 
-      <div class="login-form">
-        @if (isRegister) {
-          <div class="name-row">
-            <div class="form-field">
-              <p-floatlabel>
-                <input pInputText id="firstName" [(ngModel)]="firstName" class="w-full" />
-                <label for="firstName">Voornaam *</label>
-              </p-floatlabel>
-            </div>
-            <div class="form-field">
-              <p-floatlabel>
-                <input pInputText id="lastName" [(ngModel)]="lastName" class="w-full" />
-                <label for="lastName">Achternaam *</label>
-              </p-floatlabel>
-            </div>
-          </div>
+      <div class="auth-card-body">
+        @if (errorMessage) {
+          <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
         }
 
-        <div class="form-field">
-          <p-floatlabel>
-            <input pInputText id="email" [(ngModel)]="email" type="email" class="w-full" />
-            <label for="email">E-mailadres *</label>
-          </p-floatlabel>
-        </div>
+        <div class="login-form">
+          @if (isRegister) {
+            <div class="name-row">
+              <div class="form-group">
+                <p-floatlabel>
+                  <input pInputText id="firstName" [(ngModel)]="firstName" class="w-full" />
+                  <label for="firstName">Voornaam *</label>
+                </p-floatlabel>
+              </div>
+              <div class="form-group">
+                <p-floatlabel>
+                  <input pInputText id="lastName" [(ngModel)]="lastName" class="w-full" />
+                  <label for="lastName">Achternaam *</label>
+                </p-floatlabel>
+              </div>
+            </div>
+          }
 
-        @if (isRegister) {
-          <div class="form-field">
+          <div class="form-group">
             <p-floatlabel>
-              <input pInputText id="phone" [(ngModel)]="phone" class="w-full" />
-              <label for="phone">Telefoonnummer</label>
+              <input pInputText id="email" [(ngModel)]="email" type="email" class="w-full" />
+              <label for="email">E-mailadres *</label>
             </p-floatlabel>
           </div>
-        }
 
-        <div class="form-field">
-          <p-floatlabel>
-            <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="isRegister" styleClass="w-full" inputStyleClass="w-full" />
-            <label for="password">Wachtwoord *</label>
-          </p-floatlabel>
-        </div>
-
-        <p-button
-          [label]="isRegister ? 'Registreren' : 'Inloggen'"
-          [icon]="isRegister ? 'pi pi-user-plus' : 'pi pi-sign-in'"
-          (onClick)="submit()"
-          [loading]="loading"
-          [disabled]="loading"
-          [style]="{'width': '100%'}" />
-
-        @if (!isRegister) {
-          <div class="forgot-link">
-            <a routerLink="/forgot-password" class="link">Wachtwoord vergeten?</a>
-          </div>
-        }
-
-        <div class="auth-divider">
-          <span>of</span>
-        </div>
-
-        <div class="toggle-mode">
           @if (isRegister) {
-            <span>Al een account? </span>
-            <a (click)="toggleMode()" class="link">Inloggen</a>
-          } @else {
-            <span>Nog geen account? </span>
-            <a (click)="toggleMode()" class="link">Registreren</a>
+            <div class="form-group">
+              <p-floatlabel>
+                <input pInputText id="phone" [(ngModel)]="phone" class="w-full" />
+                <label for="phone">Telefoonnummer</label>
+              </p-floatlabel>
+            </div>
+          }
+
+          <div class="form-group">
+            <p-floatlabel>
+              <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="isRegister" styleClass="w-full" inputStyleClass="w-full" />
+              <label for="password">Wachtwoord *</label>
+            </p-floatlabel>
+          </div>
+
+          <p-button
+            [label]="isRegister ? 'Registreren' : 'Inloggen'"
+            [icon]="isRegister ? 'pi pi-user-plus' : 'pi pi-sign-in'"
+            (onClick)="submit()"
+            [loading]="loading"
+            [disabled]="loading"
+            [style]="{'width': '100%'}" />
+
+          @if (!isRegister) {
+            <div class="forgot-link">
+              <a routerLink="/forgot-password" class="link">Wachtwoord vergeten?</a>
+            </div>
           }
         </div>
+      </div>
+
+      <div class="auth-card-footer">
+        @if (isRegister) {
+          <span>Al een account? </span>
+          <a (click)="toggleMode()" class="link">Inloggen</a>
+        } @else {
+          <span>Nog geen account? </span>
+          <a (click)="toggleMode()" class="link">Registreren</a>
+        }
       </div>
     </div>
   </div>

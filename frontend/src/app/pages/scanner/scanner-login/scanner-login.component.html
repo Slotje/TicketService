@@ -1,32 +1,49 @@
-<div class="scanner-login-page">
-  <div class="auth-card">
-    <div class="auth-card-header">
-      <div class="auth-icon">
+<div class="auth-page">
+  <div class="auth-decoration">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="decoration-content">
+      <div class="decoration-icon">
         <i class="pi pi-qrcode"></i>
       </div>
       <h2>Ticket Scanner</h2>
-      <p>Log in met je scanner account</p>
+      <p>Scan QR codes om tickets te valideren bij de ingang van het evenement.</p>
     </div>
+  </div>
 
-    <div class="auth-card-body">
-      @if (errorMessage) {
-        <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
-      }
+  <div class="auth-form-side">
+    <div class="auth-card" data-aos="fade-up">
+      <div class="auth-card-header">
+        <div class="auth-icon">
+          <i class="pi pi-qrcode"></i>
+        </div>
+        <h2>Ticket Scanner</h2>
+        <p>Log in met je scanner account</p>
+      </div>
 
-      <div class="login-form">
-        <div class="form-field">
-          <p-floatlabel>
-            <input pInputText id="username" [(ngModel)]="username" class="w-full" (keyup.enter)="login()" autocomplete="username" />
-            <label for="username">Gebruikersnaam</label>
-          </p-floatlabel>
+      <div class="auth-card-body">
+        @if (errorMessage) {
+          <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+        }
+
+        <div class="login-form">
+          <div class="form-group">
+            <p-floatlabel>
+              <input pInputText id="username" [(ngModel)]="username" class="w-full" (keyup.enter)="login()" autocomplete="username" />
+              <label for="username">Gebruikersnaam</label>
+            </p-floatlabel>
+          </div>
+          <div class="form-group">
+            <p-floatlabel>
+              <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="login()" autocomplete="current-password" />
+              <label for="password">Wachtwoord</label>
+            </p-floatlabel>
+          </div>
+          <p-button label="Inloggen" icon="pi pi-sign-in" (onClick)="login()" [loading]="loading" [style]="{'width': '100%'}" />
         </div>
-        <div class="form-field">
-          <p-floatlabel>
-            <p-password id="password" [(ngModel)]="password" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full" (keyup.enter)="login()" autocomplete="current-password" />
-            <label for="password">Wachtwoord</label>
-          </p-floatlabel>
-        </div>
-        <p-button label="Inloggen" icon="pi pi-sign-in" (onClick)="login()" [loading]="loading" [style]="{'width': '100%'}" />
       </div>
     </div>
   </div>

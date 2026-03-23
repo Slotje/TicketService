@@ -1,56 +1,4 @@
-// ============================================================
-// User Login — Premium Auth Card
-// ============================================================
-
-.login-page {
-  max-width: 450px;
-  margin: 2rem auto;
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.auth-card {
-  background: #ffffff;
-  border-radius: var(--ts-radius-lg);
-  box-shadow: var(--ts-card-shadow);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  overflow: hidden;
-}
-
-.auth-card-header {
-  background: var(--ts-navy-gradient);
-  padding: 2rem 2rem 1.5rem;
-  text-align: center;
-  color: #ffffff;
-
-  h2 {
-    color: #ffffff;
-    margin: 0.75rem 0 0.35rem;
-    font-size: 1.5rem;
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.65);
-    margin: 0;
-    font-size: 0.875rem;
-  }
-}
-
-.auth-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background: rgba(212, 168, 83, 0.15);
-  border: 2px solid rgba(212, 168, 83, 0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ts-gold);
-  font-size: 1.25rem;
-}
-
-.auth-card-body {
-  padding: 1.75rem 2rem 2rem;
-}
+// Uses global .auth-page, .auth-decoration, .auth-form-side, .auth-card styles
 
 .login-form {
   display: flex;
@@ -62,7 +10,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
-
   @media (max-width: 480px) { grid-template-columns: 1fr; }
 }
 
@@ -78,40 +25,5 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
-
-  &:hover {
-    color: var(--ts-gold);
-    text-decoration: underline;
-  }
-}
-
-.auth-divider {
-  position: relative;
-  text-align: center;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgba(15, 23, 42, 0.08);
-  }
-
-  span {
-    position: relative;
-    background: #ffffff;
-    padding: 0 1rem;
-    font-size: 0.8rem;
-    color: var(--ts-navy-600);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-}
-
-.toggle-mode {
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--ts-navy-700);
+  &:hover { color: var(--ts-gold); text-decoration: underline; }
 }

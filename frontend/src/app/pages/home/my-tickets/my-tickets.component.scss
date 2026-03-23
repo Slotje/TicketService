@@ -1,5 +1,5 @@
 // ============================================================
-// My Tickets — Premium Layout
+// My Tickets — Premium Immersive Layout
 // ============================================================
 
 .my-tickets-page {
@@ -14,7 +14,11 @@
   gap: 1rem;
   margin-bottom: 0.5rem;
 
-  h1 { margin: 0; }
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
 
   .header-subtitle {
     margin: 0.15rem 0 0;
@@ -47,18 +51,25 @@
   display: flex;
   align-items: stretch;
   background: #ffffff;
-  border-radius: var(--ts-radius);
+  border-radius: var(--ts-radius-lg);
   box-shadow: var(--ts-card-shadow);
   border: 1px solid rgba(15, 23, 42, 0.06);
   cursor: pointer;
   overflow: hidden;
   transition: all var(--ts-transition);
+
+  &:hover {
+    box-shadow: var(--ts-card-shadow-hover);
+    transform: translateY(-4px);
+    border-color: rgba(212, 168, 83, 0.2);
+  }
 }
 
 .order-accent {
-  width: 4px;
+  width: 5px;
   flex-shrink: 0;
   background: var(--ts-navy-600);
+  transition: width var(--ts-transition);
 
   &.confirmed { background: #16a34a; }
   &.reserved { background: var(--ts-gold); }
@@ -67,7 +78,7 @@
 
 .order-content {
   flex: 1;
-  padding: 1rem 1.25rem;
+  padding: 1.125rem 1.25rem;
   min-width: 0;
 }
 
@@ -82,9 +93,10 @@
 .order-event-name {
   display: block;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--ts-navy-950);
   margin-bottom: 0.15rem;
+  letter-spacing: -0.01em;
 }
 
 .order-number {
@@ -92,6 +104,7 @@
   font-weight: 500;
   font-size: 0.8rem;
   color: var(--ts-navy-600);
+  letter-spacing: 0.01em;
 }
 
 .order-meta {
@@ -105,6 +118,7 @@
     gap: 0.35rem;
     color: var(--ts-navy-600);
     font-size: 0.825rem;
+    font-weight: 500;
 
     i { font-size: 0.8rem; }
   }
@@ -144,8 +158,13 @@
   padding: 0 1rem;
   color: var(--ts-navy-600);
   flex-shrink: 0;
+  transition: color var(--ts-transition);
 
   i { font-size: 0.8rem; }
+
+  .order-card:hover & {
+    color: var(--ts-gold-dark);
+  }
 }
 
 @media (max-width: 600px) {

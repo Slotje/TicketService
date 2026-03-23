@@ -1,6 +1,6 @@
 <div class="my-tickets-page">
   <!-- Page Header -->
-  <div class="page-header">
+  <div class="page-header" data-aos="fade-up">
     <div class="header-icon icon-circle-gold">
       <i class="pi pi-ticket" style="font-size: 1.2rem;"></i>
     </div>
@@ -35,8 +35,8 @@
 
   @if (orders.length > 0) {
     <div class="orders-list mt-2">
-      @for (order of orders; track order.id) {
-        <div class="order-card hover-lift" (click)="openOrder(order.orderNumber)">
+      @for (order of orders; track order.id; let i = $index) {
+        <div class="order-card hover-lift" data-aos="fade-up" [attr.data-aos-delay]="100 + (i * 75)" (click)="openOrder(order.orderNumber)">
           <div class="order-accent" [class.confirmed]="order.status === 'CONFIRMED'"
                [class.reserved]="order.status === 'RESERVED'"
                [class.expired]="order.status === 'CANCELLED' || order.status === 'EXPIRED'"></div>

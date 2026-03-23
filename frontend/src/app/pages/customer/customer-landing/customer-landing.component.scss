@@ -1,25 +1,80 @@
 // ============================================================
-// Customer Landing — Premium Branded Page
+// Customer Landing — Premium Branded Page (Immersive Design)
 // ============================================================
 
 .hero {
   margin: -2rem -1.5rem 0 -1.5rem;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem;
+  min-height: 50vh;
   text-align: center;
   color: white;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-attachment: fixed;
 
   @media (max-width: 768px) {
     margin: -1rem -0.875rem 0 -0.875rem;
-    padding: 2.5rem 1.25rem;
+    padding: 4rem 1.25rem;
+    min-height: 40vh;
+    background-attachment: scroll;
   }
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  backdrop-filter: blur(1px);
+}
+
+.hero-floating-shapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+
+  &.shape-1 {
+    width: 300px;
+    height: 300px;
+    top: -80px;
+    right: -60px;
+    animation: floatShape 8s ease-in-out infinite;
+  }
+
+  &.shape-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -40px;
+    left: -40px;
+    animation: floatShape 10s ease-in-out infinite reverse;
+  }
+
+  &.shape-3 {
+    width: 120px;
+    height: 120px;
+    top: 40%;
+    left: 15%;
+    animation: floatShape 12s ease-in-out infinite 2s;
+  }
+}
+
+@keyframes floatShape {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
 }
 
 .hero-content {
@@ -43,7 +98,7 @@
   font-weight: 800;
   margin: 0;
   color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
   letter-spacing: -0.03em;
 
   @media (max-width: 768px) { font-size: 2rem; }
@@ -88,26 +143,40 @@
 
 // --- Event Cards ---
 .event-card {
-  border-radius: var(--ts-radius);
+  border-radius: 1rem;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: var(--ts-card-shadow);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   text-decoration: none;
   color: inherit;
   border: 1px solid rgba(15, 23, 42, 0.06);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.15);
+
+    .event-card-image {
+      img, &::after {
+        transform: scale(1.08);
+      }
+    }
+  }
 }
 
 .event-card-image {
-  height: 160px;
+  height: 180px;
   background-size: cover;
   background-position: center;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  transition: transform 0.4s ease;
 }
 
 .event-card-placeholder {
@@ -134,9 +203,10 @@
   bottom: 0.75rem;
   left: 0.75rem;
   padding: 0.3rem 0.75rem;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   font-size: 0.85rem;
   font-weight: 700;
+  backdrop-filter: blur(8px);
 }
 
 .event-card-body {
