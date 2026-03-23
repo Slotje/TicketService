@@ -1,0 +1,177 @@
+@if (loading) {
+  <div class="loading-container">
+    <div class="skeleton skeleton-hero"></div>
+    <div class="detail-grid mt-3">
+      <div class="skeleton" style="height: 300px;"></div>
+      <div class="skeleton" style="height: 400px;"></div>
+    </div>
+  </div>
+}
+
+@if (event) {
+  <!-- Hero Banner -->
+  <div class="event-hero" [style.background-image]="event.imageUrl ? 'linear-gradient(to bottom, rgba(15,23,42,0.3), rgba(15,23,42,0.85)), url(' + event.imageUrl + ')' : 'none'">
+    <div class="hero-content">
+      <p-tag value="Evenement" severity="warn" styleClass="hero-tag" />
+      <h1 class="hero-title">{{ event.name }}</h1>
+      <p class="hero-organizer">Georganiseerd door <strong>{{ event.customerName }}</strong></p>
+    </div>
+  </div>
+
+  <div class="event-detail-layout">
+    <!-- Event Info -->
+    <div class="event-info-section">
+      <div class="info-card">
+        @if (event.description) {
+          <p class="event-description">{{ event.description }}</p>
+          <div class="card-divider"></div>
+        }
+
+        <div class="event-meta">
+          <div class="meta-item">
+            <div class="icon-circle-gold">
+              <i class="pi pi-calendar"></i>
+            </div>
+            <div class="meta-text">
+              <strong>Datum</strong>
+              <p>{{ formatDate(event.eventDate) }}</p>
+              @if (event.endDate) {
+                <p class="text-muted">tot {{ formatDate(event.endDate) }}</p>
+              }
+            </div>
+          </div>
+          <div class="meta-item">
+            <div class="icon-circle-gold">
+              <i class="pi pi-map-marker"></i>
+            </div>
+            <div class="meta-text">
+              <strong>Locatie</strong>
+              <p>{{ event.location }}</p>
+              @if (event.address) {
+                <p class="text-muted">{{ event.address }}</p>
+              }
+            </div>
+          </div>
+          <div class="meta-item">
+            <div class="icon-circle-gold">
+              <i class="pi pi-euro"></i>
+            </div>
+            <div class="meta-text">
+              <strong>Prijs</strong>
+              <p>&euro; {{ event.ticketPrice | number:'1.2-2' }} per ticket</p>
+            </div>
+          </div>
+          <div class="meta-item">
+            <div class="icon-circle-gold">
+              <i class="pi pi-ticket"></i>
+            </div>
+            <div class="meta-text">
+              <strong>Beschikbaarheid</strong>
+              <p>{{ event.availableTickets }} van {{ event.maxTickets }} tickets beschikbaar</p>
+              <p class="text-muted">Max {{ event.maxTicketsPerOrder }} per bestelling</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Form -->
+    <div class="order-section">
+      <div class="order-card">
+        <div class="order-card-header">
+          <i class="pi pi-shopping-cart"></i>
+          <span>Tickets Bestellen</span>
+        </div>
+
+        <div class="order-card-body">
+          @if (event.availableTickets === 0) {
+            <p-message severity="warn" text="Dit evenement is uitverkocht" [style]="{'width': '100%'}" />
+          } @else if (orderPlaced) {
+            <p-message severity="success" text="Bestelling geplaatst! Je wordt doorgestuurd..." [style]="{'width': '100%'}" />
+          } @else {
+            @if (errorMessage) {
+              <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+            }
+
+            <div class="order-form">
+              <div class="name-row">
+                <div class="form-field">
+                  <p-floatlabel>
+                    <input pInputText id="buyerFirstName" [(ngModel)]="orderForm.buyerFirstName" class="w-full" />
+                    <label for="buyerFirstName">Voornaam *</label>
+                  </p-floatlabel>
+                  @if (submitted && !orderForm.buyerFirstName) {
+                    <small class="error-text">Voornaam is verplicht</small>
+                  }
+                </div>
+                <div class="form-field">
+                  <p-floatlabel>
+                    <input pInputText id="buyerLastName" [(ngModel)]="orderForm.buyerLastName" class="w-full" />
+                    <label for="buyerLastName">Achternaam *</label>
+                  </p-floatlabel>
+                  @if (submitted && !orderForm.buyerLastName) {
+                    <small class="error-text">Achternaam is verplicht</small>
+                  }
+                </div>
+              </div>
+
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="buyerEmail" [(ngModel)]="orderForm.buyerEmail" type="email" class="w-full" />
+                  <label for="buyerEmail">E-mail *</label>
+                </p-floatlabel>
+                @if (submitted && !isValidEmail(orderForm.buyerEmail)) {
+                  <small class="error-text">Geldig e-mailadres is verplicht</small>
+                }
+              </div>
+
+              <div class="form-field">
+                <p-floatlabel>
+                  <input pInputText id="buyerPhone" [(ngModel)]="orderForm.buyerPhone" class="w-full" />
+                  <label for="buyerPhone">Telefoon</label>
+                </p-floatlabel>
+              </div>
+
+              <div class="form-field">
+                <p-floatlabel>
+                  <p-inputNumber
+                    id="quantity"
+                    [(ngModel)]="orderForm.quantity"
+                    [min]="1"
+                    [max]="maxTickets"
+                    [showButtons]="true"
+                    class="w-full" />
+                  <label for="quantity">Aantal tickets *</label>
+                </p-floatlabel>
+                <small class="text-muted">Max {{ maxTickets }} tickets</small>
+              </div>
+
+              <div class="order-summary">
+                <div class="summary-row">
+                  <span>{{ orderForm.quantity }}x ticket</span>
+                  <span>&euro; {{ event.ticketPrice | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row total">
+                  <strong>Totaal</strong>
+                  <strong>&euro; {{ getTotalPrice() | number:'1.2-2' }}</strong>
+                </div>
+              </div>
+
+              <p-message severity="info" text="Na bestellen heb je 10 minuten om te bevestigen. Tickets worden gereserveerd." [style]="{'width': '100%'}" />
+
+              <p-button
+                label="Bestelling Plaatsen"
+                icon="pi pi-check"
+                (onClick)="placeOrder()"
+                [loading]="submitting"
+                [disabled]="submitting"
+                class="w-full mt-1"
+                [style]="{'width': '100%'}" />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

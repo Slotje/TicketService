@@ -1,0 +1,50 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.auth-card {
+  width: 420px;
+  max-width: 95vw;
+  background: #ffffff;
+  border-radius: var(--ts-radius-lg);
+  box-shadow: var(--ts-card-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.auth-card-header {
+  background: var(--ts-navy-gradient);
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  color: #ffffff;
+
+  h2 { color: #ffffff; margin: 0.75rem 0 0.35rem; font-size: 1.5rem; }
+  p { color: rgba(255, 255, 255, 0.65); margin: 0; font-size: 0.875rem; }
+}
+
+.auth-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: rgba(212, 168, 83, 0.15);
+  border: 2px solid rgba(212, 168, 83, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ts-gold);
+  font-size: 1.25rem;
+}
+
+.auth-card-body {
+  padding: 1.75rem 2rem 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}

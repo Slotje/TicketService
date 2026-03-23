@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
-import { Menubar } from 'primeng/menubar';
-import { Button } from 'primeng/button';
+import { Drawer } from 'primeng/drawer';
 import { AdminAuthService } from './services/admin-auth.service';
 import { AuthService } from './services/auth.service';
 import { UserAuthService } from './services/user-auth.service';
@@ -12,12 +11,14 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, CommonModule, Menubar, Button],
+  imports: [RouterOutlet, RouterLink, CommonModule, Drawer],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
   menuItems: MenuItem[] = [];
+  mobileMenuVisible = false;
+  adminMenuVisible = false;
   private subs: Subscription[] = [];
 
   constructor(

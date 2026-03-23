@@ -1,0 +1,81 @@
+<div class="my-tickets-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-icon icon-circle-gold">
+      <i class="pi pi-ticket" style="font-size: 1.2rem;"></i>
+    </div>
+    <div>
+      <h1>Mijn Tickets</h1>
+      <p class="header-subtitle">Tickets voor {{ userAuth.email }}</p>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="orders-list mt-2">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton" style="height: 120px;"></div>
+      }
+    </div>
+  }
+
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mt-2" />
+  }
+
+  @if (!loading && orders.length === 0 && !errorMessage) {
+    <div class="empty-state mt-3">
+      <div class="icon-circle-gold" style="width:3.5rem;height:3.5rem;margin:0 auto 1rem;">
+        <i class="pi pi-ticket" style="font-size:1.25rem;"></i>
+      </div>
+      <h3>Nog geen tickets</h3>
+      <p>Koop tickets bij een evenement en ze verschijnen hier.</p>
+      <p-button label="Bekijk evenementen" icon="pi pi-calendar" routerLink="/" class="mt-2" />
+    </div>
+  }
+
+  @if (orders.length > 0) {
+    <div class="orders-list mt-2">
+      @for (order of orders; track order.id) {
+        <div class="order-card hover-lift" (click)="openOrder(order.orderNumber)">
+          <div class="order-accent" [class.confirmed]="order.status === 'CONFIRMED'"
+               [class.reserved]="order.status === 'RESERVED'"
+               [class.expired]="order.status === 'CANCELLED' || order.status === 'EXPIRED'"></div>
+          <div class="order-content">
+            <div class="order-header">
+              <div>
+                <span class="order-event-name">{{ order.eventName }}</span>
+                <span class="order-number">{{ order.orderNumber }}</span>
+              </div>
+              <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
+            </div>
+            <div class="order-meta">
+              <div class="meta-item">
+                <i class="pi pi-ticket"></i>
+                <span>{{ order.quantity }} ticket(s)</span>
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-euro"></i>
+                <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-clock"></i>
+                <span>{{ formatDate(order.createdAt) }}</span>
+              </div>
+            </div>
+            @if (order.status === 'CONFIRMED' && order.tickets) {
+              <div class="scan-progress">
+                <div class="scan-bar">
+                  <div class="scan-fill" [style.width.%]="(getScannedCount(order) / order.tickets.length) * 100"></div>
+                </div>
+                <span class="scan-text">{{ getScannedCount(order) }} / {{ order.tickets.length }} gescand</span>
+              </div>
+            }
+          </div>
+          <div class="order-arrow">
+            <i class="pi pi-chevron-right"></i>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

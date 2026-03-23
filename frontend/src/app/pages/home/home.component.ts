@@ -3,14 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Event } from '../../models/models';
-import { Card } from 'primeng/card';
-import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
-import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, Card, Button, Tag, ProgressBar],
+  imports: [CommonModule, RouterLink, Tag],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

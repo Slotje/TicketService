@@ -11,69 +11,69 @@ export const routes: Routes = [
   },
   {
     path: 'event/:id',
-    loadComponent: () => import('./pages/home/event-detail.component').then(m => m.EventDetailComponent)
+    loadComponent: () => import('./pages/home/event-detail/event-detail.component').then(m => m.EventDetailComponent)
   },
   {
     path: 'order/:orderNumber',
-    loadComponent: () => import('./pages/home/order-confirmation.component').then(m => m.OrderConfirmationComponent)
+    loadComponent: () => import('./pages/home/order-comfirmation/order-confirmation.component').then(m => m.OrderConfirmationComponent)
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/home/user-login.component').then(m => m.UserLoginComponent)
+    loadComponent: () => import('./pages/home/user-login/user-login.component').then(m => m.UserLoginComponent)
   },
   {
     path: 'forgot-password',
-    loadComponent: () => import('./pages/home/forgot-password.component').then(m => m.ForgotPasswordComponent)
+    loadComponent: () => import('./pages/home/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
   },
   {
     path: 'reset-password',
-    loadComponent: () => import('./pages/home/reset-password.component').then(m => m.ResetPasswordComponent)
+    loadComponent: () => import('./pages/home/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
     path: 'my-tickets',
-    loadComponent: () => import('./pages/home/my-tickets.component').then(m => m.MyTicketsComponent),
+    loadComponent: () => import('./pages/home/my-tickets/my-tickets.component').then(m => m.MyTicketsComponent),
     canActivate: [userAuthGuard]
   },
   // Customer (klant) routes
   {
     path: 'klant/login',
-    loadComponent: () => import('./pages/customer/customer-login.component').then(m => m.CustomerLoginComponent)
+    loadComponent: () => import('./pages/customer/customer-login/customer-login.component').then(m => m.CustomerLoginComponent)
   },
   {
     path: 'klant/activeren/:token',
-    loadComponent: () => import('./pages/customer/customer-activate.component').then(m => m.CustomerActivateComponent)
+    loadComponent: () => import('./pages/customer/customer-activate/customer-activate.component').then(m => m.CustomerActivateComponent)
   },
   {
     path: 'klant/forgot-password',
-    loadComponent: () => import('./pages/customer/customer-forgot-password.component').then(m => m.CustomerForgotPasswordComponent)
+    loadComponent: () => import('./pages/customer/customer-forgot-password/customer-forgot-password.component').then(m => m.CustomerForgotPasswordComponent)
   },
   {
     path: 'klant/reset-password',
-    loadComponent: () => import('./pages/home/reset-password.component').then(m => m.ResetPasswordComponent)
+    loadComponent: () => import('./pages/home/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
     path: 'klant/dashboard',
-    loadComponent: () => import('./pages/customer/customer-dashboard.component').then(m => m.CustomerDashboardComponent),
+    loadComponent: () => import('./pages/customer/customer-dashboard/customer-dashboard.component').then(m => m.CustomerDashboardComponent),
     canActivate: [customerAuthGuard]
   },
   {
     path: 'klant/:slug',
-    loadComponent: () => import('./pages/customer/customer-landing.component').then(m => m.CustomerLandingComponent)
+    loadComponent: () => import('./pages/customer/customer-landing/customer-landing.component').then(m => m.CustomerLandingComponent)
   },
   // Scanner routes
   {
     path: 'scan/login',
-    loadComponent: () => import('./pages/scanner/scanner-login.component').then(m => m.ScannerLoginComponent)
+    loadComponent: () => import('./pages/scanner/scanner-login/scanner-login.component').then(m => m.ScannerLoginComponent)
   },
   {
     path: 'scan',
-    loadComponent: () => import('./pages/scanner/ticket-scanner-camera.component').then(m => m.TicketScannerCameraComponent),
+    loadComponent: () => import('./pages/scanner/ticket-scanner-camera/ticket-scanner-camera.component').then(m => m.TicketScannerCameraComponent),
     canActivate: [scannerAuthGuard]
   },
   // Admin routes
   {
     path: 'admin/login',
-    loadComponent: () => import('./pages/admin/admin-login.component').then(m => m.AdminLoginComponent)
+    loadComponent: () => import('./pages/admin/admin-login/admin-login.component').then(m => m.AdminLoginComponent)
   },
   {
     path: 'admin',
@@ -82,22 +82,22 @@ export const routes: Routes = [
   },
   {
     path: 'admin/customers',
-    loadComponent: () => import('./pages/admin/customer-management.component').then(m => m.CustomerManagementComponent),
+    loadComponent: () => import('./pages/admin/customer-management/customer-management.component').then(m => m.CustomerManagementComponent),
     canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/events',
-    loadComponent: () => import('./pages/admin/event-management.component').then(m => m.EventManagementComponent),
+    loadComponent: () => import('./pages/admin/event-management/event-management.component').then(m => m.EventManagementComponent),
     canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/orders/:eventId',
-    loadComponent: () => import('./pages/admin/order-management.component').then(m => m.OrderManagementComponent),
+    loadComponent: () => import('./pages/admin/order-management/order-management.component').then(m => m.OrderManagementComponent),
     canActivate: [adminAuthGuard]
   },
   {
     path: 'admin/scanners',
-    loadComponent: () => import('./pages/admin/scanner-management.component').then(m => m.ScannerManagementComponent),
+    loadComponent: () => import('./pages/admin/scanner-management/scanner-management.component').then(m => m.ScannerManagementComponent),
     canActivate: [adminAuthGuard]
   },
   {

@@ -1,31 +1,45 @@
-<h1>Beheer Dashboard</h1>
-<div class="grid grid-3">
-  <p-card>
-    <ng-template #title><i class="pi pi-users"></i> Klanten</ng-template>
-    <p>Beheer klanten, personalisatie en branding instellingen.</p>
-    <ng-template #footer>
-      <p-button label="Klanten Beheren" icon="pi pi-arrow-right" routerLink="/admin/customers" />
-    </ng-template>
-  </p-card>
-  <p-card>
-    <ng-template #title><i class="pi pi-calendar"></i> Evenementen</ng-template>
-    <p>Maak en beheer evenementen, stel ticket capaciteit in.</p>
-    <ng-template #footer>
-      <p-button label="Evenementen Beheren" icon="pi pi-arrow-right" routerLink="/admin/events" />
-    </ng-template>
-  </p-card>
-  <p-card>
-    <ng-template #title><i class="pi pi-id-card"></i> Scanner Accounts</ng-template>
-    <p>Beheer scanner accounts voor het scannen van tickets bij evenementen.</p>
-    <ng-template #footer>
-      <p-button label="Accounts Beheren" icon="pi pi-arrow-right" routerLink="/admin/scanners" />
-    </ng-template>
-  </p-card>
-  <p-card>
-    <ng-template #title><i class="pi pi-qrcode"></i> Ticket Scanner</ng-template>
-    <p>Open de ticket scanner met camera om tickets te scannen.</p>
-    <ng-template #footer>
-      <p-button label="Scanner Openen" icon="pi pi-arrow-right" routerLink="/scan/login" />
-    </ng-template>
-  </p-card>
+<div class="admin-dashboard">
+  <h1>Beheer Dashboard</h1>
+  <div class="grid grid-2">
+    <div class="dashboard-card hover-lift" routerLink="/admin/customers">
+      <div class="card-icon icon-circle-gold">
+        <i class="pi pi-users" style="font-size: 1.25rem;"></i>
+      </div>
+      <div class="card-content">
+        <h3>Klanten</h3>
+        <p>Beheer klanten, personalisatie en branding instellingen.</p>
+      </div>
+      <div class="card-arrow"><i class="pi pi-arrow-right"></i></div>
+    </div>
+    <div class="dashboard-card hover-lift" routerLink="/admin/events">
+      <div class="card-icon icon-circle-gold">
+        <i class="pi pi-calendar" style="font-size: 1.25rem;"></i>
+      </div>
+      <div class="card-content">
+        <h3>Evenementen</h3>
+        <p>Maak en beheer evenementen, stel ticket capaciteit in.</p>
+      </div>
+      <div class="card-arrow"><i class="pi pi-arrow-right"></i></div>
+    </div>
+    <div class="dashboard-card hover-lift" routerLink="/admin/scanners">
+      <div class="card-icon icon-circle-gold">
+        <i class="pi pi-id-card" style="font-size: 1.25rem;"></i>
+      </div>
+      <div class="card-content">
+        <h3>Scanner Accounts</h3>
+        <p>Beheer scanner accounts voor het scannen van tickets bij evenementen.</p>
+      </div>
+      <div class="card-arrow"><i class="pi pi-arrow-right"></i></div>
+    </div>
+    <div class="dashboard-card hover-lift" routerLink="/scan/login">
+      <div class="card-icon icon-circle-gold">
+        <i class="pi pi-qrcode" style="font-size: 1.25rem;"></i>
+      </div>
+      <div class="card-content">
+        <h3>Ticket Scanner</h3>
+        <p>Open de ticket scanner met camera om tickets te scannen.</p>
+      </div>
+      <div class="card-arrow"><i class="pi pi-arrow-right"></i></div>
+    </div>
+  </div>
 </div>
