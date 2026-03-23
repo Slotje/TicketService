@@ -6,6 +6,12 @@
 
     <p class="description">Voer de QR code data in of scan de QR code om een ticket te valideren.</p>
 
+    <div class="form-field mb-2">
+      <p-select [options]="events" [(ngModel)]="selectedEventId"
+                optionLabel="name" optionValue="id"
+                placeholder="Selecteer evenement" class="w-full" />
+    </div>
+
     <div class="scan-form">
       <p-floatlabel>
         <input pInputText id="qrData" [(ngModel)]="qrCodeData" class="w-full scan-input"
