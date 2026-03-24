@@ -212,13 +212,14 @@
                                 buttonLayout="horizontal"
                                 incrementButtonIcon="pi pi-plus"
                                 decrementButtonIcon="pi pi-minus"
-                                [inputStyle]="{'width': '2.5rem', 'text-align': 'center'}" />
+                                [inputStyle]="{'width': '3rem', 'text-align': 'center'}" />
                             </div>
                           }
                         </div>
                       </div>
                     }
                   </div>
+                  <small class="text-muted">Max {{ event.maxTicketsPerOrder }} tickets per bestelling (nog {{ event.maxTicketsPerOrder - totalSelectedQuantity }} over)</small>
                   @if (submitted && !hasSelectedCategories) {
                     <small class="error-text">Selecteer minstens één ticket type</small>
                   }
@@ -275,8 +276,8 @@
                   (onClick)="placeOrder()"
                   [loading]="submitting"
                   [disabled]="submitting"
-                  severity="secondary"
-                  [outlined]="true"
+                  [severity]="hasCategories ? (hasSelectedCategories ? 'success' : 'secondary') : (orderForm.quantity > 0 ? 'success' : 'secondary')"
+                  [outlined]="hasCategories ? !hasSelectedCategories : !(orderForm.quantity > 0)"
                   [style]="{'width': '100%'}" />
               </div>
             </div>
