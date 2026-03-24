@@ -551,3 +551,16 @@
   font-family: monospace;
   color: var(--ts-navy-600);
 }
+
+.preview-download-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.preview-download-hint {
+  font-size: 0.85rem;
+  color: var(--ts-navy-600);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}

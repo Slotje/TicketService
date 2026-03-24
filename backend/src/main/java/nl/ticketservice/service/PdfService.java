@@ -311,6 +311,175 @@ public class PdfService {
         }
     }
 
+    /**
+     * Generates a preview PDF with example data using the customer's branding.
+     */
+    public byte[] generatePreviewPdf(Customer customer) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf, PageSize.A4);
+            document.setMargins(0, 0, 0, 0);
+
+            DeviceRgb primaryColor = parseColor(customer.primaryColor, GOLD);
+
+            byte[] logoBytes = imageLoader.loadImage(customer.logoUrl);
+
+            // === FULL PAGE DARK BACKGROUND ===
+            Div page = new Div()
+                    .setBackgroundColor(DARK_BG)
+                    .setMinHeight(842)
+                    .setPadding(0);
+
+            // === TOP HERO SECTION (gradient fallback, no event image) ===
+            Div heroSection = new Div()
+                    .setBackgroundColor(DARK_CARD)
+                    .setMinHeight(220);
+            page.add(heroSection);
+
+            // === BRAND BAR ===
+            Div brandBar = new Div()
+                    .setBackgroundColor(primaryColor)
+                    .setPadding(10)
+                    .setPaddingLeft(30)
+                    .setPaddingRight(30);
+
+            Table brandTable = new Table(UnitValue.createPercentArray(new float[]{1, 3, 1}))
+                    .useAllAvailableWidth();
+
+            Cell logoCell = new Cell().setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+            if (logoBytes != null) {
+                try {
+                    Image logo = new Image(ImageDataFactory.create(logoBytes))
+                            .setMaxWidth(40).setMaxHeight(32);
+                    logoCell.add(logo);
+                } catch (Exception ignored) {}
+            }
+            brandTable.addCell(logoCell);
+
+            Cell nameCell = new Cell().setBorder(Border.NO_BORDER)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setVerticalAlignment(VerticalAlignment.MIDDLE);
+            nameCell.add(new Paragraph(customer.companyName)
+                    .setFontSize(14).setBold()
+                    .setFontColor(contrastColor(primaryColor))
+                    .setMargin(0));
+            brandTable.addCell(nameCell);
+
+            Cell indicatorCell = new Cell().setBorder(Border.NO_BORDER)
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setVerticalAlignment(VerticalAlignment.MIDDLE);
+            indicatorCell.add(new Paragraph("1 / 2")
+                    .setFontSize(10)
+                    .setFontColor(contrastColor(primaryColor))
+                    .setMargin(0));
+            brandTable.addCell(indicatorCell);
+
+            brandBar.add(brandTable);
+            page.add(brandBar);
+
+            // === MAIN CONTENT ===
+            Div contentArea = new Div().setPadding(30).setPaddingTop(25);
+
+            contentArea.add(new Paragraph("Voorbeeld Evenement")
+                    .setFontSize(28).setBold().setFontColor(WHITE)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(4));
+
+            contentArea.add(new Paragraph("zaterdag 15 maart 2026  •  20:00")
+                    .setFontSize(12).setFontColor(GOLD)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(2));
+
+            contentArea.add(new Paragraph("Voorbeeld Locatie  •  Voorbeeldstraat 1, 1234 AB Amsterdam")
+                    .setFontSize(10).setFontColor(TEXT_MUTED)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(20));
+
+            contentArea.add(createPerforation());
+
+            // === QR CODE + DETAILS ===
+            Table mainLayout = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+                    .useAllAvailableWidth().setMarginTop(20).setMarginBottom(15);
+
+            Cell qrCell = new Cell().setBorder(Border.NO_BORDER)
+                    .setVerticalAlignment(VerticalAlignment.MIDDLE)
+                    .setTextAlignment(TextAlignment.CENTER).setPaddingRight(15);
+
+            Div qrContainer = new Div()
+                    .setBackgroundColor(WHITE).setPadding(12)
+                    .setBorderRadius(new com.itextpdf.layout.properties.BorderRadius(8));
+
+            byte[] qrImage = qrCodeService.generateQrCodeImage("VOORBEELD-TICKET-" + customer.id);
+            Image qrImg = new Image(ImageDataFactory.create(qrImage))
+                    .setWidth(160).setHeight(160)
+                    .setHorizontalAlignment(HorizontalAlignment.CENTER);
+            qrContainer.add(qrImg);
+            qrCell.add(qrContainer);
+            qrCell.add(new Paragraph("Scan bij de ingang")
+                    .setFontSize(8).setFontColor(TEXT_MUTED)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginTop(6));
+            mainLayout.addCell(qrCell);
+
+            Cell detailsCell = new Cell().setBorder(Border.NO_BORDER)
+                    .setPaddingLeft(15).setVerticalAlignment(VerticalAlignment.MIDDLE);
+            addDetailBlock(detailsCell, "BEZOEKER", "Jan de Vries", "jan@voorbeeld.nl");
+            addDetailBlock(detailsCell, "TICKETCODE", "TKT-VOORBEELD", null);
+            addDetailBlock(detailsCell, "BESTELLING", "ORD-VOORBEELD", null);
+            mainLayout.addCell(detailsCell);
+            contentArea.add(mainLayout);
+
+            // === PRICE BAR ===
+            Div priceBar = new Div()
+                    .setBackgroundColor(DARK_CARD).setPadding(12)
+                    .setPaddingLeft(20).setPaddingRight(20)
+                    .setBorderRadius(new com.itextpdf.layout.properties.BorderRadius(8))
+                    .setMarginTop(10);
+
+            Table priceTable = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1}))
+                    .useAllAvailableWidth();
+
+            Cell p1 = new Cell().setBorder(Border.NO_BORDER);
+            p1.add(new Paragraph("TICKETPRIJS").setFontSize(7).setFontColor(TEXT_MUTED).setBold().setMarginBottom(1));
+            p1.add(new Paragraph("€ 25.00").setFontSize(13).setBold().setFontColor(TEXT_LIGHT));
+            priceTable.addCell(p1);
+
+            Cell p2 = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER);
+            p2.add(new Paragraph("SERVICEKOSTEN").setFontSize(7).setFontColor(TEXT_MUTED).setBold().setMarginBottom(1));
+            p2.add(new Paragraph("€ 2.50").setFontSize(13).setBold().setFontColor(TEXT_LIGHT));
+            priceTable.addCell(p2);
+
+            Cell p3 = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
+            p3.add(new Paragraph("TOTAAL").setFontSize(7).setFontColor(TEXT_MUTED).setBold().setMarginBottom(1));
+            p3.add(new Paragraph("€ 27.50").setFontSize(16).setBold().setFontColor(primaryColor));
+            priceTable.addCell(p3);
+
+            priceBar.add(priceTable);
+            contentArea.add(priceBar);
+
+            // === FOOTER ===
+            Div footer = new Div().setMarginTop(15);
+            footer.add(new Paragraph("Dit is een voorbeeldticket — dit ticket is niet geldig voor toegang.")
+                    .setFontSize(8).setFontColor(TEXT_MUTED)
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(4));
+
+            String footerText = customer.companyName;
+            if (customer.website != null && !customer.website.isEmpty()) {
+                footerText += "  •  " + customer.website;
+            }
+            footer.add(new Paragraph(footerText)
+                    .setFontSize(7).setFontColor(DIVIDER)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            contentArea.add(footer);
+            page.add(contentArea);
+            document.add(page);
+
+            document.close();
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new TicketServiceException("Fout bij het genereren van voorbeeld PDF: " + e.getMessage(), 500);
+        }
+    }
+
     private void addDetailBlock(Cell cell, String label, String value, String subValue) {
         cell.add(new Paragraph(label)
                 .setFontSize(7)
