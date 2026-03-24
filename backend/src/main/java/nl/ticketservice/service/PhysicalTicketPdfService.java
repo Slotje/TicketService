@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Generates printable PDF with 4 physical tickets per A4 page.
- * Each page has a front side (4 tickets) and a back side (4 tickets mirrored),
- * designed for duplex printing on thick paper and professional cutting.
+ * Generates premium printable PDF with 4 physical tickets per A4 page.
+ * Features company logo, event image, branded colors, and professional layout.
+ * Designed for duplex printing on thick paper (250g/m²+) with cut marks.
  */
 @ApplicationScoped
 public class PhysicalTicketPdfService {
@@ -39,14 +39,26 @@ public class PhysicalTicketPdfService {
     @Inject
     QrCodeService qrCodeService;
 
+    @Inject
+    ImageLoaderService imageLoader;
+
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("nl-NL"));
     private static final DateTimeFormatter TIME_FMT =
             DateTimeFormatter.ofPattern("HH:mm");
 
-    // A4: 595 x 842 points. Each ticket quadrant is ~half width, ~half height
-    private static final float TICKET_WIDTH = 247.5f;  // (595 - 3*margins) / 2
-    private static final float TICKET_HEIGHT = 371f;   // (842 - 3*margins) / 2
+    // A4: 595 x 842 points. 2x2 grid with margins
+    private static final float TICKET_HEIGHT = 371f;
+
+    // Premium color palette
+    private static final DeviceRgb DARK_BG = new DeviceRgb(15, 23, 42);
+    private static final DeviceRgb DARK_CARD = new DeviceRgb(30, 41, 59);
+    private static final DeviceRgb TEXT_MUTED = new DeviceRgb(148, 163, 184);
+    private static final DeviceRgb TEXT_LIGHT = new DeviceRgb(226, 232, 240);
+    private static final DeviceRgb GOLD = new DeviceRgb(212, 168, 83);
+    private static final DeviceRgb DIVIDER = new DeviceRgb(51, 65, 85);
+    private static final DeviceRgb WHITE = new DeviceRgb(255, 255, 255);
+    private static final DeviceRgb CUT_LINE = new DeviceRgb(200, 200, 200);
 
     public byte[] generatePhysicalTicketsPdf(Event event, List<Ticket> tickets) {
         try {
@@ -57,10 +69,14 @@ public class PhysicalTicketPdfService {
             document.setMargins(25, 25, 25, 25);
 
             Customer customer = event.customer;
-            DeviceRgb primaryColor = parseColor(customer.primaryColor, new DeviceRgb(41, 128, 185));
-            DeviceRgb secondaryColor = parseColor(customer.secondaryColor, new DeviceRgb(44, 62, 80));
+            DeviceRgb primaryColor = parseColor(customer.primaryColor, GOLD);
+            DeviceRgb secondaryColor = parseColor(customer.secondaryColor, DARK_BG);
 
-            // Process tickets in groups of 4 (one sheet = front + back)
+            // Load images once
+            byte[] logoBytes = imageLoader.loadImage(customer.logoUrl);
+            byte[] eventImageBytes = imageLoader.loadImage(event.imageUrl);
+
+            // Process tickets in groups of 4
             for (int i = 0; i < tickets.size(); i += 4) {
                 if (i > 0) {
                     document.add(new AreaBreak());
@@ -69,12 +85,12 @@ public class PhysicalTicketPdfService {
                 int count = Math.min(4, tickets.size() - i);
                 List<Ticket> pageTickets = tickets.subList(i, i + count);
 
-                // === FRONT SIDE (voorkant) ===
-                addFrontPage(document, event, customer, pageTickets, primaryColor, secondaryColor);
+                // FRONT SIDE
+                addFrontPage(document, event, customer, pageTickets, primaryColor, secondaryColor, logoBytes, eventImageBytes);
 
-                // === BACK SIDE (achterkant) - mirrored order for duplex printing ===
+                // BACK SIDE (mirrored for duplex)
                 document.add(new AreaBreak());
-                addBackPage(document, event, customer, pageTickets, primaryColor, secondaryColor);
+                addBackPage(document, event, customer, pageTickets, primaryColor, secondaryColor, logoBytes);
             }
 
             document.close();
@@ -85,23 +101,21 @@ public class PhysicalTicketPdfService {
     }
 
     private void addFrontPage(Document document, Event event, Customer customer,
-                               List<Ticket> tickets, DeviceRgb primaryColor, DeviceRgb secondaryColor) {
-        // 2x2 grid layout
+                               List<Ticket> tickets, DeviceRgb primaryColor, DeviceRgb secondaryColor,
+                               byte[] logoBytes, byte[] eventImageBytes) {
         Table grid = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
                 .useAllAvailableWidth()
                 .setFixedLayout();
 
         for (int j = 0; j < 4; j++) {
             Cell cell = new Cell()
-                    .setBorder(new DashedBorder(new DeviceRgb(200, 200, 200), 0.5f))
-                    .setPadding(10)
+                    .setBorder(new DashedBorder(CUT_LINE, 0.5f))
+                    .setPadding(0)
                     .setMinHeight(TICKET_HEIGHT);
 
             if (j < tickets.size()) {
-                Ticket ticket = tickets.get(j);
-                addFrontTicket(cell, event, customer, ticket, primaryColor, secondaryColor);
+                addFrontTicket(cell, event, customer, tickets.get(j), primaryColor, secondaryColor, logoBytes, eventImageBytes);
             }
-            // Empty cells for incomplete groups stay blank
 
             grid.addCell(cell);
         }
@@ -109,101 +123,151 @@ public class PhysicalTicketPdfService {
         document.add(grid);
     }
 
-    private void addFrontTicket(Cell cell, Event event, Customer customer,
-                                 Ticket ticket, DeviceRgb primaryColor, DeviceRgb secondaryColor) {
-        // Header with company branding
-        Div header = new Div()
+    private void addFrontTicket(Cell cell, Event event, Customer customer, Ticket ticket,
+                                 DeviceRgb primaryColor, DeviceRgb secondaryColor,
+                                 byte[] logoBytes, byte[] eventImageBytes) {
+        // Dark background for entire ticket
+        Div ticketDiv = new Div()
+                .setBackgroundColor(DARK_BG)
+                .setMinHeight(TICKET_HEIGHT)
+                .setPadding(0);
+
+        // === Mini hero with event image or gradient ===
+        Div heroArea = new Div().setMinHeight(65).setPadding(0);
+        if (eventImageBytes != null) {
+            try {
+                Image eventImg = new Image(ImageDataFactory.create(eventImageBytes))
+                        .setWidth(UnitValue.createPercentValue(100))
+                        .setHeight(65)
+                        .setHorizontalAlignment(HorizontalAlignment.CENTER);
+                eventImg.setProperty(com.itextpdf.layout.properties.Property.OBJECT_FIT, com.itextpdf.layout.properties.ObjectFit.COVER);
+                heroArea.add(eventImg);
+            } catch (Exception e) {
+                heroArea.setBackgroundColor(DARK_CARD).setMinHeight(65);
+            }
+        } else {
+            heroArea.setBackgroundColor(DARK_CARD).setMinHeight(65);
+        }
+        ticketDiv.add(heroArea);
+
+        // === Brand strip with logo + company ===
+        Div brandStrip = new Div()
                 .setBackgroundColor(primaryColor)
-                .setPadding(8)
-                .setMarginBottom(8);
+                .setPadding(5)
+                .setPaddingLeft(8)
+                .setPaddingRight(8);
 
-        header.add(new Paragraph(customer.companyName)
-                .setFontSize(11)
+        Table brandRow = new Table(UnitValue.createPercentArray(new float[]{20, 80}))
+                .useAllAvailableWidth();
+
+        Cell logoCellBrand = new Cell().setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+        if (logoBytes != null) {
+            try {
+                Image logo = new Image(ImageDataFactory.create(logoBytes))
+                        .setMaxWidth(22)
+                        .setMaxHeight(18);
+                logoCellBrand.add(logo);
+            } catch (Exception e) { /* skip */ }
+        }
+        brandRow.addCell(logoCellBrand);
+
+        Cell nameCellBrand = new Cell().setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+        nameCellBrand.add(new Paragraph(customer.companyName)
+                .setFontSize(8)
                 .setBold()
-                .setFontColor(ColorConstants.WHITE)
-                .setTextAlignment(TextAlignment.CENTER)
+                .setFontColor(contrastColor(primaryColor))
                 .setMargin(0));
+        brandRow.addCell(nameCellBrand);
 
-        cell.add(header);
+        brandStrip.add(brandRow);
+        ticketDiv.add(brandStrip);
+
+        // === Content area ===
+        Div content = new Div().setPadding(8).setPaddingTop(6);
 
         // Event name
-        cell.add(new Paragraph(event.name)
-                .setFontSize(14)
+        content.add(new Paragraph(event.name)
+                .setFontSize(12)
                 .setBold()
-                .setFontColor(secondaryColor)
+                .setFontColor(WHITE)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(4));
+                .setMarginBottom(3));
 
-        // Date and time
+        // Date + time
         String dateStr = event.eventDate.format(DATE_FMT);
         String timeStr = event.eventDate.format(TIME_FMT);
         if (event.endDate != null) {
-            timeStr += " - " + event.endDate.format(TIME_FMT);
+            timeStr += " — " + event.endDate.format(TIME_FMT);
         }
 
-        cell.add(new Paragraph(dateStr)
-                .setFontSize(10)
-                .setBold()
+        content.add(new Paragraph(dateStr + "  •  " + timeStr)
+                .setFontSize(7)
+                .setFontColor(GOLD)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(1));
+                .setMarginBottom(2));
 
-        cell.add(new Paragraph(timeStr)
-                .setFontSize(9)
-                .setFontColor(new DeviceRgb(100, 100, 100))
+        // Location
+        content.add(new Paragraph(event.location)
+                .setFontSize(7)
+                .setFontColor(TEXT_MUTED)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(6));
 
-        // Location
-        cell.add(new Paragraph(event.location)
-                .setFontSize(9)
-                .setBold()
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(1));
+        // Thin divider
+        content.add(new Div().setHeight(0.5f).setBackgroundColor(DIVIDER).setMarginBottom(6));
 
-        if (event.address != null && !event.address.isEmpty()) {
-            cell.add(new Paragraph(event.address)
-                    .setFontSize(8)
-                    .setFontColor(new DeviceRgb(120, 120, 120))
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(8));
-        }
+        // QR Code centered with white bg
+        Div qrBox = new Div()
+                .setBackgroundColor(WHITE)
+                .setPadding(6)
+                .setWidth(105)
+                .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                .setBorderRadius(new com.itextpdf.layout.properties.BorderRadius(4));
 
-        // Divider
-        Div divider = new Div()
-                .setHeight(1)
-                .setBackgroundColor(new DeviceRgb(220, 220, 220))
-                .setMarginBottom(8);
-        cell.add(divider);
-
-        // QR Code
         byte[] qrImage = qrCodeService.generateQrCodeImage(ticket.qrCodeData);
         Image qrImg = new Image(ImageDataFactory.create(qrImage))
-                .setWidth(120)
-                .setHeight(120)
+                .setWidth(93)
+                .setHeight(93)
                 .setHorizontalAlignment(HorizontalAlignment.CENTER);
-        cell.add(qrImg);
+        qrBox.add(qrImg);
+        content.add(qrBox);
 
         // Ticket code
-        cell.add(new Paragraph(ticket.ticketCode)
-                .setFontSize(8)
-                .setFontColor(new DeviceRgb(150, 150, 150))
+        content.add(new Paragraph(ticket.ticketCode)
+                .setFontSize(6)
+                .setFontColor(TEXT_MUTED)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(4));
+                .setMarginTop(3)
+                .setMarginBottom(3));
 
-        // Price
-        cell.add(new Paragraph("€ " + event.ticketPrice.toPlainString())
-                .setFontSize(11)
+        // Price badge
+        Div priceBadge = new Div()
+                .setBackgroundColor(DARK_CARD)
+                .setPadding(4)
+                .setPaddingLeft(12)
+                .setPaddingRight(12)
+                .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                .setBorderRadius(new com.itextpdf.layout.properties.BorderRadius(12));
+
+        priceBadge.add(new Paragraph("€ " + event.ticketPrice.toPlainString())
+                .setFontSize(10)
                 .setBold()
                 .setFontColor(primaryColor)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(4));
+                .setMargin(0));
+
+        content.add(priceBadge);
+
+        ticketDiv.add(content);
+        cell.add(ticketDiv);
     }
 
     private void addBackPage(Document document, Event event, Customer customer,
-                              List<Ticket> tickets, DeviceRgb primaryColor, DeviceRgb secondaryColor) {
-        // For duplex printing, tickets must be in mirrored column order:
-        // Front: [0][1]    Back: [1][0]
-        //        [2][3]          [3][2]
+                              List<Ticket> tickets, DeviceRgb primaryColor, DeviceRgb secondaryColor,
+                              byte[] logoBytes) {
+        // Mirrored for duplex: [1][0] / [3][2]
         int[] mirroredOrder = {1, 0, 3, 2};
 
         Table grid = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
@@ -213,12 +277,12 @@ public class PhysicalTicketPdfService {
         for (int j = 0; j < 4; j++) {
             int idx = mirroredOrder[j];
             Cell cell = new Cell()
-                    .setBorder(new DashedBorder(new DeviceRgb(200, 200, 200), 0.5f))
-                    .setPadding(10)
+                    .setBorder(new DashedBorder(CUT_LINE, 0.5f))
+                    .setPadding(0)
                     .setMinHeight(TICKET_HEIGHT);
 
             if (idx < tickets.size()) {
-                addBackTicket(cell, event, customer, tickets.get(idx), primaryColor, secondaryColor);
+                addBackTicket(cell, event, customer, tickets.get(idx), primaryColor, secondaryColor, logoBytes);
             }
 
             grid.addCell(cell);
@@ -227,104 +291,136 @@ public class PhysicalTicketPdfService {
         document.add(grid);
     }
 
-    private void addBackTicket(Cell cell, Event event, Customer customer,
-                                Ticket ticket, DeviceRgb primaryColor, DeviceRgb secondaryColor) {
-        // Full colored background header
+    private void addBackTicket(Cell cell, Event event, Customer customer, Ticket ticket,
+                                DeviceRgb primaryColor, DeviceRgb secondaryColor,
+                                byte[] logoBytes) {
+        Div ticketDiv = new Div()
+                .setBackgroundColor(DARK_BG)
+                .setMinHeight(TICKET_HEIGHT)
+                .setPadding(0);
+
+        // === Header with logo + company ===
         Div header = new Div()
                 .setBackgroundColor(primaryColor)
                 .setPadding(12)
-                .setMarginBottom(15);
+                .setPaddingLeft(15)
+                .setPaddingRight(15)
+                .setMarginBottom(12);
+
+        if (logoBytes != null) {
+            try {
+                Image logo = new Image(ImageDataFactory.create(logoBytes))
+                        .setMaxWidth(36)
+                        .setMaxHeight(28)
+                        .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                        .setMarginBottom(4);
+                header.add(logo);
+            } catch (Exception e) { /* skip */ }
+        }
 
         header.add(new Paragraph(customer.companyName)
-                .setFontSize(13)
+                .setFontSize(12)
                 .setBold()
-                .setFontColor(ColorConstants.WHITE)
+                .setFontColor(contrastColor(primaryColor))
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMargin(0));
 
         if (customer.website != null && !customer.website.isEmpty()) {
             header.add(new Paragraph(customer.website)
-                    .setFontSize(8)
-                    .setFontColor(ColorConstants.WHITE)
+                    .setFontSize(7)
+                    .setFontColor(contrastColor(primaryColor))
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginTop(2)
                     .setMarginBottom(0));
         }
 
-        cell.add(header);
+        ticketDiv.add(header);
 
-        // Event info block
-        cell.add(new Paragraph("EVENEMENT")
-                .setFontSize(7)
+        // === Event details ===
+        Div details = new Div().setPadding(12).setPaddingTop(0);
+
+        details.add(new Paragraph("EVENEMENT")
+                .setFontSize(6)
                 .setBold()
-                .setFontColor(new DeviceRgb(150, 150, 150))
-                .setMarginBottom(2));
+                .setFontColor(GOLD)
+                .setCharacterSpacing(1.5f)
+                .setMarginBottom(3));
 
-        cell.add(new Paragraph(event.name)
+        details.add(new Paragraph(event.name)
                 .setFontSize(11)
                 .setBold()
-                .setFontColor(secondaryColor)
-                .setMarginBottom(8));
+                .setFontColor(WHITE)
+                .setMarginBottom(10));
 
         // Details table
-        Table details = new Table(UnitValue.createPercentArray(new float[]{35, 65}))
+        Table detailsTable = new Table(UnitValue.createPercentArray(new float[]{35, 65}))
                 .useAllAvailableWidth()
                 .setMarginBottom(10);
 
-        addDetailRow(details, "Datum:", event.eventDate.format(DATE_FMT));
-        addDetailRow(details, "Tijd:", event.eventDate.format(TIME_FMT)
-                + (event.endDate != null ? " - " + event.endDate.format(TIME_FMT) : ""));
-        addDetailRow(details, "Locatie:", event.location);
-        if (event.address != null && !event.address.isEmpty()) {
-            addDetailRow(details, "Adres:", event.address);
+        addDetailRow(detailsTable, "Datum", event.eventDate.format(DATE_FMT));
+        String timeInfo = event.eventDate.format(TIME_FMT);
+        if (event.endDate != null) {
+            timeInfo += " — " + event.endDate.format(TIME_FMT);
         }
-        addDetailRow(details, "Ticketcode:", ticket.ticketCode);
+        addDetailRow(detailsTable, "Tijd", timeInfo);
+        addDetailRow(detailsTable, "Locatie", event.location);
+        if (event.address != null && !event.address.isEmpty()) {
+            addDetailRow(detailsTable, "Adres", event.address);
+        }
+        addDetailRow(detailsTable, "Ticketcode", ticket.ticketCode);
 
-        cell.add(details);
+        details.add(detailsTable);
 
-        // Terms / conditions
+        // === Terms/conditions ===
         Div terms = new Div()
-                .setBackgroundColor(new DeviceRgb(245, 245, 245))
+                .setBackgroundColor(DARK_CARD)
                 .setPadding(8)
-                .setMarginTop(10);
+                .setBorderRadius(new com.itextpdf.layout.properties.BorderRadius(4))
+                .setMarginTop(8);
 
         terms.add(new Paragraph("VOORWAARDEN")
-                .setFontSize(7)
+                .setFontSize(6)
                 .setBold()
-                .setFontColor(new DeviceRgb(150, 150, 150))
+                .setFontColor(GOLD)
+                .setCharacterSpacing(1f)
                 .setMarginBottom(3));
 
-        terms.add(new Paragraph("• Dit ticket is eenmalig geldig en wordt gescand bij de ingang.")
-                .setFontSize(7)
-                .setFontColor(new DeviceRgb(100, 100, 100))
-                .setMarginBottom(1));
-        terms.add(new Paragraph("• Bewaar dit ticket zorgvuldig, duplicaten worden niet geaccepteerd.")
-                .setFontSize(7)
-                .setFontColor(new DeviceRgb(100, 100, 100))
-                .setMarginBottom(1));
-        terms.add(new Paragraph("• Bij verlies of diefstal kan geen nieuw ticket worden verstrekt.")
-                .setFontSize(7)
-                .setFontColor(new DeviceRgb(100, 100, 100)));
+        String[] conditions = {
+                "Dit ticket is eenmalig geldig en wordt gescand bij de ingang.",
+                "Bewaar dit ticket zorgvuldig, duplicaten worden niet geaccepteerd.",
+                "Bij verlies of diefstal kan geen nieuw ticket worden verstrekt."
+        };
+        for (String condition : conditions) {
+            terms.add(new Paragraph("•  " + condition)
+                    .setFontSize(6)
+                    .setFontColor(TEXT_MUTED)
+                    .setMarginBottom(1));
+        }
 
-        cell.add(terms);
+        details.add(terms);
+        ticketDiv.add(details);
+        cell.add(ticketDiv);
     }
 
     private void addDetailRow(Table table, String label, String value) {
-        Cell labelCell = new Cell()
-                .setBorder(Border.NO_BORDER)
-                .setPadding(1);
+        Cell labelCell = new Cell().setBorder(Border.NO_BORDER).setPadding(2);
         labelCell.add(new Paragraph(label)
-                .setFontSize(8)
+                .setFontSize(7)
                 .setBold()
-                .setFontColor(new DeviceRgb(100, 100, 100)));
+                .setFontColor(TEXT_MUTED));
         table.addCell(labelCell);
 
-        Cell valueCell = new Cell()
-                .setBorder(Border.NO_BORDER)
-                .setPadding(1);
+        Cell valueCell = new Cell().setBorder(Border.NO_BORDER).setPadding(2);
         valueCell.add(new Paragraph(value)
-                .setFontSize(8));
+                .setFontSize(7)
+                .setFontColor(TEXT_LIGHT));
         table.addCell(valueCell);
+    }
+
+    private DeviceRgb contrastColor(DeviceRgb color) {
+        float[] c = color.getColorValue();
+        double luminance = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+        return luminance > 0.5 ? new DeviceRgb(15, 23, 42) : WHITE;
     }
 
     private DeviceRgb parseColor(String hexColor, DeviceRgb defaultColor) {

@@ -176,19 +176,50 @@
           <div class="icon-circle-gold" style="width:1.75rem;height:1.75rem;">
             <i class="pi pi-ticket" style="font-size:0.75rem;"></i>
           </div>
-          Tickets
+          Jouw Tickets
         </h3>
         <div class="tickets-grid">
-          @for (ticket of order.tickets; track ticket.id) {
-            <div class="ticket-card" [class.scanned]="ticket.scanned">
-              <div class="ticket-top">
-                <div class="ticket-code">{{ ticket.ticketCode }}</div>
-                @if (ticket.scanned) {
-                  <p-tag value="Gescand" severity="info" />
-                }
+          @for (ticket of order.tickets; track ticket.id; let idx = $index) {
+            <div class="premium-ticket" [class.scanned]="ticket.scanned" data-aos="fade-up" [attr.data-aos-delay]="100 + (idx * 100)">
+              <!-- Dark header section -->
+              <div class="ticket-header-section">
+                <div class="ticket-event-name">{{ order.eventName }}</div>
+                <div class="ticket-counter">{{ idx + 1 }}/{{ order.tickets.length }}</div>
               </div>
-              <div class="ticket-qr">
-                <img [src]="api.getQrCodeUrl(ticket.qrCodeData)" alt="QR Code" class="qr-image" />
+
+              <!-- QR Section -->
+              <div class="ticket-qr-section">
+                <div class="qr-wrapper">
+                  <img [src]="api.getQrCodeUrl(ticket.qrCodeData)" alt="QR Code" class="qr-image" />
+                </div>
+                <span class="qr-hint">Scan bij de ingang</span>
+              </div>
+
+              <!-- Perforation line -->
+              <div class="ticket-perforation">
+                <div class="perf-circle perf-left"></div>
+                <div class="perf-line"></div>
+                <div class="perf-circle perf-right"></div>
+              </div>
+
+              <!-- Info section -->
+              <div class="ticket-info-section">
+                <div class="ticket-detail-row">
+                  <div class="ticket-detail">
+                    <span class="detail-label">BEZOEKER</span>
+                    <span class="detail-value">{{ order.buyerFirstName }} {{ order.buyerLastName }}</span>
+                  </div>
+                  <div class="ticket-detail">
+                    <span class="detail-label">TICKETCODE</span>
+                    <span class="detail-value mono">{{ ticket.ticketCode }}</span>
+                  </div>
+                </div>
+                @if (ticket.scanned) {
+                  <div class="scanned-badge">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Gescand</span>
+                  </div>
+                }
               </div>
             </div>
           }
