@@ -124,12 +124,12 @@
     i, h2 { color: #16a34a; }
   }
   &.reserved {
-    border-bottom-color: rgba(212, 168, 83, 0.3);
-    i, h2 { color: var(--ts-gold-dark); }
+    border-bottom-color: rgba(234, 120, 23, 0.3);
+    i, h2 { color: #ea580c; }
   }
   &.cancelled {
-    border-bottom-color: rgba(156, 163, 175, 0.3);
-    i, h2 { color: #6b7280; }
+    border-bottom-color: rgba(220, 38, 38, 0.3);
+    i, h2 { color: #dc2626; }
   }
 }
 
