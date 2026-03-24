@@ -30,6 +30,17 @@
   --ts-radius-lg: 1rem;
   --ts-radius-xl: 1.5rem;
   --ts-glow-gold: 0 0 20px rgba(212, 168, 83, 0.3), 0 0 60px rgba(212, 168, 83, 0.1);
+
+  // --- PrimeNG text/surface overrides for readability ---
+  --p-text-color: #0f172a;
+  --p-text-muted-color: #64748b;
+  --p-surface-ground: #f5f3f0;
+  --p-surface-section: #ffffff;
+  --p-surface-card: #ffffff;
+  --p-surface-overlay: #ffffff;
+  --p-surface-border: rgba(15, 23, 42, 0.12);
+  --p-content-color: #0f172a;
+  --p-content-background: #ffffff;
 }
 
 // --- Base Reset & Typography ---
@@ -784,15 +795,21 @@ a {
   }
 
   .p-datatable-tbody > tr {
+    background: #ffffff !important;
+    color: var(--ts-navy-950) !important;
     transition: all var(--ts-transition);
+    &:nth-child(even) {
+      background: #fafaf8 !important;
+    }
     &:hover {
-      background: rgba(212, 168, 83, 0.04) !important;
+      background: rgba(212, 168, 83, 0.06) !important;
       transform: scale(1.002);
     }
     > td {
       padding: 0.75rem 1rem;
       border-color: rgba(15, 23, 42, 0.06) !important;
       font-size: 0.9rem;
+      color: var(--ts-navy-950);
     }
   }
 
@@ -830,10 +847,13 @@ a {
 
   .p-dialog-content {
     padding: 1.5rem;
+    background: #ffffff;
+    color: var(--ts-navy-950);
   }
 
   .p-dialog-footer {
     padding: 1rem 1.5rem;
+    background: #ffffff;
     border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
   }
 }
@@ -851,6 +871,49 @@ a {
   border-radius: var(--ts-radius) !important;
 }
 
+// --- Confirm Dialog ---
+.p-confirmdialog {
+  .p-dialog-content {
+    background: #ffffff;
+    color: var(--ts-navy-950);
+  }
+  .p-confirmdialog-message {
+    color: var(--ts-navy-950);
+  }
+}
+
+// --- Password input ---
+.p-password-input {
+  background: #ffffff !important;
+  color: var(--ts-navy-950) !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
+}
+
+// --- Tooltip ---
+.p-tooltip-text {
+  color: #ffffff !important;
+  background: var(--ts-navy-950) !important;
+}
+
+// --- DatePicker panel ---
+.p-datepicker-panel {
+  background: #ffffff !important;
+  color: var(--ts-navy-950) !important;
+}
+
+// --- InputNumber ---
+.p-inputnumber {
+  .p-inputnumber-input {
+    color: var(--ts-navy-950) !important;
+  }
+}
+
+// --- Textarea ---
+.p-textarea {
+  color: var(--ts-navy-950) !important;
+  background: #ffffff !important;
+}
+
 // --- Float Labels ---
 .p-floatlabel {
   label {
@@ -863,7 +926,13 @@ a {
 .p-inputtext, .p-textarea, .p-select, .p-datepicker, .p-inputnumber-input {
   border-radius: 0.625rem !important;
   font-family: 'Inter', sans-serif;
+  background: #ffffff !important;
+  color: var(--ts-navy-950) !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
   transition: all var(--ts-transition);
+  &::placeholder {
+    color: var(--ts-navy-600) !important;
+  }
   &:focus {
     border-color: var(--ts-gold) !important;
     box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.15), 0 0 0 1px rgba(212, 168, 83, 0.3) !important;
@@ -895,10 +964,46 @@ a {
 // --- Paginator ---
 .p-paginator {
   border: none !important;
+  background: #ffffff !important;
+  color: var(--ts-navy-950) !important;
   .p-paginator-page.p-highlight {
     background: var(--ts-gold) !important;
     color: var(--ts-navy-950) !important;
   }
+  .p-paginator-page,
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-last {
+    color: var(--ts-navy-800) !important;
+  }
+}
+
+// --- Select / Dropdown ---
+.p-select-label,
+.p-dropdown-label {
+  color: var(--ts-navy-950) !important;
+}
+.p-select-panel,
+.p-dropdown-panel {
+  background: #ffffff !important;
+  color: var(--ts-navy-950) !important;
+}
+.p-select-option,
+.p-dropdown-item {
+  color: var(--ts-navy-950) !important;
+  &:hover {
+    background: rgba(212, 168, 83, 0.08) !important;
+  }
+  &.p-highlight {
+    background: rgba(212, 168, 83, 0.12) !important;
+    color: var(--ts-navy-950) !important;
+  }
+}
+
+// --- General label readability ---
+label {
+  color: var(--ts-navy-800);
 }
 
 // ============================================================
