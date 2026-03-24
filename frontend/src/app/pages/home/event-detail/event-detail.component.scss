@@ -336,14 +336,14 @@
   :host ::ng-deep {
     .p-inputnumber {
       .p-inputnumber-input {
-        width: 2.5rem;
+        width: 3rem;
         text-align: center;
-        padding: 0.35rem;
-        font-size: 0.9rem;
+        padding: 0.35rem 0.25rem;
+        font-size: 0.95rem;
         font-weight: 600;
       }
       .p-inputnumber-button {
-        width: 1.75rem;
+        width: 2rem;
         padding: 0.35rem;
       }
     }
