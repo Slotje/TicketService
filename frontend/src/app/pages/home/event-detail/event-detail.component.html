@@ -165,9 +165,18 @@
                           @if (cat.description) {
                             <small>{{ cat.description }}</small>
                           }
-                          @if (cat.validDate) {
+                          @if (cat.validDate || cat.startTime) {
                             <small class="category-date">
-                              <i class="pi pi-calendar"></i> {{ formatValidDate(cat.validDate) }}
+                              <i class="pi pi-calendar"></i>
+                              @if (cat.validDate) {
+                                {{ formatValidDate(cat.validDate) }}
+                              }
+                              @if (cat.startTime) {
+                                {{ formatTime(cat.startTime) }}
+                              }
+                              @if (cat.endTime) {
+                                - {{ formatTime(cat.endTime) }}
+                              }
                             </small>
                           }
                         </div>

@@ -281,15 +281,21 @@ public class OrderService {
 
         Event event = ticket.event;
         LocalDateTime now = LocalDateTime.now();
+        TicketCategory category = ticket.ticketCategory;
 
-        // Check if event is in the past
-        LocalDateTime eventEnd = event.endDate != null ? event.endDate : event.eventDate.plusHours(12);
-        if (now.isAfter(eventEnd)) {
-            throw new TicketServiceException("Dit evenement is al afgelopen", 400);
+        // Determine effective start/end times (category overrides event)
+        LocalDateTime effectiveStart = (category != null && category.startTime != null)
+                ? category.startTime : event.eventDate;
+        LocalDateTime effectiveEnd = (category != null && category.endTime != null)
+                ? category.endTime : (event.endDate != null ? event.endDate : event.eventDate.plusHours(12));
+
+        // Check if this ticket's time window has passed
+        if (now.isAfter(effectiveEnd)) {
+            throw new TicketServiceException("Dit ticket is verlopen", 400);
         }
 
-        // Check if scanning is allowed (only from event start time, with 1 hour margin)
-        if (now.isBefore(event.eventDate.minusHours(1))) {
+        // Check if scanning is allowed (only from 1 hour before start)
+        if (now.isBefore(effectiveStart.minusHours(1))) {
             throw new TicketServiceException(
                     "Scannen is pas mogelijk vanaf 1 uur voor de start van het evenement", 400);
         }
@@ -297,7 +303,8 @@ public class OrderService {
         // For day tickets: check if today matches the valid date
         if (ticket.validDate != null) {
             LocalDate today = now.toLocalDate();
-            if (!today.equals(ticket.validDate)) {
+            // Allow scanning on validDate and the day after (for night events)
+            if (today.isBefore(ticket.validDate) || today.isAfter(ticket.validDate.plusDays(1))) {
                 throw new TicketServiceException(
                         "Dit dagticket is alleen geldig op " + ticket.validDate, 400);
             }

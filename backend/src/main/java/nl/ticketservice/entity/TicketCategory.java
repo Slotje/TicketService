@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -45,6 +46,12 @@ public class TicketCategory extends PanacheEntity {
 
     /** For multi-day events: date this ticket is valid for. Null = valid for all days. */
     public LocalDate validDate;
+
+    /** Start time for this category/day (e.g. doors open). */
+    public LocalDateTime startTime;
+
+    /** End time for this category/day (can be next day for night events). */
+    public LocalDateTime endTime;
 
     @Column(nullable = false)
     public Integer sortOrder = 0;

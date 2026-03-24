@@ -193,6 +193,8 @@ public class EventService {
             category.maxTickets = dto.maxTickets();
         }
         category.validDate = dto.validDate();
+        category.startTime = dto.startTime();
+        category.endTime = dto.endTime();
         if (dto.sortOrder() != null) {
             category.sortOrder = dto.sortOrder();
         }
@@ -251,7 +253,8 @@ public class EventService {
         return new TicketCategoryDTO(
                 c.id, c.name, c.description, c.price, c.serviceFee,
                 c.maxTickets, c.ticketsSold, c.ticketsReserved,
-                c.getAvailableTickets(), c.validDate, c.sortOrder, c.active
+                c.getAvailableTickets(), c.validDate, c.startTime, c.endTime,
+                c.sortOrder, c.active
         );
     }
 }

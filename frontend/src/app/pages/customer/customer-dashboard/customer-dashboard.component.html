@@ -237,7 +237,9 @@
           <p-inputNumber [(ngModel)]="cat.price" [min]="0" [minFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" placeholder="Prijs" class="cat-price" />
           <input pInputText [(ngModel)]="cat.description" placeholder="Beschrijving" class="cat-desc" />
           <p-datePicker [(ngModel)]="cat._validDateObj" dateFormat="dd-mm-yy" placeholder="Geldig op (dag)" class="cat-date" />
-          <p-inputNumber [(ngModel)]="cat.maxTickets" [min]="0" placeholder="Max tickets (0=onbeperkt)" class="cat-max" />
+          <p-datePicker [(ngModel)]="cat._startTimeObj" [showTime]="true" [timeOnly]="false" dateFormat="dd-mm-yy" placeholder="Starttijd" class="cat-date" />
+          <p-datePicker [(ngModel)]="cat._endTimeObj" [showTime]="true" [timeOnly]="false" dateFormat="dd-mm-yy" placeholder="Eindtijd" class="cat-date" />
+          <p-inputNumber [(ngModel)]="cat.maxTickets" [min]="0" placeholder="Max (0=onbeperkt)" class="cat-max" />
         </div>
         <div class="category-actions">
           <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"

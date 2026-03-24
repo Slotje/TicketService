@@ -3,6 +3,7 @@ package nl.ticketservice.dto;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record TicketCategoryDTO(
         Long id,
@@ -22,6 +23,8 @@ public record TicketCategoryDTO(
         Integer ticketsReserved,
         Integer availableTickets,
         LocalDate validDate,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
         Integer sortOrder,
         boolean active
 ) {}

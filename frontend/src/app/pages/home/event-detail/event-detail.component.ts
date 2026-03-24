@@ -109,6 +109,12 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  formatTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleTimeString('nl-NL', {
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
   getTotalPrice(): number {
     return this.currentPrice * this.orderForm.quantity;
   }

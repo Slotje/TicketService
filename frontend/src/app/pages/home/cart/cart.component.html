@@ -11,7 +11,7 @@
         <i class="pi pi-shopping-cart"></i>
       </div>
       <h1>Winkelwagen</h1>
-      <p class="hero-subtitle">{{ items.length }} item(s)</p>
+      <p class="hero-subtitle">{{ totalItemCount }} item(s)</p>
     </div>
   </div>
 
@@ -21,7 +21,7 @@
     </div>
   }
 
-  @if (items.length === 0) {
+  @if (isEmpty) {
     <div class="empty-state mt-3">
       <div class="icon-circle-gold" style="width:3.5rem;height:3.5rem;margin:0 auto 1rem;">
         <i class="pi pi-shopping-cart" style="font-size:1.25rem;"></i>
@@ -32,11 +32,71 @@
     </div>
   }
 
-  @if (items.length > 0) {
+  @if (!isEmpty) {
     <div class="cart-content">
       <div class="cart-items">
+
+        <!-- Reserved Orders (with countdown timers) -->
+        @for (order of reservedOrders; track order.id; let i = $index) {
+          <div class="cart-item reserved" data-aos="fade-up" [attr.data-aos-delay]="100 + (i * 75)">
+            <div class="item-accent reserved-accent"></div>
+            <div class="item-body">
+              <div class="item-header">
+                <div class="item-info">
+                  <div class="item-title-row">
+                    <span class="item-event-name">{{ order.eventName }}</span>
+                    <p-tag value="Gereserveerd" severity="warn" />
+                  </div>
+                  @if (order.ticketCategoryName) {
+                    <span class="item-category">{{ order.ticketCategoryName }}</span>
+                  }
+                  <div class="item-meta">
+                    <span class="meta-detail">
+                      <i class="pi pi-tag"></i>
+                      {{ order.orderNumber }}
+                    </span>
+                    <span class="meta-detail">
+                      <i class="pi pi-ticket"></i>
+                      {{ order.quantity }}x ticket
+                    </span>
+                  </div>
+                </div>
+                <div class="timer-badge" [class.urgent]="isUrgent(order)">
+                  <i class="pi pi-clock"></i>
+                  <span>{{ getTimer(order) }}</span>
+                </div>
+              </div>
+
+              <div class="item-pricing">
+                <div class="price-section">
+                  <div class="price-total">
+                    <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <p-button
+                  label="Bevestigen"
+                  icon="pi pi-check"
+                  (onClick)="goToOrder(order)"
+                  severity="success"
+                  size="small" />
+                <p-button
+                  label="Annuleren"
+                  icon="pi pi-times"
+                  (onClick)="cancelReservedOrder(order)"
+                  severity="danger"
+                  [text]="true"
+                  size="small" />
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Pre-order items (not yet reserved) -->
         @for (item of items; track item.eventId; let i = $index) {
-          <div class="cart-item" data-aos="fade-up" [attr.data-aos-delay]="100 + (i * 75)">
+          <div class="cart-item" data-aos="fade-up" [attr.data-aos-delay]="100 + ((reservedOrders.length + i) * 75)">
             <div class="item-accent"></div>
             <div class="item-body">
               <div class="item-header">
@@ -104,6 +164,14 @@
       <div class="cart-summary" data-aos="fade-up">
         <h3>Overzicht</h3>
         <div class="summary-lines">
+          @for (order of reservedOrders; track order.id) {
+            <div class="summary-line">
+              <span>{{ order.eventName }} ({{ order.quantity }}x)
+                <span class="timer-inline" [class.urgent]="isUrgent(order)">{{ getTimer(order) }}</span>
+              </span>
+              <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+            </div>
+          }
           @for (item of items; track item.eventId) {
             <div class="summary-line">
               <span>{{ item.eventName }} ({{ item.quantity }}x)</span>
@@ -115,12 +183,14 @@
           <span>Totaal</span>
           <span>&euro; {{ cart.totalPrice | number:'1.2-2' }}</span>
         </div>
-        <p-button
-          label="Alles Bestellen"
-          icon="pi pi-shopping-cart"
-          (onClick)="checkoutAll()"
-          [style]="{'width': '100%'}"
-          class="mt-2" />
+        @if (items.length > 0) {
+          <p-button
+            label="Alles Bestellen"
+            icon="pi pi-shopping-cart"
+            (onClick)="checkoutAll()"
+            [style]="{'width': '100%'}"
+            class="mt-2" />
+        }
       </div>
     </div>
   }

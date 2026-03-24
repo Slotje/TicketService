@@ -21,7 +21,9 @@ export interface TicketCategory {
   ticketsSold?: number;
   ticketsReserved?: number;
   availableTickets?: number;
-  validDate?: string;
+  validDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
   sortOrder?: number;
   active: boolean;
 }
