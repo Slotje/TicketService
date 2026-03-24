@@ -68,14 +68,8 @@ export class AppComponent implements OnInit, OnDestroy {
           setTimeout(() => AOS.refresh(), 100);
         }
         const url = (e as NavigationEnd).urlAfterRedirects || (e as NavigationEnd).url;
-        // Pages without a dark hero need a solid navbar
-        this.navbarSolid = url.startsWith('/admin') ||
-          url.startsWith('/klant') ||
-          url.startsWith('/scan') ||
-          url.startsWith('/my-tickets') ||
-          url.startsWith('/login') ||
-          url.startsWith('/forgot-password') ||
-          url.startsWith('/reset-password');
+        // Only the homepage (/) has a dark hero — all other pages need a solid navbar
+        this.navbarSolid = url !== '/' && url !== '';
       })
     );
   }
