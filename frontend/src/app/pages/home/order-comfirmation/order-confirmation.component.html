@@ -59,12 +59,7 @@
       </div>
 
       @if (order.status === 'RESERVED' && remainingTime !== 'Verlopen') {
-        <p-message severity="warn" [style]="{'width': '100%'}">
-          <ng-template #detail>
-            Reservering verloopt over <strong>{{ remainingTime }}</strong>.
-            Vul je adresgegevens in en bevestig je bestelling.
-          </ng-template>
-        </p-message>
+        <p-message severity="warn" [text]="'Reservering verloopt over ' + remainingTime + '. Vul je adresgegevens in en bevestig je bestelling.'" [style]="{'width': '100%'}" />
       }
 
       @if (errorMessage) {
@@ -236,6 +231,14 @@
             [loading]="processing"
             [disabled]="!detailsSaved"
             severity="success"
+            [style]="{'width': '100%'}" />
+          <p-button
+            label="Bestelling Annuleren"
+            icon="pi pi-times"
+            (onClick)="cancelOrder()"
+            [loading]="cancelling"
+            severity="danger"
+            variant="outlined"
             [style]="{'width': '100%'}" />
         }
         @if (order.status === 'CONFIRMED') {

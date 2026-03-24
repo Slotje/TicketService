@@ -81,6 +81,12 @@ public class OrderResource {
         return orderService.confirmOrder(id);
     }
 
+    @POST
+    @Path("/{id}/cancel")
+    public OrderResponseDTO cancel(@PathParam("id") Long id) {
+        return orderService.cancelOrder(id);
+    }
+
     @GET
     @Path("/{id}/pdf")
     @Produces("application/pdf")

@@ -173,6 +173,10 @@ export class ApiService {
     return this.http.post<Order>(`${this.baseUrl}/orders/${id}/confirm`, {});
   }
 
+  cancelOrder(id: number): Observable<Order> {
+    return this.http.post<Order>(`${this.baseUrl}/orders/${id}/cancel`, {});
+  }
+
   downloadOrderPdf(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/orders/${id}/pdf`, {
       responseType: 'blob'
