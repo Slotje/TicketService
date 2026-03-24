@@ -3,6 +3,7 @@ package nl.ticketservice.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -32,6 +33,15 @@ public class Ticket extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     public Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_category_id")
+    public TicketCategory ticketCategory;
+
+    /** For day tickets: the specific date this ticket is valid for. Null = all days. */
+    public LocalDate validDate;
+
+    public String categoryName;
 
     @Column(nullable = false, updatable = false)
     public LocalDateTime createdAt;

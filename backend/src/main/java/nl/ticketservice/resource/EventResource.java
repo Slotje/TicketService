@@ -6,6 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.ticketservice.dto.EventDTO;
+import nl.ticketservice.dto.TicketCategoryDTO;
 import nl.ticketservice.dto.TicketSalesDTO;
 import nl.ticketservice.entity.Customer;
 import nl.ticketservice.entity.Event;
@@ -181,7 +182,8 @@ public class EventResource {
                 dto.availablePhysicalTickets(), dto.totalSold(),
                 dto.physicalTicketsGenerated(),
                 dto.imageUrl(), dto.status(),
-                customer.id, customer.companyName
+                customer.id, customer.companyName,
+                dto.ticketCategories()
         );
         EventDTO created = eventService.createEvent(forced);
         return Response.status(Response.Status.CREATED).entity(created).build();
@@ -283,6 +285,72 @@ public class EventResource {
         Customer customer = customerAuthService.requireCustomer(authHeader);
         requireOwnership(id, customer);
         return eventService.getTicketSales(id);
+    }
+
+    // =========================================================================
+    // Ticket Categories — manage per event (customer + admin)
+    // =========================================================================
+
+    @GET
+    @Path("/{id}/categories")
+    public List<TicketCategoryDTO> getCategories(@PathParam("id") Long id) {
+        return eventService.getTicketCategories(id);
+    }
+
+    @POST
+    @Path("/my/{id}/categories")
+    public TicketCategoryDTO createMyCategory(@PathParam("id") Long id, @Valid TicketCategoryDTO dto,
+                                               @HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        requireOwnership(id, customer);
+        return eventService.createTicketCategory(id, dto);
+    }
+
+    @PUT
+    @Path("/my/{id}/categories/{categoryId}")
+    public TicketCategoryDTO updateMyCategory(@PathParam("id") Long id, @PathParam("categoryId") Long categoryId,
+                                               @Valid TicketCategoryDTO dto,
+                                               @HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        requireOwnership(id, customer);
+        return eventService.updateTicketCategory(id, categoryId, dto);
+    }
+
+    @DELETE
+    @Path("/my/{id}/categories/{categoryId}")
+    public Response deleteMyCategory(@PathParam("id") Long id, @PathParam("categoryId") Long categoryId,
+                                      @HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        requireOwnership(id, customer);
+        eventService.deleteTicketCategory(id, categoryId);
+        return Response.noContent().build();
+    }
+
+    // Admin category management
+    @POST
+    @Path("/{id}/categories")
+    public TicketCategoryDTO createCategory(@PathParam("id") Long id, @Valid TicketCategoryDTO dto,
+                                             @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
+        return eventService.createTicketCategory(id, dto);
+    }
+
+    @PUT
+    @Path("/{id}/categories/{categoryId}")
+    public TicketCategoryDTO updateCategory(@PathParam("id") Long id, @PathParam("categoryId") Long categoryId,
+                                             @Valid TicketCategoryDTO dto,
+                                             @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
+        return eventService.updateTicketCategory(id, categoryId, dto);
+    }
+
+    @DELETE
+    @Path("/{id}/categories/{categoryId}")
+    public Response deleteCategory(@PathParam("id") Long id, @PathParam("categoryId") Long categoryId,
+                                    @HeaderParam("Authorization") String authHeader) {
+        adminAuthService.requireAdmin(authHeader);
+        eventService.deleteTicketCategory(id, categoryId);
+        return Response.noContent().build();
     }
 
     private void requireOwnership(Long eventId, Customer customer) {

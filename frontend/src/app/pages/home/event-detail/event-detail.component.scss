@@ -284,3 +284,64 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+// --- Ticket Category Selection ---
+.field-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ts-navy-600);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--ts-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--ts-gold);
+    background: rgba(212, 168, 83, 0.04);
+  }
+
+  &.selected {
+    border-color: var(--ts-gold);
+    background: rgba(212, 168, 83, 0.08);
+  }
+}
+
+.category-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong { font-size: 0.9rem; color: var(--ts-navy-950); }
+  small { font-size: 0.75rem; color: var(--ts-navy-600); }
+}
+
+.category-date {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  i { font-size: 0.7rem; }
+}
+
+.category-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ts-navy-950);
+  white-space: nowrap;
+}

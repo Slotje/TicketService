@@ -3,6 +3,7 @@ package nl.ticketservice.service;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import nl.ticketservice.dto.EventDTO;
+import nl.ticketservice.dto.TicketCategoryDTO;
 import nl.ticketservice.dto.TicketSalesDTO;
 import nl.ticketservice.entity.*;
 import nl.ticketservice.exception.TicketServiceException;
@@ -137,6 +138,69 @@ public class EventService {
         );
     }
 
+    // =========================================================================
+    // Ticket Category management
+    // =========================================================================
+
+    public List<TicketCategoryDTO> getTicketCategories(Long eventId) {
+        return TicketCategory.findByEvent(eventId).stream()
+                .map(this::toCategoryDTO)
+                .toList();
+    }
+
+    @Transactional
+    public TicketCategoryDTO createTicketCategory(Long eventId, TicketCategoryDTO dto) {
+        Event event = Event.findById(eventId);
+        if (event == null) {
+            throw new TicketServiceException("Evenement niet gevonden", 404);
+        }
+
+        TicketCategory category = new TicketCategory();
+        category.event = event;
+        updateCategoryEntity(category, dto);
+        category.persist();
+        return toCategoryDTO(category);
+    }
+
+    @Transactional
+    public TicketCategoryDTO updateTicketCategory(Long eventId, Long categoryId, TicketCategoryDTO dto) {
+        TicketCategory category = TicketCategory.findById(categoryId);
+        if (category == null || !category.event.id.equals(eventId)) {
+            throw new TicketServiceException("Ticket categorie niet gevonden", 404);
+        }
+        updateCategoryEntity(category, dto);
+        return toCategoryDTO(category);
+    }
+
+    @Transactional
+    public void deleteTicketCategory(Long eventId, Long categoryId) {
+        TicketCategory category = TicketCategory.findById(categoryId);
+        if (category == null || !category.event.id.equals(eventId)) {
+            throw new TicketServiceException("Ticket categorie niet gevonden", 404);
+        }
+        if (category.ticketsSold > 0) {
+            throw new TicketServiceException("Categorie kan niet worden verwijderd: er zijn al tickets verkocht", 409);
+        }
+        category.delete();
+    }
+
+    private void updateCategoryEntity(TicketCategory category, TicketCategoryDTO dto) {
+        category.name = dto.name();
+        category.description = dto.description();
+        category.price = dto.price();
+        category.serviceFee = dto.serviceFee();
+        if (dto.maxTickets() != null) {
+            category.maxTickets = dto.maxTickets();
+        }
+        category.validDate = dto.validDate();
+        category.startTime = dto.startTime();
+        category.endTime = dto.endTime();
+        if (dto.sortOrder() != null) {
+            category.sortOrder = dto.sortOrder();
+        }
+        category.active = dto.active();
+    }
+
     private void updateEntity(Event event, EventDTO dto) {
         event.name = dto.name();
         event.description = dto.description();
@@ -166,6 +230,10 @@ public class EventService {
     }
 
     public EventDTO toDTO(Event e) {
+        List<TicketCategoryDTO> categoryDTOs = TicketCategory.findByEvent(e.id).stream()
+                .map(this::toCategoryDTO)
+                .toList();
+
         return new EventDTO(
                 e.id, e.name, e.description, e.eventDate, e.endDate,
                 e.location, e.address, e.maxTickets, e.physicalTickets,
@@ -176,7 +244,17 @@ public class EventService {
                 e.getAvailablePhysicalTickets(), e.getTotalSold(),
                 e.physicalTicketsGenerated,
                 e.imageUrl, e.status.name(),
-                e.customer.id, e.customer.companyName
+                e.customer.id, e.customer.companyName,
+                categoryDTOs
+        );
+    }
+
+    private TicketCategoryDTO toCategoryDTO(TicketCategory c) {
+        return new TicketCategoryDTO(
+                c.id, c.name, c.description, c.price, c.serviceFee,
+                c.maxTickets, c.ticketsSold, c.ticketsReserved,
+                c.getAvailableTickets(), c.validDate, c.startTime, c.endTime,
+                c.sortOrder, c.active
         );
     }
 }

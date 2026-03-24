@@ -304,6 +304,59 @@
   .stats-grid { grid-template-columns: 1fr; }
 }
 
+// --- Ticket Categories ---
+.section-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ts-navy-950);
+  margin: 0 0 0.5rem;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: var(--ts-navy-600);
+  margin: 0 0 1rem;
+}
+
+.category-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.02);
+  border-radius: var(--ts-radius);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.category-fields {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cat-name { width: 140px; }
+.cat-desc { flex: 1; min-width: 120px; }
+.cat-date { width: 140px; }
+
+:host ::ng-deep .cat-price,
+:host ::ng-deep .cat-max {
+  width: 120px;
+}
+
+.category-actions {
+  flex-shrink: 0;
+  padding-top: 0.25rem;
+}
+
+.section-divider {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 // --- Branding Dialog ---
 .branding-layout {
   display: grid;

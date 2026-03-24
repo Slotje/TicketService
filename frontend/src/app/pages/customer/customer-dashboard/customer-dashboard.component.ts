@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../../services/api.service';
 import { CustomerAuthService } from '../../../services/customer-auth.service';
-import { Event, TicketSales } from '../../../models/models';
+import { Event, TicketCategory, TicketSales } from '../../../models/models';
 import { TableModule } from 'primeng/table';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -51,6 +51,7 @@ export class CustomerDashboardComponent implements OnInit {
   physicalSellQuantity = 1;
 
   eventForm: Event = this.emptyForm();
+  eventCategories: any[] = [];
 
   uploadingImage = false;
   brandingDialogVisible = false;
@@ -116,7 +117,36 @@ export class CustomerDashboardComponent implements OnInit {
     this.editMode = true;
     this.editingId = event.id!;
     this.dialogError = '';
+    this.eventCategories = (event.ticketCategories || []).map(c => ({
+      ...c,
+      _validDateObj: c.validDate ? new Date(c.validDate + 'T00:00:00') : null,
+      _startTimeObj: c.startTime ? new Date(c.startTime) : null,
+      _endTimeObj: c.endTime ? new Date(c.endTime) : null
+    }));
     this.dialogVisible = true;
+  }
+
+  addCategory() {
+    this.eventCategories.push({
+      name: '', description: '', price: 0, serviceFee: null,
+      maxTickets: 0, validDate: null, startTime: null, endTime: null,
+      sortOrder: this.eventCategories.length,
+      active: true, _validDateObj: null, _startTimeObj: null, _endTimeObj: null
+    });
+  }
+
+  removeCategory(index: number) {
+    const cat = this.eventCategories[index];
+    if (cat.id && cat.ticketsSold > 0) {
+      this.dialogError = 'Categorie kan niet worden verwijderd: er zijn al tickets verkocht';
+      return;
+    }
+    if (cat.id) {
+      this.api.deleteMyTicketCategory(this.editingId!, cat.id).subscribe({
+        error: (err: any) => this.dialogError = err.error?.error || 'Fout bij verwijderen categorie'
+      });
+    }
+    this.eventCategories.splice(index, 1);
   }
 
   saveEvent() {
@@ -140,7 +170,12 @@ export class CustomerDashboardComponent implements OnInit {
       : this.api.createMyEvent(this.eventForm);
 
     obs.subscribe({
-      next: () => {
+      next: (saved) => {
+        const eventId = saved.id!;
+        // Save categories if in edit mode
+        if (this.editMode && this.eventCategories.length > 0) {
+          this.saveCategories(eventId);
+        }
         this.dialogVisible = false;
         this.saving = false;
         this.successMessage = this.editMode ? 'Evenement bijgewerkt' : 'Evenement aangemaakt';
@@ -152,6 +187,32 @@ export class CustomerDashboardComponent implements OnInit {
         this.saving = false;
       }
     });
+  }
+
+  private saveCategories(eventId: number) {
+    for (let i = 0; i < this.eventCategories.length; i++) {
+      const cat = this.eventCategories[i];
+      if (!cat.name?.trim()) continue;
+
+      const dto: TicketCategory = {
+        name: cat.name,
+        description: cat.description,
+        price: cat.price || 0,
+        serviceFee: cat.serviceFee,
+        maxTickets: cat.maxTickets || 0,
+        validDate: cat._validDateObj ? new Date(cat._validDateObj).toISOString().slice(0, 10) : null,
+        startTime: cat._startTimeObj ? new Date(cat._startTimeObj).toISOString().slice(0, 19) : null,
+        endTime: cat._endTimeObj ? new Date(cat._endTimeObj).toISOString().slice(0, 19) : null,
+        sortOrder: i,
+        active: cat.active ?? true
+      };
+
+      if (cat.id) {
+        this.api.updateMyTicketCategory(eventId, cat.id, dto).subscribe();
+      } else {
+        this.api.createMyTicketCategory(eventId, dto).subscribe();
+      }
+    }
   }
 
   publishEvent(event: Event) {

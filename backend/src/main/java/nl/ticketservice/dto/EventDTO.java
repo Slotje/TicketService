@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record EventDTO(
         Long id,
@@ -42,5 +43,6 @@ public record EventDTO(
         String imageUrl,
         String status,
         Long customerId,
-        String customerName
+        String customerName,
+        List<TicketCategoryDTO> ticketCategories
 ) {}

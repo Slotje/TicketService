@@ -11,6 +11,23 @@ export interface Customer {
   active: boolean;
 }
 
+export interface TicketCategory {
+  id?: number;
+  name: string;
+  description?: string;
+  price: number;
+  serviceFee?: number;
+  maxTickets?: number;
+  ticketsSold?: number;
+  ticketsReserved?: number;
+  availableTickets?: number;
+  validDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  sortOrder?: number;
+  active: boolean;
+}
+
 export interface Event {
   id?: number;
   name: string;
@@ -37,10 +54,12 @@ export interface Event {
   status: string;
   customerId: number;
   customerName?: string;
+  ticketCategories?: TicketCategory[];
 }
 
 export interface OrderRequest {
   eventId: number;
+  ticketCategoryId?: number;
   buyerFirstName: string;
   buyerLastName: string;
   buyerEmail: string;
@@ -67,6 +86,8 @@ export interface Order {
   status: string;
   eventName: string;
   eventId: number;
+  ticketCategoryName?: string;
+  ticketCategoryId?: number;
   createdAt: string;
   confirmedAt?: string;
   expiresAt?: string;
@@ -85,6 +106,8 @@ export interface Ticket {
   ticketCode: string;
   qrCodeData: string;
   ticketType?: string;
+  categoryName?: string;
+  validDate?: string;
   scanned: boolean;
   scannedAt?: string;
   createdAt: string;

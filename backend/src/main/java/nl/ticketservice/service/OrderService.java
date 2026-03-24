@@ -13,6 +13,7 @@ import nl.ticketservice.exception.TicketServiceException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -77,6 +78,34 @@ public class OrderService {
             );
         }
 
+        // Resolve ticket category (optional)
+        TicketCategory category = null;
+        BigDecimal ticketPrice = event.ticketPrice;
+        BigDecimal effectiveFee = event.getEffectiveOnlineServiceFee();
+
+        if (dto.ticketCategoryId() != null) {
+            category = TicketCategory.findById(dto.ticketCategoryId());
+            if (category == null || !category.event.id.equals(event.id)) {
+                throw new TicketServiceException("Ticket categorie niet gevonden", 404);
+            }
+            if (!category.active) {
+                throw new TicketServiceException("Deze ticket categorie is niet beschikbaar", 400);
+            }
+            ticketPrice = category.price;
+            if (category.serviceFee != null) {
+                effectiveFee = category.serviceFee;
+            }
+            // Check category-level availability
+            if (category.maxTickets > 0 && category.getAvailableTickets() < dto.quantity()) {
+                int available = category.getAvailableTickets();
+                if (available <= 0) {
+                    throw new TicketServiceException("Deze ticket categorie is uitverkocht", 400);
+                }
+                throw new TicketServiceException(
+                        "Er zijn slechts " + available + " tickets beschikbaar voor deze categorie", 400);
+            }
+        }
+
         if (!event.hasAvailableTickets(dto.quantity())) {
             int available = event.getAvailableTickets();
             if (available <= 0) {
@@ -87,8 +116,11 @@ public class OrderService {
             );
         }
 
-        // Reserve tickets (online only - physical are handled separately)
+        // Reserve tickets
         event.ticketsReserved += dto.quantity();
+        if (category != null) {
+            category.ticketsReserved += dto.quantity();
+        }
 
         TicketOrder order = new TicketOrder();
         order.buyerFirstName = dto.buyerFirstName();
@@ -96,23 +128,26 @@ public class OrderService {
         order.buyerEmail = dto.buyerEmail().toLowerCase().trim();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
-        // Use effective online service fee (total service cost spread over online tickets only)
-        BigDecimal effectiveFee = event.getEffectiveOnlineServiceFee();
         order.serviceFeePerTicket = effectiveFee;
         order.totalServiceFee = effectiveFee.multiply(BigDecimal.valueOf(dto.quantity()));
-        BigDecimal ticketTotal = event.ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
+        BigDecimal ticketTotal = ticketPrice.multiply(BigDecimal.valueOf(dto.quantity()));
         order.totalPrice = ticketTotal.add(order.totalServiceFee);
         order.status = OrderStatus.RESERVED;
         order.event = event;
         order.expiresAt = LocalDateTime.now().plusMinutes(reservationTimeoutMinutes);
         order.persist();
 
-        // Generate tickets (online type, sold through webshop)
+        // Generate tickets
         for (int i = 0; i < dto.quantity(); i++) {
             Ticket ticket = new Ticket();
             ticket.order = order;
             ticket.event = event;
             ticket.ticketType = nl.ticketservice.entity.TicketType.ONLINE;
+            if (category != null) {
+                ticket.ticketCategory = category;
+                ticket.validDate = category.validDate;
+                ticket.categoryName = category.name;
+            }
             ticket.persist();
             order.tickets.add(ticket);
         }
@@ -172,6 +207,13 @@ public class OrderService {
         event.ticketsReserved -= order.quantity;
         event.ticketsSold += order.quantity;
 
+        // Update category counters
+        if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
+            TicketCategory cat = order.tickets.get(0).ticketCategory;
+            cat.ticketsReserved -= order.quantity;
+            cat.ticketsSold += order.quantity;
+        }
+
         if (event.getAvailableTickets() <= 0) {
             event.status = EventStatus.SOLD_OUT;
         }
@@ -196,6 +238,10 @@ public class OrderService {
         }
 
         order.event.ticketsReserved -= order.quantity;
+        // Update category counters
+        if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
+            order.tickets.get(0).ticketCategory.ticketsReserved -= order.quantity;
+        }
 
         order.status = OrderStatus.CANCELLED;
         return toDTO(order);
@@ -203,6 +249,9 @@ public class OrderService {
 
     private void cancelExpiredOrder(TicketOrder order) {
         order.event.ticketsReserved -= order.quantity;
+        if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
+            order.tickets.get(0).ticketCategory.ticketsReserved -= order.quantity;
+        }
         order.status = OrderStatus.EXPIRED;
     }
 
@@ -230,6 +279,29 @@ public class OrderService {
             throw new TicketServiceException("Dit ticket hoort niet bij dit evenement", 400);
         }
 
+        Event event = ticket.event;
+        LocalDateTime now = LocalDateTime.now();
+        TicketCategory category = ticket.ticketCategory;
+
+        // Determine effective end time (category overrides event)
+        LocalDateTime effectiveEnd = (category != null && category.endTime != null)
+                ? category.endTime : (event.endDate != null ? event.endDate : event.eventDate.plusHours(12));
+
+        // Check if this ticket's time window has passed
+        if (now.isAfter(effectiveEnd)) {
+            throw new TicketServiceException("Dit ticket is verlopen", 400);
+        }
+
+        // For day tickets: check if today matches the valid date
+        if (ticket.validDate != null) {
+            LocalDate today = now.toLocalDate();
+            // Allow scanning on validDate and the day after (for night events)
+            if (today.isBefore(ticket.validDate) || today.isAfter(ticket.validDate.plusDays(1))) {
+                throw new TicketServiceException(
+                        "Dit dagticket is alleen geldig op " + ticket.validDate, 400);
+            }
+        }
+
         if (ticket.scanned) {
             throw new TicketServiceException(
                     "Ticket is al gescand op " + ticket.scannedAt, 400
@@ -237,7 +309,7 @@ public class OrderService {
         }
 
         ticket.scanned = true;
-        ticket.scannedAt = LocalDateTime.now();
+        ticket.scannedAt = now;
 
         return toTicketDTO(ticket);
     }
@@ -247,13 +319,24 @@ public class OrderService {
                 .map(this::toTicketDTO)
                 .toList();
 
+        // Determine category name from first ticket
+        String categoryName = null;
+        Long categoryId = null;
+        if (!o.tickets.isEmpty() && o.tickets.get(0).categoryName != null) {
+            categoryName = o.tickets.get(0).categoryName;
+            if (o.tickets.get(0).ticketCategory != null) {
+                categoryId = o.tickets.get(0).ticketCategory.id;
+            }
+        }
+
         return new OrderResponseDTO(
                 o.id, o.orderNumber, o.buyerFirstName, o.buyerLastName,
                 o.buyerEmail, o.buyerPhone,
                 o.buyerStreet, o.buyerHouseNumber, o.buyerPostalCode, o.buyerCity,
                 o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
                 o.totalPrice, o.status.name(), o.event.name,
-                o.event.id, o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
+                o.event.id, categoryName, categoryId,
+                o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
         );
     }
 
@@ -262,6 +345,7 @@ public class OrderService {
     }
 
     private TicketDTO toTicketDTO(Ticket t) {
-        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.ticketType.name(), t.scanned, t.scannedAt, t.createdAt);
+        return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.ticketType.name(),
+                t.categoryName, t.validDate, t.scanned, t.scannedAt, t.createdAt);
     }
 }
