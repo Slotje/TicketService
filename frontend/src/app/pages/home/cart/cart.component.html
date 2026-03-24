@@ -181,7 +181,7 @@
         </div>
         <div class="summary-total">
           <span>Totaal</span>
-          <span>&euro; {{ cart.totalPrice | number:'1.2-2' }}</span>
+          <span>&euro; {{ cartTotalPrice | number:'1.2-2' }}</span>
         </div>
         @if (items.length > 0) {
           <p-button

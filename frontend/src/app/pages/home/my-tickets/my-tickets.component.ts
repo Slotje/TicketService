@@ -44,6 +44,18 @@ export class MyTicketsComponent implements OnInit {
     });
   }
 
+  get confirmedOrders(): Order[] {
+    return this.orders.filter(o => o.status === 'CONFIRMED');
+  }
+
+  get reservedOrders(): Order[] {
+    return this.orders.filter(o => o.status === 'RESERVED');
+  }
+
+  get cancelledOrders(): Order[] {
+    return this.orders.filter(o => o.status === 'CANCELLED' || o.status === 'EXPIRED');
+  }
+
   openOrder(orderNumber: string) {
     this.router.navigate(['/order', orderNumber]);
   }

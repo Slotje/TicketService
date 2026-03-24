@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
 import { Order } from '../models/models';
 
 export interface CartItem {
@@ -16,6 +16,13 @@ export interface CartItem {
   addedAt: number;
 }
 
+export interface CartState {
+  totalCount: number;
+  totalPrice: number;
+  shortestTimer: string;
+  isTimerUrgent: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -23,16 +30,51 @@ export class CartService {
   private readonly STORAGE_KEY = 'ts_cart';
   private items$ = new BehaviorSubject<CartItem[]>(this.loadFromStorage());
   private reservedOrders$ = new BehaviorSubject<Order[]>([]);
+  private timerTick$ = new BehaviorSubject<number>(0);
   private timerInterval: any;
 
   reservedTimers: Record<number, string> = {};
 
+  /** Reactive cart state observable for use in templates */
+  state$: Observable<CartState> = combineLatest([
+    this.items$, this.reservedOrders$, this.timerTick$
+  ]).pipe(
+    map(([items, orders]) => {
+      const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+      const cartTotal = items.reduce((sum, item) =>
+        sum + (item.ticketPrice + item.serviceFee) * item.quantity, 0);
+      const reservedTotal = orders.reduce((sum, order) =>
+        sum + (order.totalPrice || 0), 0);
+
+      let shortestTimer = '';
+      let isTimerUrgent = false;
+      const now = Date.now();
+      if (orders.length > 0) {
+        let minDiff = Infinity;
+        for (const order of orders) {
+          if (!order.expiresAt) continue;
+          const diff = new Date(order.expiresAt).getTime() - now;
+          if (diff > 0 && diff < minDiff) minDiff = diff;
+          if (diff > 0 && diff < 120000) isTimerUrgent = true;
+        }
+        if (minDiff !== Infinity) {
+          const m = Math.floor(minDiff / 60000);
+          const s = Math.floor((minDiff % 60000) / 1000);
+          shortestTimer = `${m}:${s.toString().padStart(2, '0')}`;
+        }
+      }
+
+      return {
+        totalCount: itemCount + orders.length,
+        totalPrice: cartTotal + reservedTotal,
+        shortestTimer,
+        isTimerUrgent
+      };
+    })
+  );
+
   get cartItems$(): Observable<CartItem[]> {
     return this.items$.asObservable();
-  }
-
-  get reservedOrders$$(): Observable<Order[]> {
-    return this.reservedOrders$.asObservable();
   }
 
   get cartItems(): CartItem[] {
@@ -43,46 +85,12 @@ export class CartService {
     return this.reservedOrders$.value;
   }
 
-  get itemCount(): number {
-    return this.items$.value.reduce((sum, item) => sum + item.quantity, 0);
-  }
-
-  get reservedCount(): number {
-    return this.reservedOrders$.value.length;
-  }
-
-  get totalCount(): number {
-    return this.itemCount + this.reservedCount;
-  }
-
   get totalPrice(): number {
     const cartTotal = this.items$.value.reduce((sum, item) =>
       sum + (item.ticketPrice + item.serviceFee) * item.quantity, 0);
     const reservedTotal = this.reservedOrders$.value.reduce((sum, order) =>
       sum + (order.totalPrice || 0), 0);
     return cartTotal + reservedTotal;
-  }
-
-  get shortestTimer(): string {
-    const orders = this.reservedOrders$.value;
-    if (orders.length === 0) return '';
-    let minDiff = Infinity;
-    const now = Date.now();
-    for (const order of orders) {
-      if (!order.expiresAt) continue;
-      const diff = new Date(order.expiresAt).getTime() - now;
-      if (diff > 0 && diff < minDiff) minDiff = diff;
-    }
-    if (minDiff === Infinity) return '';
-    const m = Math.floor(minDiff / 60000);
-    const s = Math.floor((minDiff % 60000) / 1000);
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
-
-  get isTimerUrgent(): boolean {
-    const orders = this.reservedOrders$.value;
-    const now = Date.now();
-    return orders.some(o => o.expiresAt && (new Date(o.expiresAt).getTime() - now) < 120000);
   }
 
   setReservedOrders(orders: Order[]) {
@@ -139,6 +147,8 @@ export class CartService {
       this.reservedOrders$.next(filtered);
       if (filtered.length === 0) this.stopTimers();
     }
+    // Trigger state$ recalculation
+    this.timerTick$.next(now);
   }
 
   addItem(item: Omit<CartItem, 'addedAt'>): void {
