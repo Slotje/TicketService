@@ -58,7 +58,11 @@ export class EventDetailComponent implements OnInit {
 
   get maxTickets(): number {
     if (!this.event) return 10;
-    return Math.min(this.event.maxTicketsPerOrder, this.event.availableTickets ?? 0);
+    let max = Math.min(this.event.maxTicketsPerOrder, this.event.availableTickets ?? 0);
+    if (this.selectedCategory?.maxTickets && this.selectedCategory.maxTickets > 0) {
+      max = Math.min(max, this.selectedCategory.availableTickets ?? 0);
+    }
+    return Math.max(max, 0);
   }
 
   constructor(
@@ -96,6 +100,10 @@ export class EventDetailComponent implements OnInit {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
+  }
+
+  isCategorySoldOut(cat: TicketCategory): boolean {
+    return !!(cat.maxTickets && cat.maxTickets > 0 && (cat.availableTickets ?? 0) <= 0);
   }
 
   selectCategory(category: TicketCategory) {
