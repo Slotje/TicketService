@@ -24,6 +24,9 @@ export class AppComponent implements OnInit, OnDestroy {
   adminMenuVisible = false;
   navbarScrolled = false;
   navbarSolid = false;
+  cartCount = 0;
+  cartTimer = '';
+  cartTimerUrgent = false;
   private subs: Subscription[] = [];
   private isBrowser: boolean;
 
@@ -63,7 +66,12 @@ export class AppComponent implements OnInit, OnDestroy {
         this.buildMenu();
         if (loggedIn) this.loadReservedOrders();
       }),
-      this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu())
+      this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
+      this.cart.state$.subscribe(state => {
+        this.cartCount = state.totalCount;
+        this.cartTimer = state.shortestTimer;
+        this.cartTimerUrgent = state.isTimerUrgent;
+      })
     );
 
     // Refresh AOS on route change & detect pages without dark hero

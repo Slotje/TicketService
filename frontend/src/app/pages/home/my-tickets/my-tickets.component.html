@@ -39,48 +39,148 @@
   }
 
   @if (orders.length > 0) {
-    <div class="orders-list mt-2">
-      @for (order of orders; track order.id; let i = $index) {
-        <div class="order-card hover-lift" data-aos="fade-up" [attr.data-aos-delay]="100 + (i * 75)" (click)="openOrder(order.orderNumber)">
-          <div class="order-accent" [class.confirmed]="order.status === 'CONFIRMED'"
-               [class.reserved]="order.status === 'RESERVED'"
-               [class.expired]="order.status === 'CANCELLED' || order.status === 'EXPIRED'"></div>
-          <div class="order-content">
-            <div class="order-header">
-              <div>
-                <span class="order-event-name">{{ order.eventName }}</span>
-                <span class="order-number">{{ order.orderNumber }}</span>
-              </div>
-              <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
-            </div>
-            <div class="order-meta">
-              <div class="meta-item">
-                <i class="pi pi-ticket"></i>
-                <span>{{ order.quantity }} ticket(s)</span>
-              </div>
-              <div class="meta-item">
-                <i class="pi pi-euro"></i>
-                <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
-              </div>
-              <div class="meta-item">
-                <i class="pi pi-clock"></i>
-                <span>{{ formatDate(order.createdAt) }}</span>
-              </div>
-            </div>
-            @if (order.status === 'CONFIRMED' && order.tickets) {
-              <div class="scan-progress">
-                <div class="scan-bar">
-                  <div class="scan-fill" [style.width.%]="(getScannedCount(order) / order.tickets.length) * 100"></div>
+    <div class="orders-sections mt-2">
+
+      <!-- Bevestigd -->
+      @if (confirmedOrders.length > 0) {
+        <div class="orders-section" data-aos="fade-up">
+          <div class="section-header confirmed">
+            <i class="pi pi-check-circle"></i>
+            <h2>Bevestigd</h2>
+            <span class="section-count">{{ confirmedOrders.length }}</span>
+          </div>
+          <div class="orders-list">
+            @for (order of confirmedOrders; track order.id; let i = $index) {
+              <div class="order-card hover-lift" [attr.data-aos-delay]="i * 50" (click)="openOrder(order.orderNumber)">
+                <div class="order-accent confirmed"></div>
+                <div class="order-content">
+                  <div class="order-header">
+                    <div>
+                      <span class="order-event-name">{{ order.eventName }}</span>
+                      <span class="order-number">{{ order.orderNumber }}</span>
+                    </div>
+                    <p-tag value="Bevestigd" severity="success" />
+                  </div>
+                  <div class="order-meta">
+                    <div class="meta-item">
+                      <i class="pi pi-ticket"></i>
+                      <span>{{ order.quantity }} ticket(s)</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-euro"></i>
+                      <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-clock"></i>
+                      <span>{{ formatDate(order.createdAt) }}</span>
+                    </div>
+                  </div>
+                  @if (order.tickets) {
+                    <div class="scan-progress">
+                      <div class="scan-bar">
+                        <div class="scan-fill" [style.width.%]="(getScannedCount(order) / order.tickets.length) * 100"></div>
+                      </div>
+                      <span class="scan-text">{{ getScannedCount(order) }} / {{ order.tickets.length }} gescand</span>
+                    </div>
+                  }
                 </div>
-                <span class="scan-text">{{ getScannedCount(order) }} / {{ order.tickets.length }} gescand</span>
+                <div class="order-arrow">
+                  <i class="pi pi-chevron-right"></i>
+                </div>
               </div>
             }
           </div>
-          <div class="order-arrow">
-            <i class="pi pi-chevron-right"></i>
+        </div>
+      }
+
+      <!-- Gereserveerd -->
+      @if (reservedOrders.length > 0) {
+        <div class="orders-section" data-aos="fade-up">
+          <div class="section-header reserved">
+            <i class="pi pi-clock"></i>
+            <h2>Gereserveerd</h2>
+            <span class="section-count">{{ reservedOrders.length }}</span>
+          </div>
+          <div class="orders-list">
+            @for (order of reservedOrders; track order.id; let i = $index) {
+              <div class="order-card hover-lift" [attr.data-aos-delay]="i * 50" (click)="openOrder(order.orderNumber)">
+                <div class="order-accent reserved"></div>
+                <div class="order-content">
+                  <div class="order-header">
+                    <div>
+                      <span class="order-event-name">{{ order.eventName }}</span>
+                      <span class="order-number">{{ order.orderNumber }}</span>
+                    </div>
+                    <p-tag value="Gereserveerd" severity="warn" />
+                  </div>
+                  <div class="order-meta">
+                    <div class="meta-item">
+                      <i class="pi pi-ticket"></i>
+                      <span>{{ order.quantity }} ticket(s)</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-euro"></i>
+                      <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-clock"></i>
+                      <span>{{ formatDate(order.createdAt) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="order-arrow">
+                  <i class="pi pi-chevron-right"></i>
+                </div>
+              </div>
+            }
           </div>
         </div>
       }
+
+      <!-- Geannuleerd -->
+      @if (cancelledOrders.length > 0) {
+        <div class="orders-section" data-aos="fade-up">
+          <div class="section-header cancelled">
+            <i class="pi pi-times-circle"></i>
+            <h2>Geannuleerd</h2>
+            <span class="section-count">{{ cancelledOrders.length }}</span>
+          </div>
+          <div class="orders-list">
+            @for (order of cancelledOrders; track order.id; let i = $index) {
+              <div class="order-card hover-lift" [attr.data-aos-delay]="i * 50" (click)="openOrder(order.orderNumber)">
+                <div class="order-accent expired"></div>
+                <div class="order-content">
+                  <div class="order-header">
+                    <div>
+                      <span class="order-event-name">{{ order.eventName }}</span>
+                      <span class="order-number">{{ order.orderNumber }}</span>
+                    </div>
+                    <p-tag [value]="getStatusLabel(order.status)" severity="danger" />
+                  </div>
+                  <div class="order-meta">
+                    <div class="meta-item">
+                      <i class="pi pi-ticket"></i>
+                      <span>{{ order.quantity }} ticket(s)</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-euro"></i>
+                      <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="meta-item">
+                      <i class="pi pi-clock"></i>
+                      <span>{{ formatDate(order.createdAt) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="order-arrow">
+                  <i class="pi pi-chevron-right"></i>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
     </div>
   }
 </div>

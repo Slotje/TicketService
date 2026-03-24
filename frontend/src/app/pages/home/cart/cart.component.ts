@@ -21,6 +21,8 @@ import { Subscription } from 'rxjs';
 export class CartComponent implements OnInit, OnDestroy {
   Math = Math;
   items: CartItem[] = [];
+  reservedOrders: Order[] = [];
+  cartTotalPrice = 0;
   processing: Record<number, boolean> = {};
   errorMessage = '';
   private subs: Subscription[] = [];
@@ -33,18 +35,20 @@ export class CartComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.subs.push(this.cart.cartItems$.subscribe(items => {
-      this.items = items;
-    }));
+    this.subs.push(
+      this.cart.cartItems$.subscribe(items => {
+        this.items = items;
+      }),
+      this.cart.state$.subscribe(state => {
+        this.reservedOrders = this.cart.reservedOrders;
+        this.cartTotalPrice = state.totalPrice;
+      })
+    );
     this.loadReservedOrders();
   }
 
   ngOnDestroy() {
     this.subs.forEach(s => s.unsubscribe());
-  }
-
-  get reservedOrders(): Order[] {
-    return this.cart.reservedOrders;
   }
 
   get isEmpty(): boolean {
