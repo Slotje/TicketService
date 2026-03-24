@@ -1,7 +1,13 @@
 package nl.ticketservice.resource;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.ticketservice.service.AdminAuthService;
@@ -12,7 +18,6 @@ import org.jboss.resteasy.reactive.RestForm;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
@@ -33,7 +38,7 @@ public class ImageResource {
             "image/webp", ".webp"
     );
 
-    private final Path uploadDir = Paths.get(System.getProperty("ticket.upload.dir", "/tmp/ticketservice-images"));
+    private final java.nio.file.Path uploadDir = Paths.get(System.getProperty("ticket.upload.dir", "/tmp/ticketservice-images"));
 
     @Inject
     AdminAuthService adminAuthService;
@@ -92,7 +97,7 @@ public class ImageResource {
 
         try {
             Files.createDirectories(uploadDir);
-            Path target = uploadDir.resolve(filename);
+            java.nio.file.Path target = uploadDir.resolve(filename);
             Files.copy(file.filePath(), target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new TicketServiceException("Fout bij opslaan bestand", 500);
@@ -110,7 +115,7 @@ public class ImageResource {
             throw new TicketServiceException("Ongeldig bestandsnaam", 400);
         }
 
-        Path file = uploadDir.resolve(filename);
+        java.nio.file.Path file = uploadDir.resolve(filename);
         if (!Files.exists(file)) {
             throw new TicketServiceException("Bestand niet gevonden", 404);
         }
