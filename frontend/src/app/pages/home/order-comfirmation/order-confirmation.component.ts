@@ -25,7 +25,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   loading = true;
   processing = false;
   cancelling = false;
-  savingDetails = false;
   errorMessage = '';
   successMessage = '';
   remainingTime = '';
@@ -37,7 +36,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
     buyerPostalCode: '',
     buyerCity: ''
   };
-  detailsSaved = false;
 
   constructor(public api: ApiService, private route: ActivatedRoute, private userAuth: UserAuthService) {}
 
@@ -54,7 +52,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
             buyerPostalCode: order.buyerPostalCode || '',
             buyerCity: order.buyerCity || ''
           };
-          this.detailsSaved = true;
         } else if (this.userAuth.hasAddress) {
           // Auto-fill from user profile
           this.buyerDetails = {
@@ -129,35 +126,27 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       && this.buyerDetails.buyerCity?.trim());
   }
 
-  saveDetails() {
+  confirmOrder() {
     if (!this.isDetailsValid()) return;
-    this.savingDetails = true;
+    this.processing = true;
     this.errorMessage = '';
     this.api.updateOrderDetails(this.order!.id, this.buyerDetails).subscribe({
-      next: (order) => {
-        this.order = order;
-        this.savingDetails = false;
-        this.detailsSaved = true;
+      next: () => {
+        this.api.confirmOrder(this.order!.id).subscribe({
+          next: (order) => {
+            this.order = order;
+            this.processing = false;
+            this.successMessage = 'Bestelling is bevestigd! Je tickets zijn nu beschikbaar.';
+            clearInterval(this.timerInterval);
+          },
+          error: (err) => {
+            this.errorMessage = err.error?.error || 'Fout bij bevestigen';
+            this.processing = false;
+          }
+        });
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Fout bij opslaan gegevens';
-        this.savingDetails = false;
-      }
-    });
-  }
-
-  confirmOrder() {
-    this.processing = true;
-    this.errorMessage = '';
-    this.api.confirmOrder(this.order!.id).subscribe({
-      next: (order) => {
-        this.order = order;
-        this.processing = false;
-        this.successMessage = 'Bestelling is bevestigd! Je tickets zijn nu beschikbaar.';
-        clearInterval(this.timerInterval);
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.error || 'Fout bij bevestigen';
         this.processing = false;
       }
     });

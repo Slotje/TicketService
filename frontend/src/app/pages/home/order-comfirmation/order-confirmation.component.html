@@ -19,24 +19,13 @@
         </div>
         <span class="step-label">Gereserveerd</span>
       </div>
-      <div class="step-line" [class.completed]="detailsSaved || order.status === 'CONFIRMED'"></div>
-      <div class="step" [class.active]="order.status === 'RESERVED' && detailsSaved" [class.completed]="order.status === 'CONFIRMED'">
-        <div class="step-dot">
-          @if (order.status === 'CONFIRMED') {
-            <i class="pi pi-check"></i>
-          } @else {
-            <span>2</span>
-          }
-        </div>
-        <span class="step-label">Adres</span>
-      </div>
       <div class="step-line" [class.completed]="order.status === 'CONFIRMED'"></div>
       <div class="step" [class.active]="order.status === 'CONFIRMED'">
         <div class="step-dot">
           @if (order.status === 'CONFIRMED') {
             <i class="pi pi-check"></i>
           } @else {
-            <span>3</span>
+            <span>2</span>
           }
         </div>
         <span class="step-label">Bevestigd</span>
@@ -135,18 +124,6 @@
             </p-floatlabel>
           </div>
         </div>
-
-        @if (!detailsSaved) {
-          <div class="mt-2">
-            <p-button
-              label="Gegevens Opslaan"
-              icon="pi pi-save"
-              (onClick)="saveDetails()"
-              [loading]="savingDetails"
-              [disabled]="!isDetailsValid()"
-              severity="info" />
-          </div>
-        }
       }
 
       <!-- Confirmed Address -->
@@ -229,7 +206,7 @@
             icon="pi pi-check"
             (onClick)="confirmOrder()"
             [loading]="processing"
-            [disabled]="!detailsSaved"
+            [disabled]="!isDetailsValid()"
             severity="success"
             [style]="{'width': '100%'}" />
           <p-button
