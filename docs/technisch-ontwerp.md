@@ -86,9 +86,9 @@ nl.ticketservice/
 │                     ConstraintViolationExceptionMapper
 ├── resource/       → 8 JAX-RS resources (Event, Order, Customer, CustomerAuth, UserAuth,
 │                     AdminAuth, Auth, Image)
-└── service/        → 15 services (Order, Event, Customer, CustomerAuth, UserAuth, AdminAuth,
+└── service/        → 16 services (Order, Event, Customer, CustomerAuth, UserAuth, AdminAuth,
                       Auth, QrCode, Pdf, PhysicalTicket, PhysicalTicketPdf, Email,
-                      EmailRetry, ReservationCleanup, Startup)
+                      EmailRetry, ReservationCleanup, Startup, ImageLoader)
 ```
 
 ### 2.3 Service-afhankelijkheden
@@ -105,6 +105,10 @@ PhysicalTicketService ──→ PhysicalTicketPdfService ──→ QrCodeService
               └──→ EmailService
 
 PdfService ──→ QrCodeService
+    │
+    └──→ ImageLoaderService (afbeeldingen laden voor PDF)
+
+PhysicalTicketPdfService ──→ ImageLoaderService
 
 EmailRetryService ──→ EmailService
 ReservationCleanupService (standalone, scheduled)
@@ -733,12 +737,11 @@ totalRevenue            = totalOnlineRevenue + totalPhysicalRevenue + totalServi
 ### 6.5 Bestelling annuleren
 
 ```
-1. Controleer: order.status == RESERVED of CONFIRMED
+1. Controleer: order.status == RESERVED (alleen gereserveerde bestellingen kunnen worden geannuleerd)
 2. Zet order.status = CANCELLED
-3. Als vorige status RESERVED: verlaag event.ticketsReserved
-4. Als vorige status CONFIRMED: verlaag event.ticketsSold
-5. Als event.status == SOLD_OUT: zet terug naar PUBLISHED
-6. Retourneer geannuleerde OrderResponseDTO
+3. Verlaag event.ticketsReserved met quantity
+4. Als event.status == SOLD_OUT: zet terug naar PUBLISHED
+5. Retourneer geannuleerde OrderResponseDTO
 ```
 
 ### 6.6 Automatische cleanup (ReservationCleanupService)
@@ -805,7 +808,9 @@ app/
 │   ├── api.service.ts                  → Centrale HTTP-client voor alle API-calls
 │   ├── admin-auth.service.ts           → Admin token-management
 │   ├── customer-auth.service.ts        → Klant token-management
-│   └── user-auth.service.ts            → Gebruiker token-management
+│   ├── user-auth.service.ts            → Gebruiker token-management
+│   ├── auth.service.ts                 → Scanner token-management
+│   └── cart.service.ts                 → Winkelwagen-state (gereserveerde bestellingen, timers)
 ├── guards/
 │   ├── admin-auth.guard.ts             → Route-bescherming admin (localStorage + /verify)
 │   ├── customer-auth.guard.ts          → Route-bescherming klant
