@@ -1,6 +1,6 @@
 # Technisch Ontwerp - TicketService
 
-**Versie:** 2.0
+**Versie:** 3.0
 **Datum:** 2026-03-24
 **Project:** TicketService - Multi-tenant Ticketverkoop Platform
 
@@ -76,19 +76,19 @@ Resource (REST)  →  Service (Business Logic)  →  Entity (JPA/Panache)  →  
 ```
 nl.ticketservice/
 ├── config/         → SampleDataLoader (dev seed data)
-├── dto/            → 14 DTO-records (EventDTO, OrderRequestDTO, OrderResponseDTO, TicketDTO,
+├── dto/            → 16 DTO-records (EventDTO, OrderRequestDTO, OrderResponseDTO, TicketDTO,
 │                     CustomerDTO, BuyerDetailsDTO, LoginDTO, LoginResponseDTO, UserLoginDTO,
-│                     UserResponseDTO, RegisterDTO, ScannerUserDTO, CreateScannerUserDTO,
-│                     TicketSalesDTO)
-├── entity/         → 7 entiteiten (Customer, Event, TicketOrder, Ticket, User, AdminUser,
-│                     ScannerUser) + 3 enums (EventStatus, OrderStatus, TicketType)
+│                     UserResponseDTO, UserUpdateDTO, RegisterDTO, ScannerUserDTO,
+│                     CreateScannerUserDTO, TicketSalesDTO, TicketCategoryDTO)
+├── entity/         → 8 entiteiten (Customer, Event, TicketOrder, Ticket, TicketCategory,
+│                     User, AdminUser, ScannerUser) + 3 enums (EventStatus, OrderStatus, TicketType)
 ├── exception/      → TicketServiceException, GlobalExceptionHandler,
 │                     ConstraintViolationExceptionMapper
 ├── resource/       → 8 JAX-RS resources (Event, Order, Customer, CustomerAuth, UserAuth,
 │                     AdminAuth, Auth, Image)
-└── service/        → 15 services (Order, Event, Customer, CustomerAuth, UserAuth, AdminAuth,
+└── service/        → 16 services (Order, Event, Customer, CustomerAuth, UserAuth, AdminAuth,
                       Auth, QrCode, Pdf, PhysicalTicket, PhysicalTicketPdf, Email,
-                      EmailRetry, ReservationCleanup, Startup)
+                      EmailRetry, ReservationCleanup, Startup, ImageLoader)
 ```
 
 ### 2.3 Service-afhankelijkheden
@@ -105,6 +105,10 @@ PhysicalTicketService ──→ PhysicalTicketPdfService ──→ QrCodeService
               └──→ EmailService
 
 PdfService ──→ QrCodeService
+    │
+    └──→ ImageLoaderService (afbeeldingen laden voor PDF)
+
+PhysicalTicketPdfService ──→ ImageLoaderService
 
 EmailRetryService ──→ EmailService
 ReservationCleanupService (standalone, scheduled)
@@ -147,6 +151,13 @@ StartupService ──→ AuthService, AdminAuthService
 | POST | `/api/events/my/{id}/physical-tickets/sell` | Klant (eigenaar) | `{"quantity":N}` | `EventDTO` | |
 | PUT | `/api/events/my/{id}/physical-tickets/sold-count` | Klant (eigenaar) | `{"count":N}` | `EventDTO` | |
 | GET | `/api/events/my/{id}/sales` | Klant (eigenaar) | - | `TicketSalesDTO` | |
+| GET | `/api/events/{id}/categories` | Publiek | - | `List<TicketCategoryDTO>` | Categorieën van evenement |
+| POST | `/api/events/{id}/categories` | Admin | `TicketCategoryDTO` | `TicketCategoryDTO` | Categorie aanmaken |
+| PUT | `/api/events/{id}/categories/{categoryId}` | Admin | `TicketCategoryDTO` | `TicketCategoryDTO` | Categorie bijwerken |
+| DELETE | `/api/events/{id}/categories/{categoryId}` | Admin | - | 204 | Categorie verwijderen |
+| POST | `/api/events/my/{id}/categories` | Klant (eigenaar) | `TicketCategoryDTO` | `TicketCategoryDTO` | Eigen categorie aanmaken |
+| PUT | `/api/events/my/{id}/categories/{categoryId}` | Klant (eigenaar) | `TicketCategoryDTO` | `TicketCategoryDTO` | Eigen categorie bijwerken |
+| DELETE | `/api/events/my/{id}/categories/{categoryId}` | Klant (eigenaar) | - | 204 | Eigen categorie verwijderen |
 
 #### OrderResource (`/api/orders`)
 
@@ -158,6 +169,7 @@ StartupService ──→ AuthService, AdminAuthService
 | POST | `/api/orders` | Publiek | `OrderRequestDTO` | `OrderResponseDTO` | Nieuwe bestelling (RESERVED) |
 | PUT | `/api/orders/{id}/details` | Publiek | `BuyerDetailsDTO` | `OrderResponseDTO` | Adresgegevens bijwerken |
 | POST | `/api/orders/{id}/confirm` | Publiek | - | `OrderResponseDTO` | Bestelling bevestigen |
+| POST | `/api/orders/{id}/cancel` | Publiek | - | `OrderResponseDTO` | Bestelling annuleren |
 | GET | `/api/orders/{id}/pdf` | Publiek | - | PDF (binary) | Ticket-PDF downloaden |
 | GET | `/api/orders/ticket/{qrCodeData}/qr` | Publiek | - | PNG (binary) | QR-code afbeelding |
 | GET | `/api/orders/event/{eventId}` | Admin | - | `List<OrderResponseDTO>` | Bestellingen per evenement |
@@ -188,6 +200,7 @@ StartupService ──→ AuthService, AdminAuthService
 | POST | `/forgot-password` | Publiek | Reset-link versturen |
 | POST | `/reset-password` | Publiek (reset token) | Wachtwoord resetten |
 | PUT | `/branding` | Klant | Huisstijl bijwerken (logo, kleuren, website) |
+| GET | `/branding/preview-ticket` | Klant | Voorbeeld-ticket PDF downloaden met huidige huisstijl |
 
 **UserAuthResource (`/api/user/auth`)**
 
@@ -196,6 +209,7 @@ StartupService ──→ AuthService, AdminAuthService
 | POST | `/register` | Publiek | Registratie → token + gebruikersgegevens |
 | POST | `/login` | Publiek | Login → token + gebruikersgegevens |
 | GET | `/verify` | Gebruiker | Token valideren → gebruikersgegevens |
+| PUT | `/profile` | Gebruiker | Profiel bijwerken (naam, telefoon, adres) |
 | POST | `/forgot-password` | Publiek | Reset-link versturen |
 | POST | `/reset-password` | Publiek (reset token) | Wachtwoord resetten |
 
@@ -237,8 +251,15 @@ Customer (1) ──────< Event (1) ──────< TicketOrder (1) �
    │                    │                                        │
    │ companyName        │ customer_id (FK)                       │ order_id (FK, nullable)
    │ slug (unique)      │                                        │ event_id (FK)
-   │ email (unique)     └────────────────────────────────────────┘
-   │                               (1) Event ──────< (many) Ticket
+   │ email (unique)     │                                        │ ticket_category_id (FK, nullable)
+   │                    ├────────────────────────────────────────┘
+   │                    │          (1) Event ──────< (many) Ticket
+   │                    │
+   │                    └──────< TicketCategory
+   │                               │ event_id (FK)
+   │                               │ name, price, maxTickets
+   │                               │ validDate, validEndDate
+   │                               │ startTime, endTime
    │
    └── events (cascade ALL, orphanRemoval)
 
@@ -246,7 +267,7 @@ AdminUser            ScannerUser           User
 (standalone)         (standalone)          (standalone)
   │ email (unique)     │ username (unique)   │ email (unique)
   │ active             │ active              │ firstName/lastName
-  │ displayName        │ displayName         │ phone
+  │ displayName        │ displayName         │ phone, street, city
 ```
 
 ### 3.2 Entiteiten
@@ -303,10 +324,12 @@ AdminUser            ScannerUser           User
 | ticketsReserved | Integer | NOT NULL | default: 0 | Aantal gereserveerde tickets |
 | physicalTicketsSold | Integer | NOT NULL | default: 0 | Aantal verkochte fysieke tickets |
 | physicalTicketsGenerated | boolean | NOT NULL | default: false | Of fysieke tickets zijn gegenereerd |
+| showAvailability | boolean | NOT NULL | default: true | Of beschikbare aantallen zichtbaar zijn voor eindgebruikers |
 | imageUrl | String(500) | nullable | @Size(max=500) | URL naar evenementafbeelding |
 | status | EventStatus | NOT NULL | EnumType.STRING, default: DRAFT | Evenementstatus |
 | customer | Customer | NOT NULL (FK) | @ManyToOne(LAZY) | Eigenaar (organisator) |
 | orders | List\<TicketOrder\> | OneToMany | cascade=ALL | Bestellingen voor dit event |
+| ticketCategories | List\<TicketCategory\> | OneToMany | cascade=ALL, orphanRemoval=true, @OrderBy("sortOrder, id") | Ticketcategorieën van dit event |
 | createdAt | LocalDateTime | NOT NULL, immutable | @PrePersist: now() | Aanmaakdatum |
 | updatedAt | LocalDateTime | nullable | @PrePersist/@PreUpdate: now() | Laatste wijzigingsdatum |
 
@@ -317,6 +340,34 @@ availableTickets     = maxTickets - ticketsSold - ticketsReserved
 availablePhysical    = physicalTickets - physicalTicketsSold
 totalSold            = ticketsSold + physicalTicketsSold
 effectiveServiceFee  = (serviceFee × maxTickets) / onlineTickets
+showAvailability     = boolean (of beschikbare aantallen getoond worden)
+ticketCategories     = List<TicketCategoryDTO> (categorieën van het event)
+```
+
+#### TicketCategory
+
+| Veld | Type | Constraint | Validatie | Beschrijving |
+|------|------|-----------|-----------|-------------|
+| id | Long | PK | - | Primaire sleutel (PanacheEntity) |
+| event | Event | NOT NULL (FK) | @ManyToOne(LAZY) | Gekoppeld evenement |
+| name | String(200) | NOT NULL | @NotBlank, @Size(max=200) | Categorienaam |
+| description | String(500) | nullable | @Size(max=500) | Beschrijving van de categorie |
+| price | BigDecimal(10,2) | NOT NULL | @NotNull, @DecimalMin("0.00") | Prijs per ticket in deze categorie |
+| serviceFee | BigDecimal(10,2) | nullable | @DecimalMin("0.00") | Servicekosten per ticket (optioneel) |
+| maxTickets | Integer | NOT NULL | @Min(0), default: 0 | Maximaal aantal tickets (0 = gebruikt event-capaciteit) |
+| ticketsSold | Integer | NOT NULL | default: 0 | Aantal verkochte tickets in deze categorie |
+| ticketsReserved | Integer | NOT NULL | default: 0 | Aantal gereserveerde tickets in deze categorie |
+| validDate | LocalDate | nullable | - | Eerste datum waarvoor ticket geldig is (null = alle dagen) |
+| validEndDate | LocalDate | nullable | - | Laatste datum waarvoor ticket geldig is (null = zelfde als validDate) |
+| startTime | LocalDateTime | nullable | - | Starttijd (bijv. deuren open) |
+| endTime | LocalDateTime | nullable | - | Eindtijd |
+| sortOrder | Integer | NOT NULL | default: 0 | Sorteervolgorde |
+| active | boolean | NOT NULL | default: true | Of de categorie beschikbaar is voor verkoop |
+
+**Berekende waarden:**
+```
+availableTickets = maxTickets - ticketsSold - ticketsReserved  (als maxTickets > 0)
+                 = onbeperkt (binnen event-capaciteit)          (als maxTickets == 0)
 ```
 
 #### TicketOrder
@@ -366,6 +417,10 @@ totalPrice          = (event.ticketPrice × quantity) + totalServiceFee
 | scannedAt | LocalDateTime | nullable | - | Tijdstip van scannen |
 | order | TicketOrder | nullable (FK) | @ManyToOne(LAZY) | Bestelling (null voor fysieke tickets) |
 | event | Event | FK | @ManyToOne(LAZY) | Gekoppeld evenement |
+| ticketCategory | TicketCategory | nullable (FK) | @ManyToOne(LAZY) | Ticketcategorie (optioneel) |
+| validDate | LocalDate | nullable | - | Eerste datum waarvoor ticket geldig is (overgenomen van categorie) |
+| validEndDate | LocalDate | nullable | - | Laatste datum waarvoor ticket geldig is |
+| categoryName | String | nullable | - | Naam van de ticketcategorie (gedenormaliseerd) |
 | createdAt | LocalDateTime | NOT NULL, immutable | @PrePersist: now() | Aanmaakdatum |
 
 #### User
@@ -378,6 +433,10 @@ totalPrice          = (event.ticketPrice × quantity) + totalServiceFee
 | firstName | String(100) | NOT NULL | @NotBlank, @Size(max=100) |
 | lastName | String(100) | NOT NULL | @NotBlank, @Size(max=100) |
 | phone | String(20) | nullable | @Size(max=20) |
+| street | String(200) | nullable | @Size(max=200) |
+| houseNumber | String(10) | nullable | @Size(max=10) |
+| postalCode | String(10) | nullable | @Size(max=10) |
+| city | String(100) | nullable | @Size(max=100) |
 | createdAt | LocalDateTime | NOT NULL, immutable | @PrePersist: now() |
 
 #### AdminUser
@@ -414,16 +473,18 @@ totalPrice          = (event.ticketPrice × quantity) + totalServiceFee
 
 | DTO | Type | Richting | Beschrijving |
 |-----|------|----------|-------------|
-| EventDTO | record | Request + Response | Evenementgegevens met berekende velden |
-| OrderRequestDTO | record | Request | Bestelformulier: eventId, kopergegevens, aantal |
-| OrderResponseDTO | record | Response | Volledige bestelling met tickets |
-| TicketDTO | record | Response | Ticketinformatie met QR-data |
+| EventDTO | record | Request + Response | Evenementgegevens met berekende velden en ticketcategorieën |
+| OrderRequestDTO | record | Request | Bestelformulier: eventId, ticketCategoryId (optioneel), kopergegevens, aantal |
+| OrderResponseDTO | record | Response | Volledige bestelling met tickets, ticketCategoryName en ticketCategoryId |
+| TicketDTO | record | Response | Ticketinformatie met QR-data, categoryName, validDate, validEndDate |
+| TicketCategoryDTO | record | Request + Response | Ticketcategorie met naam, prijs, capaciteit en geldigheidsdata |
 | CustomerDTO | record | Request + Response | Klantgegevens |
 | BuyerDetailsDTO | record | Request | Adresgegevens (straat, huisnummer, postcode, plaats) |
 | LoginDTO | record | Request | Scanner login (username, password) |
 | LoginResponseDTO | record | Response | Scanner token + displayName + username |
 | UserLoginDTO | record | Request | User/Admin login (email, password) |
-| UserResponseDTO | record | Response | User token + gegevens |
+| UserResponseDTO | record | Response | User token + gegevens inclusief adresvelden |
+| UserUpdateDTO | record | Request | Profielupdate (naam, telefoon, adresgegevens) |
 | RegisterDTO | record | Request | Registratie (email, password, naam, telefoon) |
 | ScannerUserDTO | record | Response | Scannergebruiker info |
 | CreateScannerUserDTO | record | Request | Nieuwe scannergebruiker |
@@ -495,12 +556,15 @@ Gewist na gebruik: inviteToken = null
 | Fysieke tickets | RW (alle) | RW (eigen) | - | - | - |
 | Verkooprapportage | Alle events | Eigen events | - | - | - |
 | Bestellingen (lezen) | Per event | - | - | - | Per ordernummer/e-mail |
-| Bestellingen (aanmaken/bevestigen) | - | - | - | - | Ja |
+| Ticketcategorieën (lezen) | Alle | Eigen | - | - | Per event |
+| Ticketcategorieën (schrijven) | RW (alle) | RW (eigen) | - | - | - |
+| Bestellingen (aanmaken/bevestigen/annuleren) | - | - | - | - | Ja |
 | Scannen | - | - | - | Ja | - |
 | Scanner-gebruikersbeheer | RW | - | - | - | - |
 | Afbeeldingen uploaden | Ja | Ja | - | - | - |
 | Afbeeldingen downloaden | Ja | Ja | Ja | Ja | Ja |
 | Branding instellen | - | Eigen | - | - | - |
+| Profiel bijwerken | - | - | Eigen | - | - |
 
 **Eigendomscontrole (Klant):**
 Bij alle `/api/events/my/*` endpoints wordt gecontroleerd dat `event.customer.id == ingelogde klant.id`. Bij mismatch: 403 Forbidden.
@@ -511,7 +575,7 @@ Bij alle `/api/events/my/*` endpoints wordt gecontroleerd dat `event.customer.id
 |-----|-----------------|-------------|
 | Admin | `admin_token` | Automatisch voor `/api/customers`, `/api/events`, `/api/orders/event`, `/api/auth/users` |
 | Klant | `customer_token` | Automatisch voor `/api/events/my`, `/api/customer/auth/verify`, `/api/customer/auth/branding` |
-| Gebruiker | `user_token` | Handmatig per request |
+| Gebruiker | `user_token` | Automatisch voor `/api/user/auth/verify`, `/api/user/auth/profile`; handmatig voor overige |
 | Scanner | `scanner_token` | Handmatig per request |
 
 ### 4.3 QR-code Beveiliging
@@ -637,10 +701,13 @@ totalRevenue            = totalOnlineRevenue + totalPhysicalRevenue + totalServi
 1. Controleer: event.status == PUBLISHED
 2. Controleer: quantity <= min(event.maxTicketsPerOrder, global.maxTicketsPerOrder)
 3. Controleer: beschikbaar = maxTickets - ticketsSold - ticketsReserved >= quantity
-4. Maak TicketOrder aan (status=RESERVED, expiresAt=now + timeout)
-5. Genereer {quantity} Ticket-entiteiten met unieke ticketCode en qrCodeData
-6. Verhoog event.ticketsReserved met quantity
-7. Retourneer OrderResponseDTO
+4. Optioneel: controleer ticketcategorie-capaciteit (als ticketCategoryId opgegeven)
+5. Maak TicketOrder aan (status=RESERVED, expiresAt=now + timeout)
+6. Genereer {quantity} Ticket-entiteiten met unieke ticketCode en qrCodeData
+   - Als ticketCategory: sla categoryName, validDate, validEndDate op per ticket
+7. Verhoog event.ticketsReserved met quantity
+8. Optioneel: verhoog ticketCategory.ticketsReserved met quantity
+9. Retourneer OrderResponseDTO (inclusief ticketCategoryName en ticketCategoryId)
 ```
 
 ### 6.3 Adresgegevens bijwerken
@@ -670,12 +737,11 @@ totalRevenue            = totalOnlineRevenue + totalPhysicalRevenue + totalServi
 ### 6.5 Bestelling annuleren
 
 ```
-1. Controleer: order.status == RESERVED of CONFIRMED
+1. Controleer: order.status == RESERVED (alleen gereserveerde bestellingen kunnen worden geannuleerd)
 2. Zet order.status = CANCELLED
-3. Als vorige status RESERVED: verlaag event.ticketsReserved
-4. Als vorige status CONFIRMED: verlaag event.ticketsSold
-5. Als event.status == SOLD_OUT: zet terug naar PUBLISHED
-6. Retourneer geannuleerde OrderResponseDTO
+3. Verlaag event.ticketsReserved met quantity
+4. Als event.status == SOLD_OUT: zet terug naar PUBLISHED
+5. Retourneer geannuleerde OrderResponseDTO
 ```
 
 ### 6.6 Automatische cleanup (ReservationCleanupService)
@@ -713,12 +779,19 @@ app/
 ├── pages/
 │   ├── home/
 │   │   ├── home.component              → Eventlijst met hero, statistieken en grid
-│   │   ├── event-detail/               → Eventdetails, bestelformulier, prijsberekening
-│   │   └── order-confirmation/         → Stap-indicator, adresformulier, bevestiging, PDF-download
+│   │   ├── event-detail/               → Eventdetails, bestelformulier, categorie-selector, prijsberekening
+│   │   ├── order-confirmation/         → Stap-indicator, adresformulier, bevestiging, PDF-download
+│   │   ├── cart/                       → Winkelwagen met gereserveerde bestellingen
+│   │   ├── user-login/                 → Gebruiker login/registratie
+│   │   ├── user-profile/              → Profielbewerking (naam, telefoon, adres)
+│   │   ├── my-tickets/                → Aankoopgeschiedenis
+│   │   ├── forgot-password/           → Wachtwoord vergeten (gebruiker)
+│   │   └── reset-password/            → Wachtwoord resetten (gebruiker + klant)
 │   ├── customer/
 │   │   ├── customer-login/             → Klant-login formulier
-│   │   ├── customer-dashboard/         → Dashboard met events, stats, branding, fysieke tickets
+│   │   ├── customer-dashboard/         → Dashboard met events, stats, branding, categorieën, fysieke tickets
 │   │   ├── customer-activate/          → Account activatie (wachtwoord instellen)
+│   │   ├── customer-forgot-password/  → Wachtwoord vergeten (klant)
 │   │   └── customer-landing/           → Publieke pagina per klant (/klant/:slug)
 │   ├── admin/
 │   │   ├── admin.component             → Dashboard met navigatiekaarten
@@ -726,18 +799,18 @@ app/
 │   │   ├── customer-management/        → CRUD voor klanten met tabel en dialoog
 │   │   ├── event-management/           → CRUD voor evenementen (admin-perspectief)
 │   │   ├── order-management/           → Bestellingenlijst per event
-│   │   └── scanner-management/         → Scanner-gebruikersbeheer
+│   │   ├── scanner-management/         → Scanner-gebruikersbeheer
+│   │   └── ticket-scanner/            → Admin ticket-scanner pagina
 │   ├── scanner/
 │   │   ├── scanner-login/              → Scanner-login
 │   │   └── ticket-scanner-camera/      → Live camera, handmatige invoer, scangeschiedenis
-│   └── user/
-│       ├── user-login/                 → Gebruiker login/registratie
-│       └── my-tickets/                 → Aankoopgeschiedenis
 ├── services/
 │   ├── api.service.ts                  → Centrale HTTP-client voor alle API-calls
 │   ├── admin-auth.service.ts           → Admin token-management
 │   ├── customer-auth.service.ts        → Klant token-management
-│   └── user-auth.service.ts            → Gebruiker token-management
+│   ├── user-auth.service.ts            → Gebruiker token-management
+│   ├── auth.service.ts                 → Scanner token-management
+│   └── cart.service.ts                 → Winkelwagen-state (gereserveerde bestellingen, timers)
 ├── guards/
 │   ├── admin-auth.guard.ts             → Route-bescherming admin (localStorage + /verify)
 │   ├── customer-auth.guard.ts          → Route-bescherming klant
@@ -756,14 +829,17 @@ app/
 | Pad | Component | Beschrijving |
 |-----|-----------|-------------|
 | `/` | HomeComponent | Eventlijst met hero-sectie en statistieken |
-| `/event/:id` | EventDetailComponent | Eventdetails en bestelformulier |
+| `/event/:id` | EventDetailComponent | Eventdetails, categorie-selector en bestelformulier |
 | `/order/:orderNumber` | OrderConfirmationComponent | Besteloverzicht, adres invullen, bevestigen |
+| `/winkelwagen` | CartComponent | Winkelwagen met gereserveerde bestellingen |
 | `/klant/:slug` | CustomerLandingComponent | Publieke pagina van organisator |
 | `/login` | UserLoginComponent | Gebruiker login/registratie |
-| `/forgot-password` | ForgotPasswordComponent | Wachtwoord vergeten |
+| `/forgot-password` | ForgotPasswordComponent | Wachtwoord vergeten (gebruiker) |
 | `/reset-password` | ResetPasswordComponent | Wachtwoord resetten |
 | `/klant/login` | CustomerLoginComponent | Klant-login |
 | `/klant/activeren/:token` | CustomerActivateComponent | Account activatie |
+| `/klant/forgot-password` | CustomerForgotPasswordComponent | Wachtwoord vergeten (klant) |
+| `/klant/reset-password` | ResetPasswordComponent | Wachtwoord resetten (klant) |
 | `/scan/login` | ScannerLoginComponent | Scanner-login |
 | `/admin/login` | AdminLoginComponent | Admin-login/setup |
 
@@ -771,6 +847,7 @@ app/
 
 | Pad | Component | Guard | Beschrijving |
 |-----|-----------|-------|-------------|
+| `/profiel` | UserProfileComponent | userAuthGuard | Profielbewerking (naam, adres) |
 | `/my-tickets` | MyTicketsComponent | userAuthGuard | Aankoopgeschiedenis |
 | `/klant/dashboard` | CustomerDashboardComponent | customerAuthGuard | Klant-dashboard |
 | `/admin` | AdminComponent | adminAuthGuard | Admin-dashboard |
@@ -809,6 +886,7 @@ Uitgesloten van interceptie:
 - GET /api/events/published
 - GET /api/events/customer/
 - GET /api/events/{id} (enkel event)
+- GET /api/events/{id}/categories
 - GET /api/customers/slug/
 - /api/images/ (GET)
 - /api/images/upload (handmatige auth)
@@ -817,10 +895,19 @@ Uitgesloten van interceptie:
 ### 7.5 Belangrijke UI-patronen
 
 **Event Detail (bestelformulier):**
+- Ticketcategorie-selector: dropdown/kaarten per categorie met eigen prijs en beschikbaarheid
+- Per-categorie quantity-selectors met +/- knoppen
 - Realtime prijsberekening: `totalPrice = (ticketPrice + serviceFee) × quantity`
-- Beschikbaarheidsbalk: visuele voortgang van verkochte tickets
-- Quantity-selector met +/- knoppen, begrensd op min(maxTicketsPerOrder, availableTickets)
-- Automatisch voorvullen vanuit ingelogde gebruiker
+- Beschikbaarheidsbalk: visuele voortgang van verkochte tickets (instelbaar via showAvailability)
+- Quantity-selector begrensd op min(maxTicketsPerOrder, availableTickets)
+- Automatisch voorvullen vanuit ingelogde gebruiker (inclusief adresgegevens)
+- Winkelwagenknop en directe bestelknop
+
+**Winkelwagen (CartComponent):**
+- Overzicht van alle gereserveerde bestellingen met countdown timers
+- Per bestelling: evenementnaam, categorie, aantal, prijs, status
+- Mogelijkheid om bestellingen te bevestigen of te annuleren
+- Totaalprijs berekening
 
 **Order Confirmation (3-stappen):**
 - Countdown timer in mm:ss formaat (update elke seconde)
@@ -831,7 +918,8 @@ Uitgesloten van interceptie:
 **Customer Dashboard:**
 - Statistiekenkaarten: totaal events, tickets verkocht, geschatte omzet
 - Event-tabel met inline acties (publiceren, bewerken, verwijderen)
-- Dialoogvensters voor: event CRUD, verkoopinzicht, branding
+- Ticketcategorieën beheren per evenement (toevoegen, bewerken, verwijderen, meerdaagse ondersteuning)
+- Dialoogvensters voor: event CRUD, verkoopinzicht, branding, voorbeeld-ticket PDF
 - Drag-drop zone voor afbeeldingsupload met preview
 - 16 kleurpresets voor snelle brandingselectie
 
