@@ -23,7 +23,7 @@ export class CartComponent implements OnInit, OnDestroy {
   items: CartItem[] = [];
   reservedOrders: Order[] = [];
   cartTotalPrice = 0;
-  processing: Record<number, boolean> = {};
+  processing: Record<string, boolean> = {};
   errorMessage = '';
   private subs: Subscription[] = [];
 
@@ -96,16 +96,20 @@ export class CartComponent implements OnInit, OnDestroy {
     });
   }
 
+  itemKey(item: CartItem): string {
+    return `${item.eventId}_${item.ticketCategoryId ?? 0}`;
+  }
+
   updateQuantity(item: CartItem, quantity: number) {
     if (quantity < 1) quantity = 1;
     if (quantity > Math.min(item.maxTicketsPerOrder, item.availableTickets)) {
       quantity = Math.min(item.maxTicketsPerOrder, item.availableTickets);
     }
-    this.cart.updateQuantity(item.eventId, quantity);
+    this.cart.updateQuantity(item.eventId, quantity, item.ticketCategoryId);
   }
 
-  removeItem(eventId: number) {
-    this.cart.removeItem(eventId);
+  removeItem(item: CartItem) {
+    this.cart.removeItem(item.eventId, item.ticketCategoryId);
   }
 
   getItemTotal(item: CartItem): number {
@@ -125,11 +129,13 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.processing[item.eventId] = true;
+    const key = this.itemKey(item);
+    this.processing[key] = true;
     this.errorMessage = '';
 
     const orderRequest: OrderRequest = {
       eventId: item.eventId,
+      ticketCategoryId: item.ticketCategoryId,
       buyerFirstName: this.userAuth.firstName || '',
       buyerLastName: this.userAuth.lastName || '',
       buyerEmail: this.userAuth.email || '',
@@ -139,13 +145,13 @@ export class CartComponent implements OnInit, OnDestroy {
 
     this.api.createOrder(orderRequest).subscribe({
       next: (order) => {
-        this.cart.removeItem(item.eventId);
-        this.processing[item.eventId] = false;
+        this.cart.removeItem(item.eventId, item.ticketCategoryId);
+        this.processing[key] = false;
         this.cart.addReservedOrder(order);
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Er is een fout opgetreden bij het bestellen';
-        this.processing[item.eventId] = false;
+        this.processing[key] = false;
       }
     });
   }
@@ -164,10 +170,12 @@ export class CartComponent implements OnInit, OnDestroy {
     if (remaining.length === 0) return;
 
     const item = remaining.shift()!;
-    this.processing[item.eventId] = true;
+    const key = this.itemKey(item);
+    this.processing[key] = true;
 
     const orderRequest: OrderRequest = {
       eventId: item.eventId,
+      ticketCategoryId: item.ticketCategoryId,
       buyerFirstName: this.userAuth.firstName || '',
       buyerLastName: this.userAuth.lastName || '',
       buyerEmail: this.userAuth.email || '',
@@ -177,14 +185,14 @@ export class CartComponent implements OnInit, OnDestroy {
 
     this.api.createOrder(orderRequest).subscribe({
       next: (order) => {
-        this.cart.removeItem(item.eventId);
-        this.processing[item.eventId] = false;
+        this.cart.removeItem(item.eventId, item.ticketCategoryId);
+        this.processing[key] = false;
         this.cart.addReservedOrder(order);
         this.processNext(remaining);
       },
       error: (err) => {
-        this.errorMessage = `Fout bij "${item.eventName}": ${err.error?.error || 'onbekende fout'}`;
-        this.processing[item.eventId] = false;
+        this.errorMessage = `Fout bij "${item.ticketCategoryName || item.eventName}": ${err.error?.error || 'onbekende fout'}`;
+        this.processing[key] = false;
       }
     });
   }
