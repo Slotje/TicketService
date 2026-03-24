@@ -24,6 +24,7 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   order: Order | null = null;
   loading = true;
   processing = false;
+  cancelling = false;
   savingDetails = false;
   errorMessage = '';
   successMessage = '';
@@ -158,6 +159,22 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.errorMessage = err.error?.error || 'Fout bij bevestigen';
         this.processing = false;
+      }
+    });
+  }
+
+  cancelOrder() {
+    this.cancelling = true;
+    this.errorMessage = '';
+    this.api.cancelOrder(this.order!.id).subscribe({
+      next: (order) => {
+        this.order = order;
+        this.cancelling = false;
+        clearInterval(this.timerInterval);
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.error || 'Fout bij annuleren';
+        this.cancelling = false;
       }
     });
   }

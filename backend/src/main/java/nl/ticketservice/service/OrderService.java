@@ -138,6 +138,7 @@ public class OrderService {
         order.buyerHouseNumber = dto.buyerHouseNumber();
         order.buyerPostalCode = dto.buyerPostalCode();
         order.buyerCity = dto.buyerCity();
+        order.persist();
 
         return toDTO(order);
     }
@@ -190,18 +191,11 @@ public class OrderService {
             throw new TicketServiceException("Bestelling niet gevonden", 404);
         }
 
-        if (order.status == OrderStatus.CANCELLED || order.status == OrderStatus.EXPIRED) {
-            throw new TicketServiceException("Bestelling is al geannuleerd", 400);
+        if (order.status != OrderStatus.RESERVED) {
+            throw new TicketServiceException("Alleen gereserveerde bestellingen kunnen worden geannuleerd", 400);
         }
 
-        if (order.status == OrderStatus.RESERVED) {
-            order.event.ticketsReserved -= order.quantity;
-        } else if (order.status == OrderStatus.CONFIRMED) {
-            order.event.ticketsSold -= order.quantity;
-            if (order.event.status == EventStatus.SOLD_OUT) {
-                order.event.status = EventStatus.PUBLISHED;
-            }
-        }
+        order.event.ticketsReserved -= order.quantity;
 
         order.status = OrderStatus.CANCELLED;
         return toDTO(order);

@@ -129,6 +129,7 @@ public class UserAuthService {
         user.houseNumber = houseNumber;
         user.postalCode = postalCode;
         user.city = city;
+        user.persist();
         return user;
     }
 
