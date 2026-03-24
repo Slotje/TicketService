@@ -59,6 +59,6 @@ public class User extends PanacheEntity {
     }
 
     public static User findByEmail(String email) {
-        return find("email", email).firstResult();
+        return find("LOWER(email) = ?1", email.toLowerCase().trim()).firstResult();
     }
 }

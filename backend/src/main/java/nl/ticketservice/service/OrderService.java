@@ -54,7 +54,7 @@ public class OrderService {
     }
 
     public List<OrderResponseDTO> getOrdersByEmail(String email) {
-        return TicketOrder.<TicketOrder>list("buyerEmail", email).stream()
+        return TicketOrder.<TicketOrder>list("LOWER(buyerEmail) = ?1", email.toLowerCase().trim()).stream()
                 .map(this::toDTO)
                 .toList();
     }
@@ -93,7 +93,7 @@ public class OrderService {
         TicketOrder order = new TicketOrder();
         order.buyerFirstName = dto.buyerFirstName();
         order.buyerLastName = dto.buyerLastName();
-        order.buyerEmail = dto.buyerEmail();
+        order.buyerEmail = dto.buyerEmail().toLowerCase().trim();
         order.buyerPhone = dto.buyerPhone();
         order.quantity = dto.quantity();
         // Use effective online service fee (total service cost spread over online tickets only)

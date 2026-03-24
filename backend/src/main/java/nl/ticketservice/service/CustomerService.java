@@ -43,7 +43,7 @@ public class CustomerService {
 
     @Transactional
     public CustomerDTO createCustomer(CustomerDTO dto) {
-        if (Customer.find("email", dto.email()).firstResult() != null) {
+        if (Customer.findByEmail(dto.email()) != null) {
             throw new TicketServiceException("E-mailadres is al in gebruik", 409);
         }
 
@@ -66,7 +66,7 @@ public class CustomerService {
             throw new TicketServiceException("Klant niet gevonden", 404);
         }
 
-        Customer existing = Customer.find("email", dto.email()).firstResult();
+        Customer existing = Customer.findByEmail(dto.email());
         if (existing != null && !existing.id.equals(id)) {
             throw new TicketServiceException("E-mailadres is al in gebruik door een andere klant", 409);
         }
@@ -109,7 +109,7 @@ public class CustomerService {
     private void updateEntity(Customer customer, CustomerDTO dto) {
         customer.companyName = dto.companyName();
         customer.contactPerson = dto.contactPerson();
-        customer.email = dto.email();
+        customer.email = dto.email().toLowerCase().trim();
         customer.phone = dto.phone();
         customer.logoUrl = dto.logoUrl();
         customer.primaryColor = dto.primaryColor();

@@ -27,12 +27,13 @@ public class UserAuthService {
 
     @Transactional
     public User register(String email, String password, String firstName, String lastName, String phone) {
-        if (User.findByEmail(email) != null) {
+        String normalizedEmail = email.toLowerCase().trim();
+        if (User.findByEmail(normalizedEmail) != null) {
             throw new TicketServiceException("Dit e-mailadres is al geregistreerd", 400);
         }
 
         User user = new User();
-        user.email = email.toLowerCase().trim();
+        user.email = normalizedEmail;
         user.passwordHash = hashPassword(password);
         user.firstName = firstName;
         user.lastName = lastName;

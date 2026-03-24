@@ -77,7 +77,7 @@ public class Customer extends PanacheEntity {
     }
 
     public static Customer findByEmail(String email) {
-        return find("email", email).firstResult();
+        return find("LOWER(email) = ?1", email.toLowerCase().trim()).firstResult();
     }
 
     public static Customer findBySlug(String slug) {
