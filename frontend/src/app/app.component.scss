@@ -19,7 +19,8 @@
   background: transparent;
   border-bottom: 1px solid transparent;
 
-  &.navbar-scrolled {
+  &.navbar-scrolled,
+  &.navbar-solid {
     background: var(--ts-glass-bg);
     backdrop-filter: blur(var(--ts-glass-blur));
     -webkit-backdrop-filter: blur(var(--ts-glass-blur));
@@ -27,15 +28,38 @@
     box-shadow: 0 1px 20px rgba(15, 23, 42, 0.06);
 
     .app-name { color: var(--ts-navy-950); }
-    .nav-link { color: var(--ts-navy-700); }
+    .nav-link { color: var(--ts-navy-700); &:hover { color: var(--ts-navy-950); background: rgba(15, 23, 42, 0.05); } }
     .logo-icon {
       background: var(--ts-gold-gradient);
       color: var(--ts-navy-950);
     }
+    .user-badge {
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--ts-navy-800);
+      i { color: var(--ts-navy-600); }
+    }
+    .btn-logout {
+      color: var(--ts-navy-600);
+      &:hover { color: #dc2626; background: rgba(239, 68, 68, 0.08); }
+    }
+    .btn-auth {
+      background: var(--ts-gold-gradient);
+      color: var(--ts-navy-950);
+    }
+    .btn-auth-outline {
+      background: transparent;
+      border-color: rgba(15, 23, 42, 0.15);
+      color: var(--ts-navy-700);
+      &:hover { border-color: var(--ts-gold); color: var(--ts-gold-dark); }
+    }
+    .mobile-menu-btn {
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--ts-navy-800);
+    }
   }
 
-  // When not scrolled, light text for contrast on dark hero
-  &:not(.navbar-scrolled) {
+  // When not scrolled and not solid, light text for contrast on dark hero
+  &:not(.navbar-scrolled):not(.navbar-solid) {
     .app-name { color: #ffffff; }
     .nav-link {
       color: rgba(255, 255, 255, 0.85);

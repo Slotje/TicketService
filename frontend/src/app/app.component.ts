@@ -21,6 +21,7 @@ export class AppComponent implements OnInit, OnDestroy {
   mobileMenuVisible = false;
   adminMenuVisible = false;
   navbarScrolled = false;
+  navbarSolid = false;
   private subs: Subscription[] = [];
   private isBrowser: boolean;
 
@@ -58,14 +59,23 @@ export class AppComponent implements OnInit, OnDestroy {
       this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu())
     );
 
-    // Refresh AOS on route change
+    // Refresh AOS on route change & detect pages without dark hero
     this.subs.push(
       this.router.events.pipe(
         filter(e => e instanceof NavigationEnd)
-      ).subscribe(() => {
+      ).subscribe((e) => {
         if (this.isBrowser) {
           setTimeout(() => AOS.refresh(), 100);
         }
+        const url = (e as NavigationEnd).urlAfterRedirects || (e as NavigationEnd).url;
+        // Pages without a dark hero need a solid navbar
+        this.navbarSolid = url.startsWith('/admin') ||
+          url.startsWith('/klant') ||
+          url.startsWith('/scan') ||
+          url.startsWith('/my-tickets') ||
+          url.startsWith('/login') ||
+          url.startsWith('/forgot-password') ||
+          url.startsWith('/reset-password');
       })
     );
   }
