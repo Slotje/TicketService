@@ -229,7 +229,7 @@ public class ServiceCoverageTest {
     @Order(24)
     void physicalTicketPdf_invalidHexColor_usesDefault() {
         // Invalid hex color -> parseColor should fall back to default
-        Event event = createTestEvent("#ZZZZZZ", "not-a-color");
+        Event event = createTestEvent("#ZZZZZZ", "#ZZZZZZ");
         List<Ticket> tickets = createTestTickets(event, 1);
 
         byte[] pdf = physicalTicketPdfService.generatePhysicalTicketsPdf(event, tickets);
@@ -638,7 +638,7 @@ public class ServiceCoverageTest {
                 .statusCode(200)
                 .body("status", equalTo("RESERVED"))
                 .body("quantity", equalTo(2))
-                .body("categoryName", equalTo("VIP Gold Ticket"))
+                .body("ticketCategoryName", equalTo("VIP Gold Ticket"))
                 .extract()
                 .response();
 

@@ -193,6 +193,7 @@ public class EventResourceCoverageTest {
     @Order(10)
     void testGeneratePhysicalTickets_admin_returns200Pdf() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + getAdminToken())
             .when()
                 .post("/api/events/" + physicalEventId + "/physical-tickets/generate")
@@ -207,6 +208,7 @@ public class EventResourceCoverageTest {
     void testGeneratePhysicalTickets_alreadyGenerated_returns400() {
         // Physical tickets were already generated in Order(10)
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + getAdminToken())
             .when()
                 .post("/api/events/" + physicalEventId + "/physical-tickets/generate")
@@ -256,6 +258,7 @@ public class EventResourceCoverageTest {
                 .extract().path("id")).longValue();
 
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + getAdminToken())
             .when()
                 .post("/api/events/" + noPhysicalEventId + "/physical-tickets/generate")
@@ -267,6 +270,7 @@ public class EventResourceCoverageTest {
     @Order(14)
     void testGeneratePhysicalTickets_nonexistentEvent_returns404() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + getAdminToken())
             .when()
                 .post("/api/events/999999/physical-tickets/generate")
@@ -278,6 +282,7 @@ public class EventResourceCoverageTest {
     @Order(15)
     void testGeneratePhysicalTickets_withoutAuth_returns401() {
         given()
+                .contentType(ContentType.JSON)
             .when()
                 .post("/api/events/" + physicalEventId + "/physical-tickets/generate")
             .then()
@@ -586,6 +591,7 @@ public class EventResourceCoverageTest {
     @Order(52)
     void testGenerateMyPhysicalTickets_returns200Pdf() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + customerToken)
             .when()
                 .post("/api/events/my/" + customerPhysicalEventId + "/physical-tickets/generate")
@@ -599,6 +605,7 @@ public class EventResourceCoverageTest {
     @Order(53)
     void testGenerateMyPhysicalTickets_alreadyGenerated_returns400() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + customerToken)
             .when()
                 .post("/api/events/my/" + customerPhysicalEventId + "/physical-tickets/generate")
@@ -623,6 +630,7 @@ public class EventResourceCoverageTest {
     @Order(55)
     void testGenerateMyPhysicalTickets_otherCustomer_returns403() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + secondCustomerToken)
             .when()
                 .post("/api/events/my/" + customerPhysicalEventId + "/physical-tickets/generate")
@@ -645,6 +653,7 @@ public class EventResourceCoverageTest {
     @Order(57)
     void testGenerateMyPhysicalTickets_nonexistentEvent_returns404() {
         given()
+                .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + customerToken)
             .when()
                 .post("/api/events/my/999999/physical-tickets/generate")
