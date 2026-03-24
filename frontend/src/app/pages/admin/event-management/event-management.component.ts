@@ -18,13 +18,14 @@ import { Message } from 'primeng/message';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { ProgressBar } from 'primeng/progressbar';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-event-management',
   imports: [
     CommonModule, FormsModule, RouterLink, TableModule, Button, Dialog,
     InputText, InputNumber, Textarea, FloatLabel, Select, DatePicker,
-    Tag, Message, ConfirmDialog, ProgressBar
+    Tag, Message, ConfirmDialog, ProgressBar, ToggleSwitch
   ],
   providers: [ConfirmationService],
   templateUrl: './event-management.component.html',
@@ -76,8 +77,8 @@ export class EventManagementComponent implements OnInit {
     return {
       name: '', description: '', eventDate: '', endDate: '',
       location: '', address: '', maxTickets: 100, physicalTickets: 0,
-      ticketPrice: 25.00, maxTicketsPerOrder: 10, imageUrl: '',
-      status: 'DRAFT', customerId: 0
+      ticketPrice: 25.00, maxTicketsPerOrder: 10, showAvailability: true,
+      imageUrl: '', status: 'DRAFT', customerId: 0
     };
   }
 

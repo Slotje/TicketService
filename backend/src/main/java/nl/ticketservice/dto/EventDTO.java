@@ -40,6 +40,7 @@ public record EventDTO(
         Integer availablePhysicalTickets,
         Integer totalSold,
         boolean physicalTicketsGenerated,
+        boolean showAvailability,
         String imageUrl,
         String status,
         Long customerId,

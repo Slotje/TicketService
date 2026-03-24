@@ -20,13 +20,14 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ProgressBar } from 'primeng/progressbar';
 import { ConfirmationService } from 'primeng/api';
 import { Tooltip } from 'primeng/tooltip';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-customer-dashboard',
   imports: [
     CommonModule, FormsModule, TableModule, Button, Dialog,
     InputText, InputNumber, Textarea, FloatLabel, Select, DatePicker,
-    Tag, Message, ConfirmDialog, ProgressBar, Tooltip
+    Tag, Message, ConfirmDialog, ProgressBar, Tooltip, ToggleSwitch
   ],
   providers: [ConfirmationService],
   templateUrl: './customer-dashboard.component.html',
@@ -95,8 +96,8 @@ export class CustomerDashboardComponent implements OnInit {
     return {
       name: '', description: '', eventDate: '', endDate: '',
       location: '', address: '', maxTickets: 100, physicalTickets: 0,
-      ticketPrice: 25.00, maxTicketsPerOrder: 10, imageUrl: '',
-      status: 'DRAFT', customerId: 0
+      ticketPrice: 25.00, maxTicketsPerOrder: 10, showAvailability: true,
+      imageUrl: '', status: 'DRAFT', customerId: 0
     };
   }
 

@@ -225,6 +225,7 @@ public class EventService {
             event.maxTicketsPerOrder = dto.maxTicketsPerOrder();
         }
         event.imageUrl = dto.imageUrl();
+        event.showAvailability = dto.showAvailability();
         if (dto.status() != null) {
             event.status = EventStatus.valueOf(dto.status());
         }
@@ -244,6 +245,7 @@ public class EventService {
                 e.getAvailableTickets(), e.physicalTicketsSold,
                 e.getAvailablePhysicalTickets(), e.getTotalSold(),
                 e.physicalTicketsGenerated,
+                e.showAvailability,
                 e.imageUrl, e.status.name(),
                 e.customer.id, e.customer.companyName,
                 categoryDTOs

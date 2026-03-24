@@ -51,6 +51,7 @@ export interface Event {
   availablePhysicalTickets?: number;
   totalSold?: number;
   physicalTicketsGenerated?: boolean;
+  showAvailability?: boolean;
   imageUrl?: string;
   status: string;
   customerId: number;

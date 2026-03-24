@@ -80,18 +80,20 @@
               }
             </div>
           </div>
-          <div class="meta-item">
-            <div class="meta-icon-lg">
-              <i class="pi pi-ticket"></i>
-            </div>
-            <div class="meta-text">
-              <strong>Beschikbaarheid</strong>
-              <p>{{ event.availableTickets }} van {{ event.maxTickets }} tickets beschikbaar</p>
-              <div class="availability-bar-wide">
-                <div class="availability-fill-wide" [style.width.%]="(event.availableTickets ?? 0) / event.maxTickets * 100"></div>
+          @if (event.showAvailability !== false) {
+            <div class="meta-item">
+              <div class="meta-icon-lg">
+                <i class="pi pi-ticket"></i>
+              </div>
+              <div class="meta-text">
+                <strong>Beschikbaarheid</strong>
+                <p>{{ event.availableTickets }} van {{ event.maxTickets }} tickets beschikbaar</p>
+                <div class="availability-bar-wide">
+                  <div class="availability-fill-wide" [style.width.%]="(event.availableTickets ?? 0) / event.maxTickets * 100"></div>
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -188,7 +190,7 @@
                                 @if (cat.endTime) { - {{ formatTime(cat.endTime) }} }
                               </span>
                             }
-                            @if (cat.availableTickets != null && cat.maxTickets && cat.maxTickets > 0) {
+                            @if (event.showAvailability !== false && cat.availableTickets != null && cat.maxTickets && cat.maxTickets > 0) {
                               <span class="category-avail" [class.low]="cat.availableTickets! < 50">
                                 <i class="pi pi-ticket"></i>
                                 {{ cat.availableTickets }} beschikbaar
@@ -212,14 +214,21 @@
                                 buttonLayout="horizontal"
                                 incrementButtonIcon="pi pi-plus"
                                 decrementButtonIcon="pi pi-minus"
-                                [inputStyle]="{'width': '3rem', 'text-align': 'center'}" />
+                                [readonly]="true"
+                                [inputStyle]="{'width': '3rem', 'text-align': 'center', 'pointer-events': 'none'}" />
                             </div>
                           }
                         </div>
                       </div>
                     }
                   </div>
-                  <small class="text-muted">Max {{ event.maxTicketsPerOrder }} tickets per bestelling (nog {{ event.maxTicketsPerOrder - totalSelectedQuantity }} over)</small>
+                  <small class="text-muted">Max {{ event.maxTicketsPerOrder }} tickets per bestelling (nog {{ event.maxTicketsPerOrder - totalSelectedQuantity - existingQuantityForEvent }} over)</small>
+                  @if (existingQuantityForEvent > 0) {
+                    <small class="text-muted" style="display:block;color:var(--ts-gold-dark);">
+                      <i class="pi pi-shopping-cart" style="font-size:0.7rem;"></i>
+                      {{ existingQuantityForEvent }} ticket(s) al in winkelwagen/gereserveerd
+                    </small>
+                  }
                   @if (submitted && !hasSelectedCategories) {
                     <small class="error-text">Selecteer minstens één ticket type</small>
                   }
@@ -268,16 +277,18 @@
                   [label]="addedToCart ? 'Toegevoegd!' : 'In Winkelwagen'"
                   [icon]="addedToCart ? 'pi pi-check' : 'pi pi-shopping-cart'"
                   (onClick)="addToCart()"
-                  [severity]="addedToCart ? 'success' : undefined"
+                  [severity]="addedToCart ? 'success' : (hasCategories ? (hasSelectedCategories ? undefined : 'secondary') : undefined)"
+                  [disabled]="hasCategories ? !hasSelectedCategories : false"
+                  [outlined]="hasCategories ? !hasSelectedCategories : false"
                   [style]="{'width': '100%'}" />
                 <p-button
                   label="Bestelling Plaatsen"
                   icon="pi pi-check"
                   (onClick)="placeOrder()"
                   [loading]="submitting"
-                  [disabled]="submitting"
-                  [severity]="hasCategories ? (hasSelectedCategories ? 'success' : 'secondary') : (orderForm.quantity > 0 ? 'success' : 'secondary')"
-                  [outlined]="hasCategories ? !hasSelectedCategories : !(orderForm.quantity > 0)"
+                  [disabled]="submitting || (hasCategories ? !hasSelectedCategories : false)"
+                  [severity]="hasCategories ? (hasSelectedCategories ? 'success' : 'secondary') : 'success'"
+                  [outlined]="hasCategories ? !hasSelectedCategories : false"
                   [style]="{'width': '100%'}" />
               </div>
             </div>

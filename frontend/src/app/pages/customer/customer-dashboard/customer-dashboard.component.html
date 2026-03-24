@@ -193,6 +193,12 @@
       <p-inputNumber [(ngModel)]="eventForm.maxTicketsPerOrder" [min]="1" [max]="10" [showButtons]="true" class="w-full" />
     </div>
     <div class="form-field span-2">
+      <div class="toggle-row">
+        <p-toggleSwitch [(ngModel)]="eventForm.showAvailability" />
+        <label>Beschikbaarheid tonen aan bezoekers</label>
+      </div>
+    </div>
+    <div class="form-field span-2">
       <label>Afbeelding</label>
       <div class="image-upload-area" [class.dragging]="false">
         @if (eventForm.imageUrl) {
