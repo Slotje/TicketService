@@ -30,6 +30,15 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
+    path: 'winkelwagen',
+    loadComponent: () => import('./pages/home/cart/cart.component').then(m => m.CartComponent)
+  },
+  {
+    path: 'profiel',
+    loadComponent: () => import('./pages/home/user-profile/user-profile.component').then(m => m.UserProfileComponent),
+    canActivate: [userAuthGuard]
+  },
+  {
     path: 'my-tickets',
     loadComponent: () => import('./pages/home/my-tickets/my-tickets.component').then(m => m.MyTicketsComponent),
     canActivate: [userAuthGuard]

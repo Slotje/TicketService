@@ -7,6 +7,7 @@ import { AdminAuthService } from './services/admin-auth.service';
 import { AuthService } from './services/auth.service';
 import { UserAuthService } from './services/user-auth.service';
 import { CustomerAuthService } from './services/customer-auth.service';
+import { CartService } from './services/cart.service';
 import { Subscription, filter } from 'rxjs';
 import * as AOS from 'aos';
 
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private scannerAuth: AuthService,
     public userAuth: UserAuthService,
     public customerAuth: CustomerAuthService,
+    public cart: CartService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {

@@ -9,6 +9,20 @@ export interface UserAuthResponse {
   firstName: string;
   lastName: string;
   phone?: string;
+  street?: string;
+  houseNumber?: string;
+  postalCode?: string;
+  city?: string;
+}
+
+export interface UserUpdateRequest {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  street?: string;
+  houseNumber?: string;
+  postalCode?: string;
+  city?: string;
 }
 
 @Injectable({
@@ -55,6 +69,26 @@ export class UserAuthService {
     return localStorage.getItem('user_phone');
   }
 
+  get street(): string | null {
+    return localStorage.getItem('user_street');
+  }
+
+  get houseNumber(): string | null {
+    return localStorage.getItem('user_house_number');
+  }
+
+  get postalCode(): string | null {
+    return localStorage.getItem('user_postal_code');
+  }
+
+  get city(): string | null {
+    return localStorage.getItem('user_city');
+  }
+
+  get hasAddress(): boolean {
+    return !!(this.street && this.houseNumber && this.postalCode && this.city);
+  }
+
   register(email: string, password: string, firstName: string, lastName: string, phone?: string): Observable<UserAuthResponse> {
     return this.http.post<UserAuthResponse>(`${this.baseUrl}/register`, { email, password, firstName, lastName, phone }).pipe(
       tap(res => this.storeAuth(res))
@@ -73,6 +107,10 @@ export class UserAuthService {
     localStorage.removeItem('user_first_name');
     localStorage.removeItem('user_last_name');
     localStorage.removeItem('user_phone');
+    localStorage.removeItem('user_street');
+    localStorage.removeItem('user_house_number');
+    localStorage.removeItem('user_postal_code');
+    localStorage.removeItem('user_city');
     this.loggedIn$.next(false);
     this.router.navigate(['/']);
   }
@@ -91,6 +129,14 @@ export class UserAuthService {
     );
   }
 
+  updateProfile(data: UserUpdateRequest): Observable<UserAuthResponse> {
+    return this.http.put<UserAuthResponse>(`${this.baseUrl}/profile`, data, {
+      headers: { Authorization: `Bearer ${this.token}` }
+    }).pipe(
+      tap(res => this.storeAuth(res))
+    );
+  }
+
   private storeAuth(res: UserAuthResponse) {
     if (res.token) {
       localStorage.setItem('user_token', res.token);
@@ -100,6 +146,28 @@ export class UserAuthService {
     localStorage.setItem('user_last_name', res.lastName);
     if (res.phone) {
       localStorage.setItem('user_phone', res.phone);
+    } else {
+      localStorage.removeItem('user_phone');
+    }
+    if (res.street) {
+      localStorage.setItem('user_street', res.street);
+    } else {
+      localStorage.removeItem('user_street');
+    }
+    if (res.houseNumber) {
+      localStorage.setItem('user_house_number', res.houseNumber);
+    } else {
+      localStorage.removeItem('user_house_number');
+    }
+    if (res.postalCode) {
+      localStorage.setItem('user_postal_code', res.postalCode);
+    } else {
+      localStorage.removeItem('user_postal_code');
+    }
+    if (res.city) {
+      localStorage.setItem('user_city', res.city);
+    } else {
+      localStorage.removeItem('user_city');
     }
     this.loggedIn$.next(true);
   }

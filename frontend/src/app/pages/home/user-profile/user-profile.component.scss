@@ -1,0 +1,123 @@
+// ============================================================
+// User Profile — Premium Immersive Layout
+// ============================================================
+
+.profile-page {
+  margin: -2rem -1.5rem 0;
+  margin-top: calc(-2rem - 64px);
+
+  @media (max-width: 768px) {
+    margin: -1rem -0.875rem 0;
+    margin-top: calc(-1rem - 56px);
+  }
+}
+
+// --- Hero Header ---
+.page-hero {
+  position: relative;
+  background: var(--ts-navy-gradient);
+  padding: 7rem 2rem 3rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #ffffff;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .hero-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.25rem;
+    background: rgba(212, 168, 83, 0.15);
+    border: 1px solid rgba(212, 168, 83, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+
+    i {
+      font-size: 1.5rem;
+      color: var(--ts-gold);
+    }
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+  }
+
+  .hero-subtitle {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  @media (max-width: 768px) {
+    padding: 6rem 1rem 2rem;
+    h1 { font-size: 1.75rem; }
+  }
+}
+
+// --- Content Area ---
+.profile-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.profile-card {
+  background: #ffffff;
+  border-radius: var(--ts-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--ts-card-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  color: var(--ts-navy-950);
+}
+
+.address-hint {
+  font-size: 0.85rem;
+  color: var(--ts-navy-600);
+  margin: -0.75rem 0 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  @media (max-width: 500px) { grid-template-columns: 1fr; }
+}
+
+.address-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.25rem;
+  .street { grid-column: 1; }
+  .house-number { grid-column: 2; max-width: 120px; }
+  .postal-code { grid-column: 1; max-width: 150px; }
+  .city { grid-column: 2; }
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+    .house-number, .postal-code, .city { max-width: none; grid-column: 1; }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}

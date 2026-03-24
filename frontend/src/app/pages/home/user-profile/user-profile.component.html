@@ -1,0 +1,109 @@
+<div class="profile-page">
+  <!-- Hero Header -->
+  <div class="page-hero">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content" data-aos="fade-up">
+      <div class="hero-icon">
+        <i class="pi pi-user"></i>
+      </div>
+      <h1>Mijn Profiel</h1>
+      <p class="hero-subtitle">{{ userAuth.email }}</p>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    @if (errorMessage) {
+      <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+    }
+    @if (successMessage) {
+      <p-message severity="success" [text]="successMessage" [style]="{'width': '100%'}" class="mb-2" />
+    }
+
+    <div class="profile-card" data-aos="fade-up">
+      <h3 class="section-title">
+        <div class="icon-circle-gold" style="width:1.75rem;height:1.75rem;">
+          <i class="pi pi-id-card" style="font-size:0.75rem;"></i>
+        </div>
+        Persoonlijke Gegevens
+      </h3>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="firstName" [(ngModel)]="profileForm.firstName" class="w-full" />
+            <label for="firstName">Voornaam *</label>
+          </p-floatlabel>
+        </div>
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="lastName" [(ngModel)]="profileForm.lastName" class="w-full" />
+            <label for="lastName">Achternaam *</label>
+          </p-floatlabel>
+        </div>
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="email" [value]="userAuth.email" class="w-full" [disabled]="true" />
+            <label for="email">E-mail</label>
+          </p-floatlabel>
+        </div>
+        <div class="form-field">
+          <p-floatlabel>
+            <input pInputText id="phone" [(ngModel)]="profileForm.phone" class="w-full" />
+            <label for="phone">Telefoon</label>
+          </p-floatlabel>
+        </div>
+      </div>
+
+      <p-divider />
+
+      <h3 class="section-title">
+        <div class="icon-circle-gold" style="width:1.75rem;height:1.75rem;">
+          <i class="pi pi-home" style="font-size:0.75rem;"></i>
+        </div>
+        Adresgegevens
+      </h3>
+      <p class="address-hint">
+        Vul je adresgegevens in zodat deze automatisch worden ingevuld bij bestellingen.
+      </p>
+
+      <div class="address-grid">
+        <div class="address-field street">
+          <p-floatlabel>
+            <input pInputText id="street" [(ngModel)]="profileForm.street" class="w-full" />
+            <label for="street">Straat</label>
+          </p-floatlabel>
+        </div>
+        <div class="address-field house-number">
+          <p-floatlabel>
+            <input pInputText id="houseNumber" [(ngModel)]="profileForm.houseNumber" class="w-full" />
+            <label for="houseNumber">Huisnr.</label>
+          </p-floatlabel>
+        </div>
+        <div class="address-field postal-code">
+          <p-floatlabel>
+            <input pInputText id="postalCode" [(ngModel)]="profileForm.postalCode" class="w-full" />
+            <label for="postalCode">Postcode</label>
+          </p-floatlabel>
+        </div>
+        <div class="address-field city">
+          <p-floatlabel>
+            <input pInputText id="city" [(ngModel)]="profileForm.city" class="w-full" />
+            <label for="city">Plaats</label>
+          </p-floatlabel>
+        </div>
+      </div>
+
+      <div class="form-actions mt-3">
+        <p-button
+          label="Opslaan"
+          icon="pi pi-save"
+          (onClick)="saveProfile()"
+          [loading]="saving" />
+      </div>
+    </div>
+  </div>
+</div>

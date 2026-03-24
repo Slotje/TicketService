@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
+import { UserAuthService } from '../../../services/user-auth.service';
 import { BuyerDetails, Order } from '../../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -37,7 +38,7 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   };
   detailsSaved = false;
 
-  constructor(public api: ApiService, private route: ActivatedRoute) {}
+  constructor(public api: ApiService, private route: ActivatedRoute, private userAuth: UserAuthService) {}
 
   ngOnInit() {
     const orderNumber = this.route.snapshot.paramMap.get('orderNumber')!;
@@ -53,6 +54,14 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
             buyerCity: order.buyerCity || ''
           };
           this.detailsSaved = true;
+        } else if (this.userAuth.hasAddress) {
+          // Auto-fill from user profile
+          this.buyerDetails = {
+            buyerStreet: this.userAuth.street || '',
+            buyerHouseNumber: this.userAuth.houseNumber || '',
+            buyerPostalCode: this.userAuth.postalCode || '',
+            buyerCity: this.userAuth.city || ''
+          };
         }
         if (order.status === 'RESERVED') {
           this.startTimer();

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
 import { UserAuthService } from '../../../services/user-auth.service';
+import { CartService } from '../../../services/cart.service';
 import { Event, OrderRequest } from '../../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
@@ -30,6 +31,7 @@ export class EventDetailComponent implements OnInit {
   submitted = false;
   submitting = false;
   orderPlaced = false;
+  addedToCart = false;
   errorMessage = '';
 
   orderForm: OrderRequest = {
@@ -50,7 +52,8 @@ export class EventDetailComponent implements OnInit {
     private api: ApiService,
     private route: ActivatedRoute,
     private router: Router,
-    private userAuth: UserAuthService
+    private userAuth: UserAuthService,
+    public cart: CartService
   ) {}
 
   ngOnInit() {
@@ -88,6 +91,24 @@ export class EventDetailComponent implements OnInit {
 
   isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  addToCart() {
+    if (!this.event) return;
+    this.cart.addItem({
+      eventId: this.event.id!,
+      eventName: this.event.name,
+      eventDate: this.event.eventDate,
+      location: this.event.location,
+      ticketPrice: this.event.ticketPrice,
+      serviceFee: this.event.effectiveOnlineServiceFee ?? this.event.serviceFee ?? 0,
+      quantity: this.orderForm.quantity,
+      maxTicketsPerOrder: this.event.maxTicketsPerOrder,
+      availableTickets: this.event.availableTickets ?? 0,
+      imageUrl: this.event.imageUrl
+    });
+    this.addedToCart = true;
+    setTimeout(() => this.addedToCart = false, 3000);
   }
 
   placeOrder() {
