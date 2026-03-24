@@ -38,8 +38,11 @@ public class Ticket extends PanacheEntity {
     @JoinColumn(name = "ticket_category_id")
     public TicketCategory ticketCategory;
 
-    /** For day tickets: the specific date this ticket is valid for. Null = all days. */
+    /** For day tickets: the first date this ticket is valid for. Null = all days. */
     public LocalDate validDate;
+
+    /** Last date this ticket is valid for. Null = same as validDate. */
+    public LocalDate validEndDate;
 
     public String categoryName;
 

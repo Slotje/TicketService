@@ -120,6 +120,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.eventCategories = (event.ticketCategories || []).map(c => ({
       ...c,
       _validDateObj: c.validDate ? new Date(c.validDate + 'T00:00:00') : null,
+      _validEndDateObj: c.validEndDate ? new Date(c.validEndDate + 'T00:00:00') : null,
       _startTimeObj: c.startTime ? new Date(c.startTime) : null,
       _endTimeObj: c.endTime ? new Date(c.endTime) : null
     }));
@@ -129,9 +130,9 @@ export class CustomerDashboardComponent implements OnInit {
   addCategory() {
     this.eventCategories.push({
       name: '', description: '', price: 0, serviceFee: null,
-      maxTickets: 0, validDate: null, startTime: null, endTime: null,
+      maxTickets: 0, validDate: null, validEndDate: null, startTime: null, endTime: null,
       sortOrder: this.eventCategories.length,
-      active: true, _validDateObj: null, _startTimeObj: null, _endTimeObj: null
+      active: true, _validDateObj: null, _validEndDateObj: null, _startTimeObj: null, _endTimeObj: null
     });
   }
 
@@ -201,6 +202,7 @@ export class CustomerDashboardComponent implements OnInit {
         serviceFee: cat.serviceFee,
         maxTickets: cat.maxTickets || 0,
         validDate: cat._validDateObj ? new Date(cat._validDateObj).toISOString().slice(0, 10) : null,
+        validEndDate: cat._validEndDateObj ? new Date(cat._validEndDateObj).toISOString().slice(0, 10) : null,
         startTime: cat._startTimeObj ? new Date(cat._startTimeObj).toISOString().slice(0, 19) : null,
         endTime: cat._endTimeObj ? new Date(cat._endTimeObj).toISOString().slice(0, 19) : null,
         sortOrder: i,

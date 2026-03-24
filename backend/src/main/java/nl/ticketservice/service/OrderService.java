@@ -146,6 +146,7 @@ public class OrderService {
             if (category != null) {
                 ticket.ticketCategory = category;
                 ticket.validDate = category.validDate;
+                ticket.validEndDate = category.validEndDate;
                 ticket.categoryName = category.name;
             }
             ticket.persist();
@@ -292,13 +293,19 @@ public class OrderService {
             throw new TicketServiceException("Dit ticket is verlopen", 400);
         }
 
-        // For day tickets: check if today matches the valid date
+        // For day tickets: check if today falls within the valid date range
         if (ticket.validDate != null) {
             LocalDate today = now.toLocalDate();
-            // Allow scanning on validDate and the day after (for night events)
-            if (today.isBefore(ticket.validDate) || today.isAfter(ticket.validDate.plusDays(1))) {
-                throw new TicketServiceException(
-                        "Dit dagticket is alleen geldig op " + ticket.validDate, 400);
+            LocalDate endDate = ticket.validEndDate != null ? ticket.validEndDate : ticket.validDate;
+            // Allow scanning from validDate to endDate+1 (for night events that end after midnight)
+            if (today.isBefore(ticket.validDate) || today.isAfter(endDate.plusDays(1))) {
+                if (ticket.validDate.equals(endDate)) {
+                    throw new TicketServiceException(
+                            "Dit ticket is alleen geldig op " + ticket.validDate, 400);
+                } else {
+                    throw new TicketServiceException(
+                            "Dit ticket is alleen geldig van " + ticket.validDate + " t/m " + endDate, 400);
+                }
             }
         }
 
@@ -346,6 +353,6 @@ public class OrderService {
 
     private TicketDTO toTicketDTO(Ticket t) {
         return new TicketDTO(t.id, t.ticketCode, t.qrCodeData, t.ticketType.name(),
-                t.categoryName, t.validDate, t.scanned, t.scannedAt, t.createdAt);
+                t.categoryName, t.validDate, t.validEndDate, t.scanned, t.scannedAt, t.createdAt);
     }
 }

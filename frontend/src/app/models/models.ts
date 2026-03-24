@@ -22,6 +22,7 @@ export interface TicketCategory {
   ticketsReserved?: number;
   availableTickets?: number;
   validDate?: string | null;
+  validEndDate?: string | null;
   startTime?: string | null;
   endTime?: string | null;
   sortOrder?: number;
@@ -108,6 +109,7 @@ export interface Ticket {
   ticketType?: string;
   categoryName?: string;
   validDate?: string;
+  validEndDate?: string;
   scanned: boolean;
   scannedAt?: string;
   createdAt: string;
