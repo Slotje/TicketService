@@ -8,6 +8,7 @@ import { AuthService } from './services/auth.service';
 import { UserAuthService } from './services/user-auth.service';
 import { CustomerAuthService } from './services/customer-auth.service';
 import { CartService } from './services/cart.service';
+import { ApiService } from './services/api.service';
 import { Subscription, filter } from 'rxjs';
 import * as AOS from 'aos';
 
@@ -32,6 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public userAuth: UserAuthService,
     public customerAuth: CustomerAuthService,
     public cart: CartService,
+    private api: ApiService,
     private router: Router,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -57,7 +59,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.adminAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
       this.scannerAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
-      this.userAuth.isLoggedIn$.subscribe(() => this.buildMenu()),
+      this.userAuth.isLoggedIn$.subscribe((loggedIn) => {
+        this.buildMenu();
+        if (loggedIn) this.loadReservedOrders();
+      }),
       this.customerAuth.isLoggedIn$.subscribe(() => this.buildMenu())
     );
 
@@ -82,6 +87,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   goToLogin() {
     this.router.navigate(['/login']);
+  }
+
+  private loadReservedOrders() {
+    const email = this.userAuth.email;
+    if (!email) return;
+    this.api.getOrdersByEmail(email).subscribe({
+      next: (orders) => {
+        this.cart.setReservedOrders(orders.filter(o => o.status === 'RESERVED'));
+      }
+    });
   }
 
   private buildMenu() {

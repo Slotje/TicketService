@@ -21,12 +21,9 @@ import { Subscription } from 'rxjs';
 export class CartComponent implements OnInit, OnDestroy {
   Math = Math;
   items: CartItem[] = [];
-  reservedOrders: Order[] = [];
-  reservedTimers: Record<number, string> = {};
   processing: Record<number, boolean> = {};
   errorMessage = '';
-  private sub?: Subscription;
-  private timerInterval: any;
+  private subs: Subscription[] = [];
 
   constructor(
     public cart: CartService,
@@ -36,15 +33,18 @@ export class CartComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.sub = this.cart.cartItems$.subscribe(items => {
+    this.subs.push(this.cart.cartItems$.subscribe(items => {
       this.items = items;
-    });
+    }));
     this.loadReservedOrders();
   }
 
   ngOnDestroy() {
-    this.sub?.unsubscribe();
-    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.subs.forEach(s => s.unsubscribe());
+  }
+
+  get reservedOrders(): Order[] {
+    return this.cart.reservedOrders;
   }
 
   get isEmpty(): boolean {
@@ -62,47 +62,19 @@ export class CartComponent implements OnInit, OnDestroy {
 
     this.api.getOrdersByEmail(email).subscribe({
       next: (orders) => {
-        this.reservedOrders = orders.filter(o => o.status === 'RESERVED');
-        if (this.reservedOrders.length > 0) {
-          this.startTimers();
-        }
+        this.cart.setReservedOrders(orders.filter(o => o.status === 'RESERVED'));
       }
     });
   }
 
-  private startTimers() {
-    this.updateTimers();
-    this.timerInterval = setInterval(() => this.updateTimers(), 1000);
-  }
-
-  private updateTimers() {
-    const now = Date.now();
-    for (const order of this.reservedOrders) {
-      if (!order.expiresAt) continue;
-      const expires = new Date(order.expiresAt).getTime();
-      const diff = expires - now;
-      if (diff <= 0) {
-        this.reservedTimers[order.id] = 'Verlopen';
-      } else {
-        const m = Math.floor(diff / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        this.reservedTimers[order.id] = `${m}:${s.toString().padStart(2, '0')}`;
-      }
-    }
-    // Remove expired orders
-    this.reservedOrders = this.reservedOrders.filter(o =>
-      this.reservedTimers[o.id] !== 'Verlopen'
-    );
-  }
-
   getTimer(order: Order): string {
-    return this.reservedTimers[order.id] || '';
+    return this.cart.reservedTimers[order.id] || '';
   }
 
   isUrgent(order: Order): boolean {
     if (!order.expiresAt) return false;
     const diff = new Date(order.expiresAt).getTime() - Date.now();
-    return diff < 120000; // less than 2 minutes
+    return diff < 120000;
   }
 
   goToOrder(order: Order) {
@@ -112,7 +84,7 @@ export class CartComponent implements OnInit, OnDestroy {
   cancelReservedOrder(order: Order) {
     this.api.cancelOrder(order.id).subscribe({
       next: () => {
-        this.reservedOrders = this.reservedOrders.filter(o => o.id !== order.id);
+        this.cart.removeReservedOrder(order.id);
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Fout bij annuleren';
@@ -165,9 +137,7 @@ export class CartComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.cart.removeItem(item.eventId);
         this.processing[item.eventId] = false;
-        // Add to reserved orders instead of navigating away
-        this.reservedOrders.push(order);
-        if (!this.timerInterval) this.startTimers();
+        this.cart.addReservedOrder(order);
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Er is een fout opgetreden bij het bestellen';
@@ -205,8 +175,7 @@ export class CartComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.cart.removeItem(item.eventId);
         this.processing[item.eventId] = false;
-        this.reservedOrders.push(order);
-        if (!this.timerInterval) this.startTimers();
+        this.cart.addReservedOrder(order);
         this.processNext(remaining);
       },
       error: (err) => {
