@@ -26,6 +26,12 @@ public class StartupService {
 
     @Transactional
     void onStart(@Observes StartupEvent ev) {
+        // Always ensure a default admin exists
+        if (AdminUser.count() == 0) {
+            adminAuthService.createUser("admin@ticketservice.nl", "admin", "Beheerder");
+            LOG.info("Standaard admin gebruiker aangemaakt (admin@ticketservice.nl / admin)");
+        }
+
         if (!"drop-and-create".equals(dbGeneration)) {
             return;
         }
@@ -35,11 +41,6 @@ public class StartupService {
         if (ScannerUser.count() == 0) {
             authService.createUser("scanner", "scanner123", "Standaard Scanner");
             LOG.info("Standaard scanner gebruiker aangemaakt (scanner / scanner123)");
-        }
-
-        if (AdminUser.count() == 0) {
-            adminAuthService.createUser("admin@ticketservice.nl", "admin", "Beheerder");
-            LOG.info("Standaard admin gebruiker aangemaakt (admin@ticketservice.nl / admin)");
         }
     }
 }

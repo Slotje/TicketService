@@ -380,9 +380,11 @@ a {
   display: flex;
   min-height: 100vh;
   margin: -2rem -1.5rem;
+  margin-top: calc(-2rem - 64px);
 
   @media (max-width: 768px) {
     margin: -1rem -0.875rem;
+    margin-top: calc(-1rem - 56px);
   }
 }
 
@@ -447,11 +449,23 @@ a {
   align-items: center;
   justify-content: center;
   padding: 3rem 2rem;
-  background: #f5f3f0;
+  background: linear-gradient(170deg, #1e293b 0%, #0f172a 100%);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(212, 168, 83, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(212, 168, 83, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
 
   @media (max-width: 900px) {
     width: 100%;
-    padding: 2rem 1rem;
+    min-height: 100vh;
+    padding: 6rem 1rem 2rem;
   }
 }
 
@@ -460,9 +474,11 @@ a {
   max-width: 440px;
   background: #ffffff;
   border-radius: var(--ts-radius-xl);
-  box-shadow: var(--ts-card-shadow-lg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out;
+  position: relative;
+  z-index: 1;
 
   .auth-card-header {
     padding: 2rem 2rem 1.5rem;

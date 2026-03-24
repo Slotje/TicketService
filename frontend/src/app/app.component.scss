@@ -390,10 +390,28 @@
 .footer-bottom {
   padding: 1.25rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .footer-copy {
   font-size: 0.8rem;
+}
+
+.powered-by {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .powered-by-name {
+    font-weight: 600;
+  }
 }
 
 // --- Mobile Drawer ---
@@ -499,6 +517,8 @@
   }
 
   .footer-bottom {
+    flex-direction: column;
+    gap: 0.5rem;
     text-align: center;
   }
 
