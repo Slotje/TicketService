@@ -283,21 +283,13 @@ public class OrderService {
         LocalDateTime now = LocalDateTime.now();
         TicketCategory category = ticket.ticketCategory;
 
-        // Determine effective start/end times (category overrides event)
-        LocalDateTime effectiveStart = (category != null && category.startTime != null)
-                ? category.startTime : event.eventDate;
+        // Determine effective end time (category overrides event)
         LocalDateTime effectiveEnd = (category != null && category.endTime != null)
                 ? category.endTime : (event.endDate != null ? event.endDate : event.eventDate.plusHours(12));
 
         // Check if this ticket's time window has passed
         if (now.isAfter(effectiveEnd)) {
             throw new TicketServiceException("Dit ticket is verlopen", 400);
-        }
-
-        // Check if scanning is allowed (only from 1 hour before start)
-        if (now.isBefore(effectiveStart.minusHours(1))) {
-            throw new TicketServiceException(
-                    "Scannen is pas mogelijk vanaf 1 uur voor de start van het evenement", 400);
         }
 
         // For day tickets: check if today matches the valid date
