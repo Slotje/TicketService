@@ -1,6 +1,6 @@
 # Functioneel Ontwerp - TicketService
 
-**Versie:** 2.0
+**Versie:** 3.0
 **Datum:** 2026-03-24
 **Project:** TicketService - Multi-tenant Ticketverkoop Platform
 
@@ -28,13 +28,14 @@ Het platform biedt een volledige end-to-end oplossing: van het aanmaken van een 
 Het systeem omvat de volgende functionele gebieden:
 
 1. **Evenementbeheer** – Aanmaken, bewerken, publiceren en verwijderen van evenementen
-2. **Online ticketverkoop** – Reserveren, betalen en bevestigen van tickets via de website
-3. **Fysieke ticketverkoop** – Genereren van afdrukbare tickets voor verkoop aan de deur
-4. **Ticketscanning** – QR-code validatie bij de ingang met camera of handmatige invoer
-5. **Klantbeheer (multi-tenant)** – Onboarding, branding en dashboards per organisator
-6. **Gebruikersbeheer** – Registratie, login en aankoopgeschiedenis voor eindgebruikers
-7. **E-mailcommunicatie** – Bevestigingen, uitnodigingen en wachtwoord-reset berichten
-8. **Rapportage** – Verkoopoverzichten met omzet- en scanstatistieken
+2. **Ticketcategorieën** – Meerdere tickettypen per evenement met eigen prijs, capaciteit en geldigheidsdata (meerdaagse ondersteuning)
+3. **Online ticketverkoop** – Reserveren, betalen en bevestigen van tickets via de website met winkelwagenfunctie
+4. **Fysieke ticketverkoop** – Genereren van afdrukbare tickets voor verkoop aan de deur
+5. **Ticketscanning** – QR-code validatie bij de ingang met camera of handmatige invoer
+6. **Klantbeheer (multi-tenant)** – Onboarding, branding en dashboards per organisator
+7. **Gebruikersbeheer** – Registratie, login, profielbeheer en aankoopgeschiedenis voor eindgebruikers
+8. **E-mailcommunicatie** – Bevestigingen, uitnodigingen en wachtwoord-reset berichten
+9. **Rapportage** – Verkoopoverzichten met omzet- en scanstatistieken
 
 ### 1.4 Begrippen
 
@@ -46,6 +47,8 @@ Het systeem omvat de volgende functionele gebieden:
 | **Servicekosten** | Toeslag per ticket die wordt verdeeld over online tickets; fysieke tickets zijn vrijgesteld |
 | **Fysieke tickets** | Tickets bedoeld voor verkoop aan de deur, apart gegenereerd als afdrukbare PDF |
 | **Effectieve servicefee** | De herberekende servicefee per online ticket na verdeling van de totale servicekosten |
+| **Ticketcategorie** | Een tickettype binnen een evenement met eigen naam, prijs, capaciteit en optionele geldigheidsdata |
+| **Winkelwagen** | Tijdelijke verzameling van gereserveerde bestellingen die de gebruiker kan bevestigen |
 
 ---
 
@@ -65,12 +68,16 @@ Het systeem omvat de volgende functionele gebieden:
 | F-EV-08 | Instellen van maximaal aantal tickets per bestelling (1-10, standaard 10) | Klant, Admin | Wordt afgedwongen bij het plaatsen van een bestelling. |
 | F-EV-09 | Optioneel einddatum/tijd instellen voor meerdaagse evenementen | Klant, Admin | Einddatum is optioneel; wordt getoond op tickets indien ingevuld. |
 | F-EV-10 | Evenement kan alleen verwijderd worden als er nog geen tickets zijn verkocht | Klant, Admin | Systeem weigert verwijdering met foutmelding bij verkochte tickets. |
+| F-EV-11 | Instellen of beschikbaarheid zichtbaar is voor eindgebruikers (showAvailability) | Klant, Admin | Standaard aan; indien uit worden beschikbare aantallen niet getoond. |
+| F-EV-12 | Ticketcategorieën aanmaken, bewerken en verwijderen per evenement | Klant, Admin | Categorieën met eigen naam, beschrijving, prijs, servicekosten, capaciteit en sorteervolgorde. |
+| F-EV-13 | Ticketcategorieën kunnen optionele geldigheidsdata hebben (meerdaagse ondersteuning) | Klant, Admin | Start-/einddatum en start-/eindtijd per categorie; null = geldig voor alle dagen. |
+| F-EV-14 | Ticketcategorieën kunnen actief/inactief gezet worden | Klant, Admin | Inactieve categorieën zijn niet beschikbaar voor verkoop. |
 
 ### 2.2 Ticketverkoop (Online)
 
 | ID | Eis | Actor | Details |
 |----|-----|-------|---------|
-| F-TK-01 | Bestellen van 1 tot N tickets per bestelling (max instelbaar per evenement, standaard 10) | Gebruiker | Aantal wordt begrensd door min(maxTicketsPerOrder, beschikbare tickets). |
+| F-TK-01 | Bestellen van 1 tot N tickets per bestelling (max instelbaar per evenement, standaard 10) | Gebruiker | Aantal wordt begrensd door min(maxTicketsPerOrder, beschikbare tickets). Optioneel per ticketcategorie. |
 | F-TK-02 | Reservering is 10 minuten geldig; daarna verloopt de bestelling automatisch | Systeem | Cleanup-service draait elke 60 seconden. Tickets worden vrijgegeven bij verval. |
 | F-TK-03 | Na bevestiging ontvangt de koper een e-mail met PDF-tickets | Systeem | PDF bevat per ticket een pagina met QR-code, evenementdetails en prijsinformatie. |
 | F-TK-04 | Elk ticket bevat een unieke QR-code (HMAC-SHA256 gesigneerd) | Systeem | QR-code bevat ticketdata + handtekening gescheiden door pipe-karakter. |
@@ -80,7 +87,9 @@ Het systeem omvat de volgende functionele gebieden:
 | F-TK-08 | Adresgegevens (straat, huisnummer, postcode, plaats) moeten worden ingevuld vóór bevestiging | Gebruiker | Adres wordt in een tweede stap gevraagd na de initiële reservering. |
 | F-TK-09 | Bij bevestiging worden servicekosten berekend en opgeslagen per bestelling | Systeem | Formule: effectieve servicefee × aantal tickets. |
 | F-TK-10 | Formulier wordt automatisch voorgevuld als de gebruiker is ingelogd | Systeem | Voornaam, achternaam, e-mail en telefoon worden overgenomen uit gebruikersprofiel. |
-| F-TK-11 | Bestelling kan worden geannuleerd (door admin) met teruggave van tickets | Admin | Tickets worden vrijgegeven en tellers bijgewerkt. |
+| F-TK-11 | Bestelling kan worden geannuleerd met teruggave van tickets | Admin, Systeem | Tickets worden vrijgegeven en tellers bijgewerkt. Beschikbaar via annuleer-endpoint. |
+| F-TK-12 | Bij bestelling kan een ticketcategorie worden opgegeven | Gebruiker | Categorie bepaalt prijs, geldigheidsdata en capaciteitscontrole. |
+| F-TK-13 | Tickets in een bestelling bevatten de categorienaam en geldigheidsdata | Systeem | Categorienaam en validDate/validEndDate worden opgeslagen per ticket. |
 
 ### 2.3 Fysieke Tickets
 
@@ -118,6 +127,7 @@ Het systeem omvat de volgende functionele gebieden:
 | F-KL-02 | Klant ontvangt een uitnodigingslink per e-mail om account te activeren (7 dagen geldig) | Systeem | Na activatie wordt het wachtwoord ingesteld en de inviteToken gewist. |
 | F-KL-03 | Elke klant krijgt een unieke slug voor een publieke landingspagina (`/klant/{slug}`) | Systeem | Slug wordt automatisch gegenereerd: bedrijfsnaam → lowercase, diacrieten verwijderd, speciale tekens → koppeltekens. Bij duplicaat wordt een teller toegevoegd. |
 | F-KL-04 | Klant kan huisstijl instellen: primaire kleur, secundaire kleur, logo en website | Klant | Kleuren in hex-formaat (#RRGGBB). Logo via bestandsupload. Huisstijl wordt toegepast op tickets en e-mails. |
+| F-KL-04a | Klant kan een voorbeeld-ticket PDF downloaden met huidige huisstijl | Klant | Toont hoe een ticket eruitziet met de ingestelde branding (primaire kleur, logo, bedrijfsnaam). |
 | F-KL-05 | Klant heeft een eigen dashboard met overzicht van eigen evenementen, verkoopstatistieken en omzet | Klant | Dashboard toont: totaal evenementen, totaal verkochte tickets, geschatte omzet. |
 | F-KL-06 | Admin kan uitnodiging opnieuw versturen als klant nog geen wachtwoord heeft ingesteld | Admin | Nieuwe token wordt gegenereerd met nieuwe verloopdatum. |
 | F-KL-07 | Admin kan klant activeren/deactiveren | Admin | Inactieve klanten kunnen niet inloggen en hun evenementen zijn niet zichtbaar. |
@@ -134,6 +144,7 @@ Het systeem omvat de volgende functionele gebieden:
 | F-AU-03 | Wachtwoord-vergeten flow met reset-link per e-mail (1 uur geldig) | Klant, Gebruiker | Reset-token bevat huidige password hash; wordt ongeldig bij wachtwoordwijziging. |
 | F-AU-04 | Eerste admin kan zichzelf registreren via setup-endpoint als er nog geen admin bestaat | Admin | Na eerste registratie wordt setup geblokkeerd. |
 | F-AU-05 | Gebruikers kunnen zich registreren met e-mail, wachtwoord, naam en telefoonnummer | Gebruiker | E-mail moet uniek zijn. Wachtwoord minimaal 6 tekens. |
+| F-AU-05a | Gebruikers kunnen hun profiel bijwerken (naam, telefoon, adresgegevens) | Gebruiker | Adresvelden: straat, huisnummer, postcode, plaats. Worden ook gebruikt om bestelformulier voor te vullen. |
 | F-AU-06 | Scanner-accounts worden beheerd door admin (aanmaken, verwijderen, activeren/deactiveren) | Admin | Scanner logt in met gebruikersnaam en wachtwoord (geen e-mail). |
 | F-AU-07 | Elke login-flow retourneert een Bearer-token dat meegegeven wordt in de Authorization-header | Alle | Frontend slaat tokens op in localStorage per rol. |
 | F-AU-08 | Wachtwoord-vergeten endpoint retourneert altijd hetzelfde bericht (geen user enumeration) | Systeem | "Als er een account bestaat met dit e-mailadres, is er een e-mail verzonden." |
@@ -169,13 +180,15 @@ Het systeem omvat de volgende functionele gebieden:
 ```
 1. Gebruiker bezoekt homepage → overzicht van gepubliceerde evenementen
 2. Klik op evenement → detailpagina met beschrijving, datum, locatie, prijzen
-3. Vul bestelformulier in: voornaam, achternaam, e-mail, (telefoon), aantal tickets
-4. Klik "Bestelling Plaatsen" → bestelling status: RESERVED, timer: 10 minuten
-5. Redirect naar bevestigingspagina (/order/{orderNumber})
-6. Vul adresgegevens in: straat, huisnummer, postcode, plaats → Sla op
-7. Klik "Bestelling Bevestigen" → status: CONFIRMED
-8. E-mail met PDF-tickets wordt automatisch verstuurd
-9. PDF kan opnieuw gedownload worden via de bevestigingspagina
+3. Selecteer ticketcategorie (indien beschikbaar) en aantal tickets
+4. Vul bestelformulier in: voornaam, achternaam, e-mail, (telefoon), aantal tickets
+5. Klik "Bestelling Plaatsen" → bestelling status: RESERVED, timer: 10 minuten
+6. Bestelling wordt toegevoegd aan winkelwagen (gereserveerde bestellingen)
+7. Ga naar bevestigingspagina (/order/{orderNumber})
+8. Vul adresgegevens in: straat, huisnummer, postcode, plaats → Sla op
+9. Klik "Bestelling Bevestigen" → status: CONFIRMED
+10. E-mail met PDF-tickets wordt automatisch verstuurd
+11. PDF kan opnieuw gedownload worden via de bevestigingspagina
 ```
 
 **Stap-indicator op bevestigingspagina:**
@@ -198,9 +211,10 @@ Stap 1: Gereserveerd  →  Stap 2: Adres invullen  →  Stap 3: Bevestigd
 3. Klik "Nieuw Evenement" → dialoogvenster opent
 4. Vul in: naam, beschrijving, startdatum, (einddatum), locatie, (adres),
    totaal tickets, (fysieke tickets), ticketprijs, (servicekosten),
-   (max per bestelling), (afbeelding uploaden)
-5. Opslaan → evenement status: DRAFT (Concept)
-6. Klik "Publiceren" → status: PUBLISHED → evenement zichtbaar voor eindgebruikers
+   (max per bestelling), (afbeelding uploaden), (beschikbaarheid tonen)
+5. Optioneel: Voeg ticketcategorieën toe met eigen naam, prijs, capaciteit en geldigheidsdata
+6. Opslaan → evenement status: DRAFT (Concept)
+7. Klik "Publiceren" → status: PUBLISHED → evenement zichtbaar voor eindgebruikers
 ```
 
 **Aanvullende acties op dashboard:**
@@ -210,7 +224,8 @@ Stap 1: Gereserveerd  →  Stap 2: Adres invullen  →  Stap 3: Bevestigd
 - **Fysieke tickets downloaden:** Klik "Download" → eerder gegenereerde PDF opnieuw ophalen.
 - **Fysieke verkoop registreren:** Invoer aantal verkochte fysieke tickets.
 - **Verkoopinzicht:** Pop-up met gedetailleerde omzet- en ticketstatistieken.
-- **Branding instellen:** Dialoogvenster met logo-upload, kleurkiezer (16 presets), website-URL.
+- **Ticketcategorieën beheren:** Toevoegen, bewerken en verwijderen van categorieën per evenement.
+- **Branding instellen:** Dialoogvenster met logo-upload, kleurkiezer (16 presets), website-URL, voorbeeld-ticket PDF.
 
 ### 3.3 Tickets Scannen (Scanner)
 
@@ -287,7 +302,8 @@ Stap 1: Gereserveerd  →  Stap 2: Adres invullen  →  Stap 3: Bevestigd
 1. Bezoek /login → klik "Registreren"
 2. Vul in: e-mail, wachtwoord (min. 6 tekens), voornaam, achternaam, (telefoon)
 3. Account aangemaakt → automatisch ingelogd → redirect naar homepage
-4. Naam en e-mail worden bij volgende bestellingen automatisch ingevuld
+4. Naam, e-mail en adresgegevens worden bij volgende bestellingen automatisch ingevuld
+5. Gebruiker kan profiel bijwerken via /my-tickets: naam, telefoon, straat, huisnummer, postcode, plaats
 ```
 
 ---
