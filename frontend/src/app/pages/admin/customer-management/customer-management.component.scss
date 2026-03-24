@@ -37,6 +37,23 @@ h1 { color: var(--ts-navy-950); margin: 0; }
   color: var(--ts-navy-600);
 }
 
+// --- Logo Upload ---
+.logo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.logo-preview {
+  max-width: 120px;
+  max-height: 60px;
+  object-fit: contain;
+  border-radius: var(--ts-radius);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  padding: 0.25rem;
+  background: #fff;
+}
+
 // --- Table wrapper enhancements ---
 :host ::ng-deep .p-datatable {
   border-radius: var(--ts-radius-lg);

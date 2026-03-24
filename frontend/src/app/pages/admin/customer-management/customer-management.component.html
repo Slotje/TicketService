@@ -96,10 +96,32 @@
       </p-floatlabel>
     </div>
     <div class="form-field">
-      <p-floatlabel>
-        <input pInputText id="logoUrl" [(ngModel)]="customerForm.logoUrl" class="w-full" />
-        <label for="logoUrl">Logo URL</label>
-      </p-floatlabel>
+      <label>Logo</label>
+      <div class="logo-upload">
+        @if (customerForm.logoUrl) {
+          <img [src]="customerForm.logoUrl" alt="Logo" class="logo-preview" />
+        }
+        <div class="flex align-items-center gap-2">
+          <p-button
+            label="Logo Uploaden"
+            icon="pi pi-upload"
+            severity="secondary"
+            [loading]="uploadingLogo"
+            (onClick)="logoInput.click()"
+            size="small" />
+          @if (customerForm.logoUrl) {
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              (onClick)="customerForm.logoUrl = ''"
+              size="small"
+              pTooltip="Logo verwijderen" />
+          }
+        </div>
+        <input #logoInput type="file" accept="image/*" (change)="uploadLogo($event)" style="display:none" />
+      </div>
     </div>
     <div class="form-field">
       <label>Primaire Kleur</label>
