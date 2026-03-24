@@ -34,6 +34,7 @@ export class EventDetailComponent implements OnInit {
   addedToCart = false;
   errorMessage = '';
   selectedCategory: TicketCategory | null = null;
+  categoryQuantities: Record<number, number> = {};
 
   orderForm: OrderRequest = {
     eventId: 0,
@@ -63,6 +64,31 @@ export class EventDetailComponent implements OnInit {
       max = Math.min(max, this.selectedCategory.availableTickets ?? 0);
     }
     return Math.max(max, 0);
+  }
+
+  get selectedCategories(): TicketCategory[] {
+    return this.activeCategories.filter(c => (this.categoryQuantities[c.id!] ?? 0) > 0);
+  }
+
+  get hasSelectedCategories(): boolean {
+    return this.selectedCategories.length > 0;
+  }
+
+  getCategoryMax(cat: TicketCategory): number {
+    if (!this.event) return 10;
+    let max = this.event.maxTicketsPerOrder;
+    if (cat.maxTickets && cat.maxTickets > 0) {
+      max = Math.min(max, cat.availableTickets ?? 0);
+    }
+    return Math.max(max, 0);
+  }
+
+  getCategoryQuantity(cat: TicketCategory): number {
+    return this.categoryQuantities[cat.id!] ?? 0;
+  }
+
+  setCategoryQuantity(cat: TicketCategory, qty: number) {
+    this.categoryQuantities[cat.id!] = qty ?? 0;
   }
 
   constructor(
@@ -124,6 +150,10 @@ export class EventDetailComponent implements OnInit {
   }
 
   getTotalPrice(): number {
+    if (this.hasCategories) {
+      return this.selectedCategories.reduce((sum, cat) =>
+        sum + cat.price * (this.categoryQuantities[cat.id!] ?? 0), 0);
+    }
     return this.currentPrice * this.orderForm.quantity;
   }
 
@@ -133,18 +163,45 @@ export class EventDetailComponent implements OnInit {
 
   addToCart() {
     if (!this.event) return;
-    this.cart.addItem({
-      eventId: this.event.id!,
-      eventName: this.event.name,
-      eventDate: this.event.eventDate,
-      location: this.event.location,
-      ticketPrice: this.event.ticketPrice,
-      serviceFee: this.event.effectiveOnlineServiceFee ?? this.event.serviceFee ?? 0,
-      quantity: this.orderForm.quantity,
-      maxTicketsPerOrder: this.event.maxTicketsPerOrder,
-      availableTickets: this.event.availableTickets ?? 0,
-      imageUrl: this.event.imageUrl
-    });
+    this.submitted = true;
+
+    if (this.hasCategories) {
+      if (!this.hasSelectedCategories) {
+        this.errorMessage = 'Selecteer minstens één ticket type';
+        return;
+      }
+      this.errorMessage = '';
+      for (const cat of this.selectedCategories) {
+        this.cart.addItem({
+          eventId: this.event.id!,
+          eventName: this.event.name,
+          eventDate: this.event.eventDate,
+          location: this.event.location,
+          ticketCategoryId: cat.id,
+          ticketCategoryName: cat.name,
+          ticketPrice: cat.price,
+          serviceFee: cat.serviceFee ?? this.event.effectiveOnlineServiceFee ?? this.event.serviceFee ?? 0,
+          quantity: this.categoryQuantities[cat.id!],
+          maxTicketsPerOrder: this.event.maxTicketsPerOrder,
+          availableTickets: cat.availableTickets ?? this.event.availableTickets ?? 0,
+          imageUrl: this.event.imageUrl
+        });
+      }
+    } else {
+      this.cart.addItem({
+        eventId: this.event.id!,
+        eventName: this.event.name,
+        eventDate: this.event.eventDate,
+        location: this.event.location,
+        ticketPrice: this.event.ticketPrice,
+        serviceFee: this.event.effectiveOnlineServiceFee ?? this.event.serviceFee ?? 0,
+        quantity: this.orderForm.quantity,
+        maxTicketsPerOrder: this.event.maxTicketsPerOrder,
+        availableTickets: this.event.availableTickets ?? 0,
+        imageUrl: this.event.imageUrl
+      });
+    }
+
     this.addedToCart = true;
     setTimeout(() => this.addedToCart = false, 3000);
   }
@@ -157,27 +214,56 @@ export class EventDetailComponent implements OnInit {
       return;
     }
 
-    if (this.hasCategories && !this.selectedCategory) {
-      return;
-    }
-
-    if (this.orderForm.quantity < 1 || this.orderForm.quantity > this.maxTickets) {
-      this.errorMessage = `Aantal tickets moet tussen 1 en ${this.maxTickets} zijn`;
-      return;
-    }
-
-    this.submitting = true;
-    this.api.createOrder(this.orderForm).subscribe({
-      next: (order) => {
-        this.orderPlaced = true;
-        if (order?.orderNumber) {
-          setTimeout(() => {
-            this.router.navigateByUrl('/order/' + order.orderNumber);
-          }, 1500);
+    if (this.hasCategories) {
+      if (!this.hasSelectedCategories) {
+        this.errorMessage = 'Selecteer minstens één ticket type';
+        return;
+      }
+      this.submitting = true;
+      this.placeOrdersSequential([...this.selectedCategories]);
+    } else {
+      if (this.orderForm.quantity < 1 || this.orderForm.quantity > this.maxTickets) {
+        this.errorMessage = `Aantal tickets moet tussen 1 en ${this.maxTickets} zijn`;
+        return;
+      }
+      this.submitting = true;
+      this.api.createOrder(this.orderForm).subscribe({
+        next: (order) => {
+          this.orderPlaced = true;
+          if (order?.orderNumber) {
+            setTimeout(() => this.router.navigateByUrl('/order/' + order.orderNumber), 1500);
+          }
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Er is een fout opgetreden bij het plaatsen van de bestelling';
+          this.submitting = false;
         }
+      });
+    }
+  }
+
+  private placeOrdersSequential(remaining: TicketCategory[], firstOrderNumber?: string) {
+    if (remaining.length === 0) {
+      this.orderPlaced = true;
+      if (firstOrderNumber) {
+        setTimeout(() => this.router.navigateByUrl('/order/' + firstOrderNumber), 1500);
+      }
+      return;
+    }
+
+    const cat = remaining.shift()!;
+    const request: OrderRequest = {
+      ...this.orderForm,
+      ticketCategoryId: cat.id,
+      quantity: this.categoryQuantities[cat.id!]
+    };
+
+    this.api.createOrder(request).subscribe({
+      next: (order) => {
+        this.placeOrdersSequential(remaining, firstOrderNumber ?? order.orderNumber);
       },
       error: (err) => {
-        this.errorMessage = err.error?.error || 'Er is een fout opgetreden bij het plaatsen van de bestelling';
+        this.errorMessage = err.error?.error || `Fout bij "${cat.name}"`;
         this.submitting = false;
       }
     });

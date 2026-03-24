@@ -95,13 +95,16 @@
         }
 
         <!-- Pre-order items (not yet reserved) -->
-        @for (item of items; track item.eventId; let i = $index) {
+        @for (item of items; track itemKey(item); let i = $index) {
           <div class="cart-item" data-aos="fade-up" [attr.data-aos-delay]="100 + ((reservedOrders.length + i) * 75)">
             <div class="item-accent"></div>
             <div class="item-body">
               <div class="item-header">
                 <div class="item-info">
                   <span class="item-event-name">{{ item.eventName }}</span>
+                  @if (item.ticketCategoryName) {
+                    <span class="item-category">{{ item.ticketCategoryName }}</span>
+                  }
                   <div class="item-meta">
                     <span class="meta-detail">
                       <i class="pi pi-calendar"></i>
@@ -113,7 +116,7 @@
                     </span>
                   </div>
                 </div>
-                <button class="remove-btn" (click)="removeItem(item.eventId)" title="Verwijderen">
+                <button class="remove-btn" (click)="removeItem(item)" title="Verwijderen">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
@@ -152,7 +155,7 @@
                   label="Bestellen"
                   icon="pi pi-check"
                   (onClick)="checkout(item)"
-                  [loading]="processing[item.eventId]"
+                  [loading]="processing[itemKey(item)]"
                   size="small" />
               </div>
             </div>
@@ -172,9 +175,9 @@
               <span>&euro; {{ order.totalPrice | number:'1.2-2' }}</span>
             </div>
           }
-          @for (item of items; track item.eventId) {
+          @for (item of items; track itemKey(item)) {
             <div class="summary-line">
-              <span>{{ item.eventName }} ({{ item.quantity }}x)</span>
+              <span>{{ item.ticketCategoryName || item.eventName }} ({{ item.quantity }}x)</span>
               <span>&euro; {{ getItemTotal(item) | number:'1.2-2' }}</span>
             </div>
           }

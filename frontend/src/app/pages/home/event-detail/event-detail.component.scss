@@ -309,15 +309,7 @@
   padding: 1rem 1.125rem;
   border: 2px solid rgba(15, 23, 42, 0.1);
   border-radius: var(--ts-radius-lg);
-  cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover:not(.sold-out) {
-    border-color: var(--ts-gold);
-    background: rgba(212, 168, 83, 0.04);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(212, 168, 83, 0.1);
-  }
 
   &.selected {
     border-color: var(--ts-gold);
@@ -332,35 +324,29 @@
   }
 }
 
-.category-radio {
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  border: 2px solid rgba(15, 23, 42, 0.2);
+.category-right {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-
-  .category-option.selected & {
-    border-color: var(--ts-gold);
-  }
-
-  .category-option.sold-out & {
-    border-color: rgba(15, 23, 42, 0.1);
-  }
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.radio-dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 50%;
-  background: transparent;
-  transition: all 0.2s ease;
-
-  &.active {
-    background: var(--ts-gold);
+.category-qty {
+  :host ::ng-deep {
+    .p-inputnumber {
+      .p-inputnumber-input {
+        width: 2.5rem;
+        text-align: center;
+        padding: 0.35rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .p-inputnumber-button {
+        width: 1.75rem;
+        padding: 0.35rem;
+      }
+    }
   }
 }
 

@@ -7,6 +7,8 @@ export interface CartItem {
   eventName: string;
   eventDate: string;
   location: string;
+  ticketCategoryId?: number;
+  ticketCategoryName?: string;
   ticketPrice: number;
   serviceFee: number;
   quantity: number;
@@ -151,9 +153,14 @@ export class CartService {
     this.timerTick$.next(now);
   }
 
+  private itemKey(item: { eventId: number; ticketCategoryId?: number }): string {
+    return `${item.eventId}_${item.ticketCategoryId ?? 0}`;
+  }
+
   addItem(item: Omit<CartItem, 'addedAt'>): void {
     const items = [...this.items$.value];
-    const existing = items.findIndex(i => i.eventId === item.eventId);
+    const key = this.itemKey(item);
+    const existing = items.findIndex(i => this.itemKey(i) === key);
 
     if (existing >= 0) {
       items[existing].quantity = item.quantity;
@@ -164,15 +171,17 @@ export class CartService {
     this.save(items);
   }
 
-  updateQuantity(eventId: number, quantity: number): void {
+  updateQuantity(eventId: number, quantity: number, ticketCategoryId?: number): void {
+    const key = this.itemKey({ eventId, ticketCategoryId });
     const items = this.items$.value.map(item =>
-      item.eventId === eventId ? { ...item, quantity } : item
+      this.itemKey(item) === key ? { ...item, quantity } : item
     );
     this.save(items);
   }
 
-  removeItem(eventId: number): void {
-    const items = this.items$.value.filter(i => i.eventId !== eventId);
+  removeItem(eventId: number, ticketCategoryId?: number): void {
+    const key = this.itemKey({ eventId, ticketCategoryId });
+    const items = this.items$.value.filter(i => this.itemKey(i) !== key);
     this.save(items);
   }
 
@@ -180,12 +189,14 @@ export class CartService {
     this.save([]);
   }
 
-  hasItem(eventId: number): boolean {
-    return this.items$.value.some(i => i.eventId === eventId);
+  hasItem(eventId: number, ticketCategoryId?: number): boolean {
+    const key = this.itemKey({ eventId, ticketCategoryId });
+    return this.items$.value.some(i => this.itemKey(i) === key);
   }
 
-  getItem(eventId: number): CartItem | undefined {
-    return this.items$.value.find(i => i.eventId === eventId);
+  getItem(eventId: number, ticketCategoryId?: number): CartItem | undefined {
+    const key = this.itemKey({ eventId, ticketCategoryId });
+    return this.items$.value.find(i => this.itemKey(i) === key);
   }
 
   private save(items: CartItem[]): void {
