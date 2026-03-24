@@ -73,7 +73,11 @@
             </div>
             <div class="meta-text">
               <strong>Prijs</strong>
-              <p>&euro; {{ event.ticketPrice | number:'1.2-2' }} per ticket</p>
+              @if (hasCategories) {
+                <p>Vanaf &euro; {{ activeCategories[0]?.price | number:'1.2-2' }} per ticket</p>
+              } @else {
+                <p>&euro; {{ event.ticketPrice | number:'1.2-2' }} per ticket</p>
+              }
             </div>
           </div>
           <div class="meta-item">
@@ -149,6 +153,34 @@
                 </p-floatlabel>
               </div>
 
+              @if (hasCategories) {
+                <div class="form-field">
+                  <label class="field-label">Ticket type *</label>
+                  <div class="category-list">
+                    @for (cat of activeCategories; track cat.id) {
+                      <div class="category-option" [class.selected]="selectedCategory?.id === cat.id"
+                           (click)="selectCategory(cat)">
+                        <div class="category-info">
+                          <strong>{{ cat.name }}</strong>
+                          @if (cat.description) {
+                            <small>{{ cat.description }}</small>
+                          }
+                          @if (cat.validDate) {
+                            <small class="category-date">
+                              <i class="pi pi-calendar"></i> {{ formatValidDate(cat.validDate) }}
+                            </small>
+                          }
+                        </div>
+                        <div class="category-price">&euro; {{ cat.price | number:'1.2-2' }}</div>
+                      </div>
+                    }
+                  </div>
+                  @if (submitted && !selectedCategory) {
+                    <small class="error-text">Selecteer een ticket type</small>
+                  }
+                </div>
+              }
+
               <div class="form-field">
                 <p-floatlabel>
                   <p-inputNumber
@@ -165,8 +197,8 @@
 
               <div class="order-summary">
                 <div class="summary-row">
-                  <span>{{ orderForm.quantity }}x ticket</span>
-                  <span>&euro; {{ event.ticketPrice | number:'1.2-2' }}</span>
+                  <span>{{ orderForm.quantity }}x {{ selectedCategory?.name || 'ticket' }}</span>
+                  <span>&euro; {{ currentPrice | number:'1.2-2' }}</span>
                 </div>
                 <div class="summary-divider"></div>
                 <div class="summary-row total">

@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
 import { UserAuthService } from '../../../services/user-auth.service';
 import { CartService } from '../../../services/cart.service';
-import { Event, OrderRequest } from '../../../models/models';
+import { Event, OrderRequest, TicketCategory } from '../../../models/models';
 import { Card } from 'primeng/card';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
@@ -33,6 +33,7 @@ export class EventDetailComponent implements OnInit {
   orderPlaced = false;
   addedToCart = false;
   errorMessage = '';
+  selectedCategory: TicketCategory | null = null;
 
   orderForm: OrderRequest = {
     eventId: 0,
@@ -42,6 +43,18 @@ export class EventDetailComponent implements OnInit {
     buyerPhone: '',
     quantity: 1
   };
+
+  get hasCategories(): boolean {
+    return !!(this.event?.ticketCategories && this.event.ticketCategories.length > 0);
+  }
+
+  get activeCategories(): TicketCategory[] {
+    return this.event?.ticketCategories?.filter(c => c.active) ?? [];
+  }
+
+  get currentPrice(): number {
+    return this.selectedCategory?.price ?? this.event?.ticketPrice ?? 0;
+  }
 
   get maxTickets(): number {
     if (!this.event) return 10;
@@ -85,8 +98,19 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  selectCategory(category: TicketCategory) {
+    this.selectedCategory = category;
+    this.orderForm.ticketCategoryId = category.id;
+  }
+
+  formatValidDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('nl-NL', {
+      weekday: 'short', day: 'numeric', month: 'long'
+    });
+  }
+
   getTotalPrice(): number {
-    return (this.event?.ticketPrice ?? 0) * this.orderForm.quantity;
+    return this.currentPrice * this.orderForm.quantity;
   }
 
   isValidEmail(email: string): boolean {
@@ -116,6 +140,10 @@ export class EventDetailComponent implements OnInit {
     this.errorMessage = '';
 
     if (!this.orderForm.buyerFirstName || !this.orderForm.buyerLastName || !this.isValidEmail(this.orderForm.buyerEmail)) {
+      return;
+    }
+
+    if (this.hasCategories && !this.selectedCategory) {
       return;
     }
 

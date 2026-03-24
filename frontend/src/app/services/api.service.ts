@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { BuyerDetails, Customer, Event, Order, OrderRequest, Ticket, TicketSales } from '../models/models';
+import { BuyerDetails, Customer, Event, Order, OrderRequest, Ticket, TicketCategory, TicketSales } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -142,6 +142,23 @@ export class ApiService {
 
   getTicketSales(eventId: number): Observable<TicketSales> {
     return this.http.get<TicketSales>(`${this.baseUrl}/events/${eventId}/sales`);
+  }
+
+  // Ticket Categories
+  getTicketCategories(eventId: number): Observable<TicketCategory[]> {
+    return this.http.get<TicketCategory[]>(`${this.baseUrl}/events/${eventId}/categories`);
+  }
+
+  createMyTicketCategory(eventId: number, category: TicketCategory): Observable<TicketCategory> {
+    return this.http.post<TicketCategory>(`${this.baseUrl}/events/my/${eventId}/categories`, category);
+  }
+
+  updateMyTicketCategory(eventId: number, categoryId: number, category: TicketCategory): Observable<TicketCategory> {
+    return this.http.put<TicketCategory>(`${this.baseUrl}/events/my/${eventId}/categories/${categoryId}`, category);
+  }
+
+  deleteMyTicketCategory(eventId: number, categoryId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/events/my/${eventId}/categories/${categoryId}`);
   }
 
   // Orders

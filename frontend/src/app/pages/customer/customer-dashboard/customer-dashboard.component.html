@@ -222,6 +222,33 @@
     }
   </div>
 
+  <!-- Ticket Categories Section -->
+  @if (editMode) {
+    <div class="section-divider mt-3 mb-2"></div>
+    <h3 class="section-subtitle">
+      <i class="pi pi-tags"></i> Ticket Categorieën
+    </h3>
+    <p class="hint-text">Voeg verschillende tickettypen toe (bijv. Standaard, VIP, Dagkaart). Laat leeg voor één standaard tickettype.</p>
+
+    @for (cat of eventCategories; track cat.id || $index) {
+      <div class="category-row">
+        <div class="category-fields">
+          <input pInputText [(ngModel)]="cat.name" placeholder="Naam *" class="cat-name" />
+          <p-inputNumber [(ngModel)]="cat.price" [min]="0" [minFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" placeholder="Prijs" class="cat-price" />
+          <input pInputText [(ngModel)]="cat.description" placeholder="Beschrijving" class="cat-desc" />
+          <p-datePicker [(ngModel)]="cat._validDateObj" dateFormat="dd-mm-yy" placeholder="Geldig op (dag)" class="cat-date" />
+          <p-inputNumber [(ngModel)]="cat.maxTickets" [min]="0" placeholder="Max tickets (0=onbeperkt)" class="cat-max" />
+        </div>
+        <div class="category-actions">
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                    (onClick)="removeCategory($index)" pTooltip="Verwijderen" />
+        </div>
+      </div>
+    }
+    <p-button label="Categorie Toevoegen" icon="pi pi-plus" severity="secondary" size="small"
+              (onClick)="addCategory()" class="mt-1" />
+  }
+
   <ng-template #footer>
     <p-button label="Annuleren" icon="pi pi-times" (onClick)="dialogVisible = false" [text]="true" />
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveEvent()" [loading]="saving" />
