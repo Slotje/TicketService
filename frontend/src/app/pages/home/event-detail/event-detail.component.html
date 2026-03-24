@@ -177,14 +177,22 @@
 
               <p-message severity="info" text="Na bestellen heb je 10 minuten om te bevestigen. Tickets worden gereserveerd." [style]="{'width': '100%'}" />
 
-              <p-button
-                label="Bestelling Plaatsen"
-                icon="pi pi-check"
-                (onClick)="placeOrder()"
-                [loading]="submitting"
-                [disabled]="submitting"
-                class="w-full mt-1"
-                [style]="{'width': '100%'}" />
+              <div class="order-buttons">
+                <p-button
+                  label="Bestelling Plaatsen"
+                  icon="pi pi-check"
+                  (onClick)="placeOrder()"
+                  [loading]="submitting"
+                  [disabled]="submitting"
+                  [style]="{'width': '100%'}" />
+                <p-button
+                  [label]="addedToCart ? 'Toegevoegd!' : 'In Winkelwagen'"
+                  [icon]="addedToCart ? 'pi pi-check' : 'pi pi-shopping-cart'"
+                  (onClick)="addToCart()"
+                  [severity]="addedToCart ? 'success' : 'secondary'"
+                  [outlined]="!addedToCart"
+                  [style]="{'width': '100%'}" />
+              </div>
             </div>
           }
         </div>

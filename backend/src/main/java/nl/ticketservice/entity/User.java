@@ -34,6 +34,18 @@ public class User extends PanacheEntity {
     @Size(max = 20)
     public String phone;
 
+    @Size(max = 200)
+    public String street;
+
+    @Size(max = 10)
+    public String houseNumber;
+
+    @Size(max = 10)
+    public String postalCode;
+
+    @Size(max = 100)
+    public String city;
+
     @Column(nullable = false, updatable = false)
     public LocalDateTime createdAt;
 

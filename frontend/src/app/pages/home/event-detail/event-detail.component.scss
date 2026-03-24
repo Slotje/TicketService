@@ -278,3 +278,9 @@
   background: rgba(255, 255, 255, 0.1);
   margin: 0.6rem 0;
 }
+
+.order-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

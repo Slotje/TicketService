@@ -41,6 +41,14 @@
 
       <!-- Auth Section -->
       <div class="auth-section">
+        <!-- Cart Icon -->
+        <a routerLink="/winkelwagen" class="cart-link">
+          <i class="pi pi-shopping-cart"></i>
+          @if (cart.itemCount > 0) {
+            <span class="cart-badge">{{ cart.itemCount }}</span>
+          }
+        </a>
+
         @if (adminAuth.isLoggedIn) {
           <div class="user-badge">
             <i class="pi pi-cog"></i>
@@ -60,10 +68,10 @@
             <span class="logout-text">Uitloggen</span>
           </button>
         } @else if (userAuth.isLoggedIn) {
-          <div class="user-badge">
+          <a routerLink="/profiel" class="user-badge" style="text-decoration:none;cursor:pointer;">
             <i class="pi pi-user"></i>
             <span>{{ userAuth.name }}</span>
-          </div>
+          </a>
           <button class="btn-logout" (click)="userAuth.logout()">
             <i class="pi pi-sign-out"></i>
             <span class="logout-text">Uitloggen</span>
@@ -119,6 +127,14 @@
         }
       }
 
+      <a routerLink="/winkelwagen" class="drawer-link" (click)="mobileMenuVisible = false">
+        <i class="pi pi-shopping-cart"></i>
+        <span>Winkelwagen</span>
+        @if (cart.itemCount > 0) {
+          <span class="cart-badge-inline">{{ cart.itemCount }}</span>
+        }
+      </a>
+
       <div class="drawer-divider"></div>
 
       @if (adminAuth.isLoggedIn) {
@@ -144,6 +160,10 @@
           <i class="pi pi-user"></i>
           <span>{{ userAuth.name }}</span>
         </div>
+        <a class="drawer-link" routerLink="/profiel" (click)="mobileMenuVisible = false">
+          <i class="pi pi-id-card"></i>
+          <span>Mijn Profiel</span>
+        </a>
         <a class="drawer-link" (click)="userAuth.logout(); mobileMenuVisible = false">
           <i class="pi pi-sign-out"></i>
           <span>Uitloggen</span>

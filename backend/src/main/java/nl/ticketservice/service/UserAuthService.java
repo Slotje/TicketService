@@ -119,6 +119,19 @@ public class UserAuthService {
         }
     }
 
+    @Transactional
+    public User updateProfile(User user, String firstName, String lastName, String phone,
+                              String street, String houseNumber, String postalCode, String city) {
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.phone = phone;
+        user.street = street;
+        user.houseNumber = houseNumber;
+        user.postalCode = postalCode;
+        user.city = city;
+        return user;
+    }
+
     public User requireUser(String authHeader) {
         String token = extractToken(authHeader);
         User user = validateToken(token);

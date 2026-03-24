@@ -5,5 +5,9 @@ public record UserResponseDTO(
         String email,
         String firstName,
         String lastName,
-        String phone
+        String phone,
+        String street,
+        String houseNumber,
+        String postalCode,
+        String city
 ) {}

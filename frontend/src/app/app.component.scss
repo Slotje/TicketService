@@ -94,6 +94,10 @@
       background: rgba(255, 255, 255, 0.1);
       color: #ffffff;
     }
+    .cart-link {
+      color: rgba(255, 255, 255, 0.85);
+      &:hover { color: #ffffff; background: rgba(255, 255, 255, 0.1); }
+    }
     .logo-icon {
       background: rgba(255, 255, 255, 0.15);
       color: var(--ts-gold);
@@ -221,6 +225,58 @@
     transform: translateX(4px);
     i { color: var(--ts-gold-dark); }
   }
+}
+
+// --- Cart Link ---
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  color: var(--ts-navy-700);
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  i { font-size: 1.1rem; }
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.05);
+    color: var(--ts-navy-950);
+  }
+}
+
+.cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--ts-gold);
+  color: var(--ts-navy-950);
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.cart-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--ts-gold);
+  color: var(--ts-navy-950);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: auto;
 }
 
 // --- Auth Section ---

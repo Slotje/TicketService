@@ -1,0 +1,127 @@
+<div class="cart-page">
+  <!-- Hero Header -->
+  <div class="page-hero">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-content" data-aos="fade-up">
+      <div class="hero-icon">
+        <i class="pi pi-shopping-cart"></i>
+      </div>
+      <h1>Winkelwagen</h1>
+      <p class="hero-subtitle">{{ items.length }} item(s)</p>
+    </div>
+  </div>
+
+  @if (errorMessage) {
+    <div class="cart-content">
+      <p-message severity="error" [text]="errorMessage" [style]="{'width': '100%'}" class="mb-2" />
+    </div>
+  }
+
+  @if (items.length === 0) {
+    <div class="empty-state mt-3">
+      <div class="icon-circle-gold" style="width:3.5rem;height:3.5rem;margin:0 auto 1rem;">
+        <i class="pi pi-shopping-cart" style="font-size:1.25rem;"></i>
+      </div>
+      <h3>Je winkelwagen is leeg</h3>
+      <p>Voeg tickets toe vanuit een evenement.</p>
+      <p-button label="Bekijk evenementen" icon="pi pi-calendar" routerLink="/" class="mt-2" />
+    </div>
+  }
+
+  @if (items.length > 0) {
+    <div class="cart-content">
+      <div class="cart-items">
+        @for (item of items; track item.eventId; let i = $index) {
+          <div class="cart-item" data-aos="fade-up" [attr.data-aos-delay]="100 + (i * 75)">
+            <div class="item-accent"></div>
+            <div class="item-body">
+              <div class="item-header">
+                <div class="item-info">
+                  <span class="item-event-name">{{ item.eventName }}</span>
+                  <div class="item-meta">
+                    <span class="meta-detail">
+                      <i class="pi pi-calendar"></i>
+                      {{ formatDate(item.eventDate) }}
+                    </span>
+                    <span class="meta-detail">
+                      <i class="pi pi-map-marker"></i>
+                      {{ item.location }}
+                    </span>
+                  </div>
+                </div>
+                <button class="remove-btn" (click)="removeItem(item.eventId)" title="Verwijderen">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+
+              <div class="item-pricing">
+                <div class="quantity-section">
+                  <label>Aantal</label>
+                  <div class="quantity-controls">
+                    <button class="qty-btn" (click)="updateQuantity(item, item.quantity - 1)" [disabled]="item.quantity <= 1">
+                      <i class="pi pi-minus"></i>
+                    </button>
+                    <span class="qty-value">{{ item.quantity }}</span>
+                    <button class="qty-btn" (click)="updateQuantity(item, item.quantity + 1)"
+                            [disabled]="item.quantity >= Math.min(item.maxTicketsPerOrder, item.availableTickets)">
+                      <i class="pi pi-plus"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="price-section">
+                  <div class="price-line">
+                    <span>{{ item.quantity }}x &euro; {{ item.ticketPrice | number:'1.2-2' }}</span>
+                  </div>
+                  @if (item.serviceFee > 0) {
+                    <div class="price-line service-fee">
+                      <span>Servicekosten: {{ item.quantity }}x &euro; {{ item.serviceFee | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                  <div class="price-total">
+                    <span>&euro; {{ getItemTotal(item) | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <p-button
+                  label="Bestellen"
+                  icon="pi pi-check"
+                  (onClick)="checkout(item)"
+                  [loading]="processing[item.eventId]"
+                  size="small" />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="cart-summary" data-aos="fade-up">
+        <h3>Overzicht</h3>
+        <div class="summary-lines">
+          @for (item of items; track item.eventId) {
+            <div class="summary-line">
+              <span>{{ item.eventName }} ({{ item.quantity }}x)</span>
+              <span>&euro; {{ getItemTotal(item) | number:'1.2-2' }}</span>
+            </div>
+          }
+        </div>
+        <div class="summary-total">
+          <span>Totaal</span>
+          <span>&euro; {{ cart.totalPrice | number:'1.2-2' }}</span>
+        </div>
+        <p-button
+          label="Alles Bestellen"
+          icon="pi pi-shopping-cart"
+          (onClick)="checkoutAll()"
+          [style]="{'width': '100%'}"
+          class="mt-2" />
+      </div>
+    </div>
+  }
+</div>
