@@ -87,6 +87,10 @@ public class Event extends PanacheEntity {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     public List<TicketOrder> orders = new ArrayList<>();
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder, id")
+    public List<TicketCategory> ticketCategories = new ArrayList<>();
+
     @Column(nullable = false, updatable = false)
     public LocalDateTime createdAt;
 

@@ -1,5 +1,6 @@
 package nl.ticketservice.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record TicketDTO(
@@ -7,6 +8,8 @@ public record TicketDTO(
         String ticketCode,
         String qrCodeData,
         String ticketType,
+        String categoryName,
+        LocalDate validDate,
         boolean scanned,
         LocalDateTime scannedAt,
         LocalDateTime createdAt

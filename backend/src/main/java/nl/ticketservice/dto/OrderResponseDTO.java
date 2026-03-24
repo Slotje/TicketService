@@ -23,6 +23,8 @@ public record OrderResponseDTO(
         String status,
         String eventName,
         Long eventId,
+        String ticketCategoryName,
+        Long ticketCategoryId,
         LocalDateTime createdAt,
         LocalDateTime confirmedAt,
         LocalDateTime expiresAt,
