@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import nl.ticketservice.entity.Customer;
 import nl.ticketservice.service.CustomerAuthService;
 import nl.ticketservice.service.EmailService;
+import nl.ticketservice.service.PdfService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Map;
@@ -22,6 +23,9 @@ public class CustomerAuthResource {
 
     @Inject
     EmailService emailService;
+
+    @Inject
+    PdfService pdfService;
 
     @ConfigProperty(name = "ticket.app.base-url", defaultValue = "http://localhost:80")
     String baseUrl;
@@ -140,5 +144,16 @@ public class CustomerAuthResource {
         }
 
         return Response.ok(Map.of("success", true)).build();
+    }
+
+    @GET
+    @Path("/branding/preview-ticket")
+    @Produces("application/pdf")
+    public Response previewTicketPdf(@HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        byte[] pdf = pdfService.generatePreviewPdf(customer);
+        return Response.ok(pdf)
+                .header("Content-Disposition", "inline; filename=\"voorbeeld-ticket.pdf\"")
+                .build();
     }
 }

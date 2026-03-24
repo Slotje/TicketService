@@ -528,6 +528,17 @@
           <span class="physical-code">TK-AB12CD</span>
         </div>
       </div>
+
+      <div class="preview-download-section">
+        <p class="preview-download-hint">Download een echt gegenereerd voorbeeld ticket als PDF om te zien hoe het er precies uitziet met jouw branding.</p>
+        <p-button
+          label="Download Voorbeeld Ticket"
+          icon="pi pi-download"
+          (onClick)="downloadPreviewTicket()"
+          severity="secondary"
+          [outlined]="true"
+          [style]="{'width': '100%'}" />
+      </div>
     </div>
   </div>
 

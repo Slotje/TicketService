@@ -426,4 +426,26 @@ export class CustomerDashboardComponent implements OnInit {
     if (target === 'primary') this.brandingForm.primaryColor = color;
     else this.brandingForm.secondaryColor = color;
   }
+
+  downloadPreviewTicket() {
+    const token = localStorage.getItem('customer_token');
+    const headers: any = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    this.http.get('/api/customer/auth/branding/preview-ticket', {
+      headers, responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'voorbeeld-ticket.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.brandingError = 'Fout bij downloaden voorbeeld ticket';
+      }
+    });
+  }
 }
