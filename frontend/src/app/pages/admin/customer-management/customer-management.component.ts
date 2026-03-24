@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../../services/api.service';
 import { Customer } from '../../../models/models';
 import { TableModule } from 'primeng/table';
@@ -35,11 +34,9 @@ export class CustomerManagementComponent implements OnInit {
   errorMessage = '';
   dialogError = '';
   editingId: number | null = null;
-  uploadingLogo = false;
-
   customerForm: Customer = this.emptyForm();
 
-  constructor(private api: ApiService, private http: HttpClient, private confirmService: ConfirmationService) {}
+  constructor(private api: ApiService, private confirmService: ConfirmationService) {}
 
   ngOnInit() {
     this.loadCustomers();
@@ -106,30 +103,6 @@ export class CustomerManagementComponent implements OnInit {
     this.api.resendCustomerInvite(customer.id!).subscribe({
       next: () => this.errorMessage = '',
       error: (err) => this.errorMessage = err.error?.error || 'Fout bij versturen uitnodiging'
-    });
-  }
-
-  uploadLogo(event: any) {
-    const file = event.target?.files?.[0];
-    if (!file) return;
-
-    this.uploadingLogo = true;
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const token = localStorage.getItem('admin_token');
-    const headers: any = {};
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-
-    this.http.post<{url: string}>('/api/images/upload', formData, { headers }).subscribe({
-      next: (res) => {
-        this.customerForm.logoUrl = res.url;
-        this.uploadingLogo = false;
-      },
-      error: (err) => {
-        this.dialogError = err.error?.error || 'Fout bij uploaden logo';
-        this.uploadingLogo = false;
-      }
     });
   }
 

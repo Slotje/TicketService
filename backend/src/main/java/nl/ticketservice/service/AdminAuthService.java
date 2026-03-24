@@ -77,7 +77,7 @@ public class AdminAuthService {
         }
 
         AdminUser user = new AdminUser();
-        user.email = email;
+        user.email = email.toLowerCase().trim();
         user.passwordHash = hashPassword(password);
         user.displayName = displayName;
         user.persist();
