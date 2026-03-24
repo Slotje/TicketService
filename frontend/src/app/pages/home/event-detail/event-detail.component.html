@@ -155,32 +155,52 @@
 
               @if (hasCategories) {
                 <div class="form-field">
-                  <label class="field-label">Ticket type *</label>
+                  <label class="field-label">Kies je ticket</label>
                   <div class="category-list">
                     @for (cat of activeCategories; track cat.id) {
-                      <div class="category-option" [class.selected]="selectedCategory?.id === cat.id"
-                           (click)="selectCategory(cat)">
-                        <div class="category-info">
-                          <strong>{{ cat.name }}</strong>
-                          @if (cat.description) {
-                            <small>{{ cat.description }}</small>
-                          }
-                          @if (cat.validDate || cat.startTime) {
-                            <small class="category-date">
-                              <i class="pi pi-calendar"></i>
-                              @if (cat.validDate) {
-                                {{ formatValidDate(cat.validDate) }}
-                              }
-                              @if (cat.startTime) {
-                                {{ formatTime(cat.startTime) }}
-                              }
-                              @if (cat.endTime) {
-                                - {{ formatTime(cat.endTime) }}
-                              }
-                            </small>
-                          }
+                      <div class="category-option"
+                           [class.selected]="selectedCategory?.id === cat.id"
+                           [class.sold-out]="isCategorySoldOut(cat)"
+                           (click)="!isCategorySoldOut(cat) && selectCategory(cat)">
+                        <div class="category-radio">
+                          <div class="radio-dot" [class.active]="selectedCategory?.id === cat.id"></div>
                         </div>
-                        <div class="category-price">&euro; {{ cat.price | number:'1.2-2' }}</div>
+                        <div class="category-info">
+                          <div class="category-name-row">
+                            <strong>{{ cat.name }}</strong>
+                            @if (isCategorySoldOut(cat)) {
+                              <p-tag value="Uitverkocht" severity="danger" styleClass="cat-tag" />
+                            }
+                          </div>
+                          @if (cat.description) {
+                            <small class="category-desc">{{ cat.description }}</small>
+                          }
+                          <div class="category-meta">
+                            @if (cat.validDate) {
+                              <span class="category-date">
+                                <i class="pi pi-calendar"></i>
+                                {{ formatValidDate(cat.validDate) }}
+                              </span>
+                            }
+                            @if (cat.startTime) {
+                              <span class="category-date">
+                                <i class="pi pi-clock"></i>
+                                {{ formatTime(cat.startTime) }}
+                                @if (cat.endTime) { - {{ formatTime(cat.endTime) }} }
+                              </span>
+                            }
+                            @if (cat.availableTickets != null && cat.maxTickets && cat.maxTickets > 0) {
+                              <span class="category-avail" [class.low]="cat.availableTickets! < 50">
+                                <i class="pi pi-ticket"></i>
+                                {{ cat.availableTickets }} beschikbaar
+                              </span>
+                            }
+                          </div>
+                        </div>
+                        <div class="category-price-col">
+                          <span class="category-price">&euro; {{ cat.price | number:'1.2-2' }}</span>
+                          <small class="category-per">per ticket</small>
+                        </div>
                       </div>
                     }
                   </div>
