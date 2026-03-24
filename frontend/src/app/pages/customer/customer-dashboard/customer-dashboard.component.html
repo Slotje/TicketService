@@ -1,42 +1,55 @@
-<div class="dashboard-header mb-2">
-  <div>
-    <h1>Mijn Evenementen</h1>
-    <p class="subtitle">{{ customerAuth.companyName }}</p>
+<!-- Hero Header -->
+<div class="dashboard-hero">
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
   </div>
-  <div class="flex gap-1">
-    <p-button label="Branding" icon="pi pi-palette" [outlined]="true" (onClick)="openBranding()" />
-    <p-button label="Nieuw Evenement" icon="pi pi-plus" (onClick)="openNew()" />
-    <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" severity="secondary" (onClick)="customerAuth.logout()" />
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-icon">
+        <i class="pi pi-building"></i>
+      </div>
+      <div>
+        <h1>Mijn Evenementen</h1>
+        <p class="hero-subtitle">{{ customerAuth.companyName }}</p>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <p-button label="Branding" icon="pi pi-palette" [outlined]="true" styleClass="hero-btn-outline" (onClick)="openBranding()" />
+      <p-button label="Nieuw Evenement" icon="pi pi-plus" styleClass="hero-btn-gold" (onClick)="openNew()" />
+      <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" styleClass="hero-btn-text" (onClick)="customerAuth.logout()" />
+    </div>
   </div>
-</div>
 
-<!-- Stats Overview -->
-<div class="stats-grid mb-2">
-  <div class="stat-card">
-    <div class="stat-icon icon-circle-gold">
-      <i class="pi pi-calendar" style="font-size: 1rem;"></i>
+  <!-- Stats inside hero -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-hero">
+        <i class="pi pi-calendar"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ events.length }}</span>
+        <span class="stat-label">Evenementen</span>
+      </div>
     </div>
-    <div class="stat-info">
-      <span class="stat-value">{{ events.length }}</span>
-      <span class="stat-label">Evenementen</span>
+    <div class="stat-card">
+      <div class="stat-icon-hero">
+        <i class="pi pi-ticket"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getTotalTicketsSold() }}</span>
+        <span class="stat-label">Tickets verkocht</span>
+      </div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon icon-circle-gold">
-      <i class="pi pi-ticket" style="font-size: 1rem;"></i>
-    </div>
-    <div class="stat-info">
-      <span class="stat-value">{{ getTotalTicketsSold() }}</span>
-      <span class="stat-label">Tickets verkocht</span>
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon icon-circle-gold">
-      <i class="pi pi-euro" style="font-size: 1rem;"></i>
-    </div>
-    <div class="stat-info">
-      <span class="stat-value">&euro; {{ getEstimatedRevenue() | number:'1.0-0' }}</span>
-      <span class="stat-label">Geschatte omzet</span>
+    <div class="stat-card">
+      <div class="stat-icon-hero">
+        <i class="pi pi-euro"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">&euro; {{ getEstimatedRevenue() | number:'1.0-0' }}</span>
+        <span class="stat-label">Geschatte omzet</span>
+      </div>
     </div>
   </div>
 </div>
