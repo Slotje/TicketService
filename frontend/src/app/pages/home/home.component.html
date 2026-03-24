@@ -130,12 +130,14 @@
               </div>
             </div>
             <div class="event-card-footer">
-              <div class="availability-info">
-                <div class="availability-bar">
-                  <div class="availability-fill" [style.width.%]="getAvailabilityPercentage(event)"></div>
+              @if (event.showAvailability !== false) {
+                <div class="availability-info">
+                  <div class="availability-bar">
+                    <div class="availability-fill" [style.width.%]="getAvailabilityPercentage(event)"></div>
+                  </div>
+                  <span class="availability-text">{{ event.availableTickets }} / {{ event.maxTickets }}</span>
                 </div>
-                <span class="availability-text">{{ event.availableTickets }} / {{ event.maxTickets }}</span>
-              </div>
+              }
               <p-tag
                 [value]="getStatusLabel(event)"
                 [severity]="getStatusSeverity(event)" />

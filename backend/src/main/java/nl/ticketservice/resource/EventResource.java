@@ -180,7 +180,7 @@ public class EventResource {
                 dto.ticketsSold(), dto.ticketsReserved(),
                 dto.availableTickets(), dto.physicalTicketsSold(),
                 dto.availablePhysicalTickets(), dto.totalSold(),
-                dto.physicalTicketsGenerated(),
+                dto.physicalTicketsGenerated(), dto.showAvailability(),
                 dto.imageUrl(), dto.status(),
                 customer.id, customer.companyName,
                 dto.ticketCategories()

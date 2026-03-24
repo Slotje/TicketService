@@ -73,6 +73,9 @@ public class Event extends PanacheEntity {
     @Column(nullable = false)
     public boolean physicalTicketsGenerated = false;
 
+    @Column(nullable = false)
+    public boolean showAvailability = true;
+
     @Size(max = 500)
     public String imageUrl;
 

@@ -78,11 +78,30 @@ export class EventDetailComponent implements OnInit {
     return Object.values(this.categoryQuantities).reduce((sum, qty) => sum + (qty ?? 0), 0);
   }
 
+  get cartQuantityForEvent(): number {
+    if (!this.event) return 0;
+    return this.cart.cartItems
+      .filter(i => i.eventId === this.event!.id)
+      .reduce((sum, i) => sum + i.quantity, 0);
+  }
+
+  get reservedQuantityForEvent(): number {
+    if (!this.event) return 0;
+    return this.cart.reservedOrders
+      .filter(o => o.eventId === this.event!.id)
+      .reduce((sum, o) => sum + o.quantity, 0);
+  }
+
+  get existingQuantityForEvent(): number {
+    return this.cartQuantityForEvent + this.reservedQuantityForEvent;
+  }
+
   getCategoryMax(cat: TicketCategory): number {
     if (!this.event) return 10;
     const currentQty = this.categoryQuantities[cat.id!] ?? 0;
     const othersQty = this.totalSelectedQuantity - currentQty;
-    let max = this.event.maxTicketsPerOrder - othersQty;
+    const existingQty = this.existingQuantityForEvent;
+    let max = this.event.maxTicketsPerOrder - othersQty - existingQty;
     if (cat.maxTickets && cat.maxTickets > 0) {
       max = Math.min(max, cat.availableTickets ?? 0);
     }
