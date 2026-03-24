@@ -122,15 +122,15 @@ public class UserAuthService {
     @Transactional
     public User updateProfile(User user, String firstName, String lastName, String phone,
                               String street, String houseNumber, String postalCode, String city) {
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.phone = phone;
-        user.street = street;
-        user.houseNumber = houseNumber;
-        user.postalCode = postalCode;
-        user.city = city;
-        user.persist();
-        return user;
+        User managed = User.findById(user.id);
+        managed.firstName = firstName;
+        managed.lastName = lastName;
+        managed.phone = phone;
+        managed.street = street;
+        managed.houseNumber = houseNumber;
+        managed.postalCode = postalCode;
+        managed.city = city;
+        return managed;
     }
 
     public User requireUser(String authHeader) {
