@@ -23,6 +23,7 @@ public record TicketCategoryDTO(
         Integer ticketsReserved,
         Integer availableTickets,
         LocalDate validDate,
+        LocalDate validEndDate,
         LocalDateTime startTime,
         LocalDateTime endTime,
         Integer sortOrder,

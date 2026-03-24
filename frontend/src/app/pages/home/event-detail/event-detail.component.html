@@ -180,6 +180,9 @@
                               <span class="category-date">
                                 <i class="pi pi-calendar"></i>
                                 {{ formatValidDate(cat.validDate) }}
+                                @if (cat.validEndDate && cat.validEndDate !== cat.validDate) {
+                                  t/m {{ formatValidDate(cat.validEndDate) }}
+                                }
                               </span>
                             }
                             @if (cat.startTime) {

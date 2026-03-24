@@ -228,22 +228,66 @@
     <h3 class="section-subtitle">
       <i class="pi pi-tags"></i> Ticket Categorieën
     </h3>
-    <p class="hint-text">Voeg verschillende tickettypen toe (bijv. Standaard, VIP, Dagkaart). Laat leeg voor één standaard tickettype.</p>
+    <p class="hint-text">Voeg verschillende tickettypen toe (bijv. Weekendticket, Dagticket Zaterdag, VIP). Laat leeg voor één standaard tickettype.</p>
 
-    @for (cat of eventCategories; track cat.id || $index) {
-      <div class="category-row">
-        <div class="category-fields">
-          <input pInputText [(ngModel)]="cat.name" placeholder="Naam *" class="cat-name" />
-          <p-inputNumber [(ngModel)]="cat.price" [min]="0" [minFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" placeholder="Prijs" class="cat-price" />
-          <input pInputText [(ngModel)]="cat.description" placeholder="Beschrijving" class="cat-desc" />
-          <p-datePicker [(ngModel)]="cat._validDateObj" dateFormat="dd-mm-yy" placeholder="Geldig op (dag)" class="cat-date" />
-          <p-datePicker [(ngModel)]="cat._startTimeObj" [showTime]="true" [timeOnly]="false" dateFormat="dd-mm-yy" placeholder="Starttijd" class="cat-date" />
-          <p-datePicker [(ngModel)]="cat._endTimeObj" [showTime]="true" [timeOnly]="false" dateFormat="dd-mm-yy" placeholder="Eindtijd" class="cat-date" />
-          <p-inputNumber [(ngModel)]="cat.maxTickets" [min]="0" placeholder="Max (0=onbeperkt)" class="cat-max" />
+    @for (cat of eventCategories; track cat.id || $index; let i = $index) {
+      <div class="category-card">
+        <div class="category-card-header">
+          <span class="category-card-number">{{ i + 1 }}</span>
+          <input pInputText [(ngModel)]="cat.name" placeholder="Naam (bijv. Weekendticket) *" class="category-card-name" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small"
+                    (onClick)="removeCategory(i)" pTooltip="Verwijderen" />
         </div>
-        <div class="category-actions">
-          <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
-                    (onClick)="removeCategory($index)" pTooltip="Verwijderen" />
+
+        <div class="category-card-body">
+          <!-- Row 1: Price + Max tickets -->
+          <div class="cat-form-row">
+            <div class="cat-form-field">
+              <label>Prijs *</label>
+              <p-inputNumber [(ngModel)]="cat.price" [min]="0" [minFractionDigits]="2" mode="currency" currency="EUR" locale="nl-NL" class="w-full" />
+            </div>
+            <div class="cat-form-field">
+              <label>Max tickets</label>
+              <p-inputNumber [(ngModel)]="cat.maxTickets" [min]="0" placeholder="0 = onbeperkt" class="w-full" />
+            </div>
+          </div>
+
+          <!-- Row 2: Description -->
+          <div class="cat-form-field">
+            <label>Beschrijving</label>
+            <input pInputText [(ngModel)]="cat.description" placeholder="Korte beschrijving" class="w-full" />
+          </div>
+
+          <!-- Geldigheid Section -->
+          <div class="cat-section">
+            <label class="cat-section-label"><i class="pi pi-calendar"></i> Geldigheid</label>
+            <div class="cat-form-row">
+              <div class="cat-form-field">
+                <label>Van datum</label>
+                <p-datePicker [(ngModel)]="cat._validDateObj" dateFormat="dd-mm-yy" placeholder="Eerste dag" class="w-full" />
+              </div>
+              <div class="cat-form-field">
+                <label>Tot datum</label>
+                <p-datePicker [(ngModel)]="cat._validEndDateObj" dateFormat="dd-mm-yy" placeholder="Laatste dag" class="w-full" />
+              </div>
+            </div>
+            <small class="cat-hint">Laat leeg voor geldigheid op alle dagen van het evenement.</small>
+          </div>
+
+          <!-- Tijden Section -->
+          <div class="cat-section">
+            <label class="cat-section-label"><i class="pi pi-clock"></i> Tijden</label>
+            <div class="cat-form-row">
+              <div class="cat-form-field">
+                <label>Begintijd</label>
+                <p-datePicker [(ngModel)]="cat._startTimeObj" [showTime]="true" dateFormat="dd-mm-yy" placeholder="Deuren open" class="w-full" />
+              </div>
+              <div class="cat-form-field">
+                <label>Eindtijd</label>
+                <p-datePicker [(ngModel)]="cat._endTimeObj" [showTime]="true" dateFormat="dd-mm-yy" placeholder="Einde" class="w-full" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     }

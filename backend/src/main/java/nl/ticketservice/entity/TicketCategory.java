@@ -44,13 +44,16 @@ public class TicketCategory extends PanacheEntity {
     @Column(nullable = false)
     public Integer ticketsReserved = 0;
 
-    /** For multi-day events: date this ticket is valid for. Null = valid for all days. */
+    /** For multi-day events: first date this ticket is valid for. Null = valid for all days. */
     public LocalDate validDate;
 
-    /** Start time for this category/day (e.g. doors open). */
+    /** Last date this ticket is valid for. Null = same as validDate (single day). */
+    public LocalDate validEndDate;
+
+    /** Start time (e.g. doors open on first day). */
     public LocalDateTime startTime;
 
-    /** End time for this category/day (can be next day for night events). */
+    /** End time (e.g. event ends on last day). */
     public LocalDateTime endTime;
 
     @Column(nullable = false)

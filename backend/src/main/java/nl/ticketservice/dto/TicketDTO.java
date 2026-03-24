@@ -10,6 +10,7 @@ public record TicketDTO(
         String ticketType,
         String categoryName,
         LocalDate validDate,
+        LocalDate validEndDate,
         boolean scanned,
         LocalDateTime scannedAt,
         LocalDateTime createdAt
