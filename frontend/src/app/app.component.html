@@ -44,8 +44,11 @@
         <!-- Cart Icon -->
         <a routerLink="/winkelwagen" class="cart-link">
           <i class="pi pi-shopping-cart"></i>
-          @if (cart.itemCount > 0) {
-            <span class="cart-badge">{{ cart.itemCount }}</span>
+          @if (cart.totalCount > 0) {
+            <span class="cart-badge">{{ cart.totalCount }}</span>
+          }
+          @if (cart.shortestTimer) {
+            <span class="cart-timer" [class.urgent]="cart.isTimerUrgent">{{ cart.shortestTimer }}</span>
           }
         </a>
 
@@ -130,8 +133,11 @@
       <a routerLink="/winkelwagen" class="drawer-link" (click)="mobileMenuVisible = false">
         <i class="pi pi-shopping-cart"></i>
         <span>Winkelwagen</span>
-        @if (cart.itemCount > 0) {
-          <span class="cart-badge-inline">{{ cart.itemCount }}</span>
+        @if (cart.totalCount > 0) {
+          <span class="cart-badge-inline">{{ cart.totalCount }}</span>
+        }
+        @if (cart.shortestTimer) {
+          <span class="cart-timer-inline" [class.urgent]="cart.isTimerUrgent">{{ cart.shortestTimer }}</span>
         }
       </a>
 

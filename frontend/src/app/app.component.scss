@@ -279,6 +279,39 @@
   margin-left: auto;
 }
 
+.cart-timer {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ts-gold-dark);
+  white-space: nowrap;
+  line-height: 1;
+
+  &.urgent {
+    color: #dc2626;
+    animation: pulse-urgent 1s ease-in-out infinite;
+  }
+}
+
+.cart-timer-inline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ts-gold-dark);
+  margin-left: 0.5rem;
+
+  &.urgent {
+    color: #dc2626;
+  }
+}
+
+@keyframes pulse-urgent {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 // --- Auth Section ---
 .auth-section {
   display: flex;
