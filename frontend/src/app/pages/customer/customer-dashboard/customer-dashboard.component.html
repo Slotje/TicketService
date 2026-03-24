@@ -303,7 +303,7 @@
   [(visible)]="brandingDialogVisible"
   header="Pagina Branding"
   [modal]="true"
-  [style]="{'width': '700px'}"
+  [style]="{'width': '850px'}"
   [closable]="true">
 
   @if (brandingError) {
@@ -389,6 +389,114 @@
               <div class="preview-date">Za 15 maart 2026</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 1.5rem 0 1rem;">Voorbeeld Digitaal Ticket</h3>
+      <div class="ticket-preview digital-ticket">
+        <div class="ticket-preview-header" [style.background]="'linear-gradient(135deg, ' + brandingForm.primaryColor + ' 0%, ' + brandingForm.secondaryColor + ' 100%)'">
+          <span class="ticket-preview-event">Voorbeeld Evenement</span>
+          <span class="ticket-preview-counter">1/2</span>
+        </div>
+        <div class="ticket-preview-qr">
+          <svg class="fake-qr" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#fff"/>
+            <rect x="5" y="5" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="70" y="5" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="5" y="70" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="10" y="10" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="75" y="10" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="10" y="75" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="13" y="13" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="78" y="13" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="13" y="78" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="35" y="5" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="45" y="5" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="55" y="5" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="35" y="15" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="50" y="15" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="60" y="15" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="35" y="25" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="45" y="25" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="5" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="15" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="25" y="40" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="35" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="50" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="65" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="75" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="90" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="5" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="20" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="40" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="55" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="70" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="85" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="5" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="15" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="30" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="45" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="60" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="80" y="60" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="70" y="70" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="85" y="70" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="75" y="80" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="90" y="80" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="70" y="90" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="80" y="90" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="90" y="90" width="5" height="5" fill="#1a1a2e"/>
+          </svg>
+          <span class="qr-hint-text">Scan bij de ingang</span>
+        </div>
+        <div class="ticket-preview-perforation">
+          <div class="perf-dot-left"></div>
+          <div class="perf-dashes"></div>
+          <div class="perf-dot-right"></div>
+        </div>
+        <div class="ticket-preview-info">
+          <div class="ticket-preview-detail">
+            <span class="tp-label">BEZOEKER</span>
+            <span class="tp-value">Jan de Vries</span>
+          </div>
+          <div class="ticket-preview-detail">
+            <span class="tp-label">TICKETCODE</span>
+            <span class="tp-value mono">TK-AB12CD</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 1.5rem 0 1rem;">Voorbeeld Fysiek Ticket</h3>
+      <div class="ticket-preview physical-ticket">
+        <div class="physical-ticket-left" [style.background]="'linear-gradient(180deg, ' + brandingForm.primaryColor + ' 0%, ' + brandingForm.secondaryColor + ' 100%)'">
+          @if (brandingForm.logoUrl) {
+            <img [src]="brandingForm.logoUrl" class="physical-logo" />
+          }
+          <span class="physical-event">Voorbeeld Evenement</span>
+          <span class="physical-date">Za 15 maart 2026</span>
+        </div>
+        <div class="physical-ticket-right">
+          <svg class="fake-qr small" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#fff"/>
+            <rect x="5" y="5" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="70" y="5" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="5" y="70" width="25" height="25" rx="2" fill="#1a1a2e"/>
+            <rect x="10" y="10" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="75" y="10" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="10" y="75" width="15" height="15" rx="1" fill="#fff"/>
+            <rect x="13" y="13" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="78" y="13" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="13" y="78" width="9" height="9" fill="#1a1a2e"/>
+            <rect x="35" y="5" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="45" y="10" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="55" y="5" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="40" y="35" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="55" y="40" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="70" y="50" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="85" y="55" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="75" y="80" width="5" height="5" fill="#1a1a2e"/>
+            <rect x="90" y="85" width="5" height="5" fill="#1a1a2e"/>
+          </svg>
+          <span class="physical-code">TK-AB12CD</span>
         </div>
       </div>
     </div>

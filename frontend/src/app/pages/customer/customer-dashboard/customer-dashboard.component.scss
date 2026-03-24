@@ -353,3 +353,148 @@
     border-radius: 0.25rem;
   }
 }
+
+// --- Branding preview layout wider ---
+.branding-layout {
+  grid-template-columns: 1fr 320px;
+}
+
+// --- Ticket Preview (Digital) ---
+.ticket-preview {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid rgba(15,23,42,0.08);
+  background: #fff;
+}
+
+.ticket-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ticket-preview-counter {
+  opacity: 0.7;
+  font-size: 0.7rem;
+}
+
+.ticket-preview-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+}
+
+.fake-qr {
+  width: 100px;
+  height: 100px;
+  &.small { width: 70px; height: 70px; }
+}
+
+.qr-hint-text {
+  font-size: 0.65rem;
+  color: var(--ts-navy-600);
+  margin-top: 0.25rem;
+}
+
+.ticket-preview-perforation {
+  display: flex;
+  align-items: center;
+  margin: 0 -1px;
+}
+
+.perf-dot-left, .perf-dot-right {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ts-navy-50, #f8fafc);
+  flex-shrink: 0;
+}
+
+.perf-dashes {
+  flex: 1;
+  border-top: 2px dashed rgba(15,23,42,0.12);
+}
+
+.ticket-preview-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+}
+
+.ticket-preview-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tp-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--ts-navy-600);
+  letter-spacing: 0.05em;
+}
+
+.tp-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ts-navy-950);
+  &.mono { font-family: monospace; }
+}
+
+// --- Physical Ticket Preview ---
+.physical-ticket {
+  display: flex;
+  min-height: 100px;
+}
+
+.physical-ticket-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem;
+  color: #fff;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.physical-logo {
+  max-width: 50px;
+  max-height: 30px;
+  object-fit: contain;
+  margin-bottom: 0.25rem;
+}
+
+.physical-event {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.physical-date {
+  font-size: 0.6rem;
+  opacity: 0.8;
+}
+
+.physical-ticket-right {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: #fff;
+  gap: 0.25rem;
+}
+
+.physical-code {
+  font-size: 0.55rem;
+  font-family: monospace;
+  color: var(--ts-navy-600);
+}
