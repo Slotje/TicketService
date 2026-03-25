@@ -108,6 +108,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.editMode = false;
     this.editingId = null;
     this.dialogError = '';
+    this.eventCategories = [];
     this.dialogVisible = true;
   }
 
@@ -143,22 +144,39 @@ export class CustomerDashboardComponent implements OnInit {
       this.dialogError = 'Categorie kan niet worden verwijderd: er zijn al tickets verkocht';
       return;
     }
-    if (cat.id) {
-      this.api.deleteMyTicketCategory(this.editingId!, cat.id).subscribe({
+    if (cat.id && this.editingId) {
+      this.api.deleteMyTicketCategory(this.editingId, cat.id).subscribe({
         error: (err: any) => this.dialogError = err.error?.error || 'Fout bij verwijderen categorie'
       });
     }
     this.eventCategories.splice(index, 1);
   }
 
+  private formatLocalDateTime(date: Date): string {
+    const y = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const mi = String(date.getMinutes()).padStart(2, '0');
+    const s = String(date.getSeconds()).padStart(2, '0');
+    return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+  }
+
+  private formatLocalDate(date: Date): string {
+    const y = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${d}`;
+  }
+
   saveEvent() {
     this.dialogError = '';
 
     if (this.eventDateValue) {
-      this.eventForm.eventDate = this.eventDateValue.toISOString().slice(0, 19);
+      this.eventForm.eventDate = this.formatLocalDateTime(this.eventDateValue);
     }
     if (this.endDateValue) {
-      this.eventForm.endDate = this.endDateValue.toISOString().slice(0, 19);
+      this.eventForm.endDate = this.formatLocalDateTime(this.endDateValue);
     }
 
     if (!this.eventForm.name || !this.eventForm.location || !this.eventForm.eventDate) {
@@ -174,8 +192,8 @@ export class CustomerDashboardComponent implements OnInit {
     obs.subscribe({
       next: (saved) => {
         const eventId = saved.id!;
-        // Save categories if in edit mode
-        if (this.editMode && this.eventCategories.length > 0) {
+        // Save categories (both for new and existing events)
+        if (this.eventCategories.length > 0) {
           this.saveCategories(eventId);
         }
         this.dialogVisible = false;
@@ -202,10 +220,10 @@ export class CustomerDashboardComponent implements OnInit {
         price: cat.price || 0,
         serviceFee: cat.serviceFee,
         maxTickets: cat.maxTickets || 0,
-        validDate: cat._validDateObj ? new Date(cat._validDateObj).toISOString().slice(0, 10) : null,
-        validEndDate: cat._validEndDateObj ? new Date(cat._validEndDateObj).toISOString().slice(0, 10) : null,
-        startTime: cat._startTimeObj ? new Date(cat._startTimeObj).toISOString().slice(0, 19) : null,
-        endTime: cat._endTimeObj ? new Date(cat._endTimeObj).toISOString().slice(0, 19) : null,
+        validDate: cat._validDateObj ? this.formatLocalDate(new Date(cat._validDateObj)) : null,
+        validEndDate: cat._validEndDateObj ? this.formatLocalDate(new Date(cat._validEndDateObj)) : null,
+        startTime: cat._startTimeObj ? this.formatLocalDateTime(new Date(cat._startTimeObj)) : null,
+        endTime: cat._endTimeObj ? this.formatLocalDateTime(new Date(cat._endTimeObj)) : null,
         sortOrder: i,
         active: cat.active ?? true
       };

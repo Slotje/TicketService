@@ -102,14 +102,24 @@ export class EventManagementComponent implements OnInit {
     this.dialogVisible = true;
   }
 
+  private formatLocalDateTime(date: Date): string {
+    const y = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const mi = String(date.getMinutes()).padStart(2, '0');
+    const s = String(date.getSeconds()).padStart(2, '0');
+    return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+  }
+
   saveEvent() {
     this.dialogError = '';
 
     if (this.eventDateValue) {
-      this.eventForm.eventDate = this.eventDateValue.toISOString().slice(0, 19);
+      this.eventForm.eventDate = this.formatLocalDateTime(this.eventDateValue);
     }
     if (this.endDateValue) {
-      this.eventForm.endDate = this.endDateValue.toISOString().slice(0, 19);
+      this.eventForm.endDate = this.formatLocalDateTime(this.endDateValue);
     }
 
     if (!this.eventForm.name || !this.eventForm.location || !this.eventForm.customerId || !this.eventForm.eventDate) {

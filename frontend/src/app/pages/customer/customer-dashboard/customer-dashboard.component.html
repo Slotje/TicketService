@@ -229,7 +229,6 @@
   </div>
 
   <!-- Ticket Categories Section -->
-  @if (editMode) {
     <div class="section-divider mt-3 mb-2"></div>
     <h3 class="section-subtitle">
       <i class="pi pi-tags"></i> Ticket Categorieën
@@ -299,7 +298,6 @@
     }
     <p-button label="Categorie Toevoegen" icon="pi pi-plus" severity="secondary" size="small"
               (onClick)="addCategory()" class="mt-1" />
-  }
 
   <ng-template #footer>
     <p-button label="Annuleren" icon="pi pi-times" (onClick)="dialogVisible = false" [text]="true" />
