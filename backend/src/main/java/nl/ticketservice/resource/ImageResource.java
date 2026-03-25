@@ -1,6 +1,7 @@
 package nl.ticketservice.resource;
 
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
@@ -10,6 +11,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import nl.ticketservice.entity.StoredImage;
 import nl.ticketservice.service.AdminAuthService;
 import nl.ticketservice.service.CustomerAuthService;
 import nl.ticketservice.exception.TicketServiceException;
@@ -18,8 +20,6 @@ import org.jboss.resteasy.reactive.RestForm;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,8 +38,6 @@ public class ImageResource {
             "image/webp", ".webp"
     );
 
-    private final java.nio.file.Path uploadDir = Paths.get(System.getProperty("ticket.upload.dir", "/tmp/ticketservice-images"));
-
     @Inject
     AdminAuthService adminAuthService;
 
@@ -50,6 +48,7 @@ public class ImageResource {
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response upload(@RestForm("file") FileUpload file,
                            @HeaderParam("Authorization") String authHeader) {
         // Require either admin or customer auth
@@ -76,17 +75,17 @@ public class ImageResource {
             throw new TicketServiceException("Geen bestand geüpload", 400);
         }
 
-        // Check file size
+        byte[] data;
         try {
-            long fileSize = Files.size(file.filePath());
-            if (fileSize > MAX_FILE_SIZE) {
-                throw new TicketServiceException("Bestand is te groot (max 5MB)", 400);
-            }
+            data = Files.readAllBytes(file.filePath());
         } catch (IOException e) {
             throw new TicketServiceException("Fout bij lezen bestand", 500);
         }
 
-        // Check content type
+        if (data.length > MAX_FILE_SIZE) {
+            throw new TicketServiceException("Bestand is te groot (max 5MB)", 400);
+        }
+
         String contentType = file.contentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
             throw new TicketServiceException("Ongeldig bestandstype. Toegestaan: JPEG, PNG, GIF, WebP", 400);
@@ -95,13 +94,12 @@ public class ImageResource {
         String extension = TYPE_EXTENSIONS.getOrDefault(contentType, ".jpg");
         String filename = UUID.randomUUID() + extension;
 
-        try {
-            Files.createDirectories(uploadDir);
-            java.nio.file.Path target = uploadDir.resolve(filename);
-            Files.copy(file.filePath(), target, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new TicketServiceException("Fout bij opslaan bestand", 500);
-        }
+        StoredImage image = new StoredImage();
+        image.filename = filename;
+        image.contentType = contentType;
+        image.data = data;
+        image.fileSize = data.length;
+        image.persist();
 
         String url = "/api/images/" + filename;
         return Response.ok(Map.of("url", url)).build();
@@ -115,30 +113,14 @@ public class ImageResource {
             throw new TicketServiceException("Ongeldig bestandsnaam", 400);
         }
 
-        java.nio.file.Path file = uploadDir.resolve(filename);
-        if (!Files.exists(file)) {
+        StoredImage image = StoredImage.findByFilename(filename);
+        if (image == null) {
             throw new TicketServiceException("Bestand niet gevonden", 404);
         }
 
-        String contentType = "application/octet-stream";
-        if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
-            contentType = "image/jpeg";
-        } else if (filename.endsWith(".png")) {
-            contentType = "image/png";
-        } else if (filename.endsWith(".gif")) {
-            contentType = "image/gif";
-        } else if (filename.endsWith(".webp")) {
-            contentType = "image/webp";
-        }
-
-        try {
-            byte[] data = Files.readAllBytes(file);
-            return Response.ok(data)
-                    .type(contentType)
-                    .header("Cache-Control", "public, max-age=86400")
-                    .build();
-        } catch (IOException e) {
-            throw new TicketServiceException("Fout bij lezen bestand", 500);
-        }
+        return Response.ok(image.data)
+                .type(image.contentType)
+                .header("Cache-Control", "public, max-age=86400")
+                .build();
     }
 }
