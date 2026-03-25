@@ -28,5 +28,7 @@ public record OrderResponseDTO(
         LocalDateTime createdAt,
         LocalDateTime confirmedAt,
         LocalDateTime expiresAt,
-        List<TicketDTO> tickets
+        List<TicketDTO> tickets,
+        String paymentUrl,
+        String paymentStatus
 ) {}

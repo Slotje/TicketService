@@ -94,6 +94,8 @@ export interface Order {
   confirmedAt?: string;
   expiresAt?: string;
   tickets: Ticket[];
+  paymentUrl?: string;
+  paymentStatus?: string;
 }
 
 export interface BuyerDetails {

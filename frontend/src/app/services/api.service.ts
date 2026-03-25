@@ -194,6 +194,28 @@ export class ApiService {
     return this.http.post<Order>(`${this.baseUrl}/orders/${id}/cancel`, {});
   }
 
+  retryPayment(id: number): Observable<Order> {
+    return this.http.post<Order>(`${this.baseUrl}/orders/${id}/pay`, {});
+  }
+
+  refundOrder(id: number): Observable<Order> {
+    return this.http.post<Order>(`${this.baseUrl}/orders/${id}/refund`, {});
+  }
+
+  getMollieSettings(): Observable<{configured: boolean; maskedKey: string}> {
+    const token = localStorage.getItem('customer_token');
+    const headers: any = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return this.http.get<{configured: boolean; maskedKey: string}>(`${this.baseUrl}/customer/auth/mollie`, { headers });
+  }
+
+  saveMollieSettings(mollieApiKey: string): Observable<any> {
+    const token = localStorage.getItem('customer_token');
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return this.http.put(`${this.baseUrl}/customer/auth/mollie`, { mollieApiKey }, { headers });
+  }
+
   downloadOrderPdf(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/orders/${id}/pdf`, {
       responseType: 'blob'

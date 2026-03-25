@@ -9,15 +9,26 @@
   <div class="order-page">
     <!-- Step Indicator -->
     <div class="step-indicator">
-      <div class="step" [class.active]="order.status === 'RESERVED'" [class.completed]="order.status === 'CONFIRMED'">
+      <div class="step" [class.active]="order.status === 'RESERVED'" [class.completed]="order.status !== 'RESERVED'">
         <div class="step-dot">
-          @if (order.status === 'CONFIRMED') {
+          @if (order.status !== 'RESERVED') {
             <i class="pi pi-check"></i>
           } @else {
             <span>1</span>
           }
         </div>
-        <span class="step-label">Gereserveerd</span>
+        <span class="step-label">Gegevens</span>
+      </div>
+      <div class="step-line" [class.completed]="order.status === 'PENDING_PAYMENT' || order.status === 'CONFIRMED'"></div>
+      <div class="step" [class.active]="order.status === 'PENDING_PAYMENT'" [class.completed]="order.status === 'CONFIRMED'">
+        <div class="step-dot">
+          @if (order.status === 'CONFIRMED') {
+            <i class="pi pi-check"></i>
+          } @else {
+            <span>2</span>
+          }
+        </div>
+        <span class="step-label">Betaling</span>
       </div>
       <div class="step-line" [class.completed]="order.status === 'CONFIRMED'"></div>
       <div class="step" [class.active]="order.status === 'CONFIRMED'">
@@ -25,7 +36,7 @@
           @if (order.status === 'CONFIRMED') {
             <i class="pi pi-check"></i>
           } @else {
-            <span>2</span>
+            <span>3</span>
           }
         </div>
         <span class="step-label">Bevestigd</span>
@@ -39,7 +50,7 @@
           <span class="order-number">{{ order.orderNumber }}</span>
           <p-tag [value]="getStatusLabel()" [severity]="getStatusSeverity()" />
         </div>
-        @if (order.status === 'RESERVED') {
+        @if (order.status === 'RESERVED' || order.status === 'PENDING_PAYMENT') {
           <div class="timer-badge" [class.urgent]="remainingTime === 'Verlopen'">
             <i class="pi pi-clock"></i>
             <span>{{ remainingTime }}</span>
@@ -48,7 +59,17 @@
       </div>
 
       @if (order.status === 'RESERVED' && remainingTime !== 'Verlopen') {
-        <p-message severity="warn" [text]="'Reservering verloopt over ' + remainingTime + '. Vul je adresgegevens in en bevestig je bestelling.'" [style]="{'width': '100%'}" />
+        <p-message severity="warn" [text]="'Reservering verloopt over ' + remainingTime + '. Vul je adresgegevens in en bevestig je bestelling.'" [style]="{'width': '100%'}" }
+
+      @if (order.status === 'PENDING_PAYMENT') {
+        <div class="payment-pending-section">
+          <div class="payment-pending-icon">
+            <i class="pi pi-spin pi-spinner" style="font-size:1.5rem;color:var(--ts-gold-dark);"></i>
+          </div>
+          <p style="text-align:center;color:#6b7280;margin:0.5rem 0;">
+            Betaling wordt verwerkt... De pagina wordt automatisch bijgewerkt.
+          </p>
+        </div>
       }
 
       @if (errorMessage) {
@@ -207,6 +228,23 @@
             (onClick)="confirmOrder()"
             [loading]="processing"
             [disabled]="!isDetailsValid()"
+            severity="success"
+            [style]="{'width': '100%'}" />
+          <p-button
+            label="Bestelling Annuleren"
+            icon="pi pi-times"
+            (onClick)="cancelOrder()"
+            [loading]="cancelling"
+            severity="danger"
+            variant="outlined"
+            [style]="{'width': '100%'}" />
+        }
+        @if (order.status === 'PENDING_PAYMENT') {
+          <p-button
+            label="Opnieuw Betalen"
+            icon="pi pi-credit-card"
+            (onClick)="retryPayment()"
+            [loading]="retrying"
             severity="success"
             [style]="{'width': '100%'}" />
           <p-button

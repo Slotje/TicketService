@@ -32,6 +32,9 @@ public class OrderService {
     @Inject
     EmailService emailService;
 
+    @Inject
+    MolliePaymentService molliePaymentService;
+
     public List<OrderResponseDTO> getOrdersByEvent(Long eventId) {
         return TicketOrder.<TicketOrder>list("event.id", eventId).stream()
                 .map(this::toDTO)
@@ -200,6 +203,32 @@ public class OrderService {
             throw new TicketServiceException("Vul eerst je adresgegevens in voordat je de bestelling bevestigt", 400);
         }
 
+        // Check if customer has Mollie API key configured
+        String mollieApiKey = order.event.customer.mollieApiKey;
+        if (mollieApiKey != null && !mollieApiKey.isBlank()) {
+            // Initiate Mollie payment
+            return initiateMolliePayment(order, mollieApiKey);
+        }
+
+        // No Mollie key: confirm immediately (free/manual payment flow)
+        return finalizeConfirmation(order);
+    }
+
+    private OrderResponseDTO initiateMolliePayment(TicketOrder order, String apiKey) {
+        String description = "Tickets " + order.event.name + " - " + order.orderNumber;
+        MolliePaymentService.MolliePayment payment = molliePaymentService.createPayment(
+                apiKey, order.totalPrice, description, order.orderNumber
+        );
+
+        order.status = OrderStatus.PENDING_PAYMENT;
+        order.molliePaymentId = payment.id();
+        order.paymentStatus = payment.status();
+        // Keep expiresAt so the order can still expire if payment takes too long
+
+        return toDTOWithPaymentUrl(order, payment.checkoutUrl());
+    }
+
+    private OrderResponseDTO finalizeConfirmation(TicketOrder order) {
         order.status = OrderStatus.CONFIRMED;
         order.confirmedAt = LocalDateTime.now();
         order.expiresAt = null;
@@ -208,7 +237,6 @@ public class OrderService {
         event.ticketsReserved -= order.quantity;
         event.ticketsSold += order.quantity;
 
-        // Update category counters
         if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
             TicketCategory cat = order.tickets.get(0).ticketCategory;
             cat.ticketsReserved -= order.quantity;
@@ -228,13 +256,108 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponseDTO completePayment(String molliePaymentId) {
+        TicketOrder order = TicketOrder.find("molliePaymentId", molliePaymentId).firstResult();
+        if (order == null) {
+            throw new TicketServiceException("Bestelling niet gevonden voor betaling", 404);
+        }
+
+        if (order.status != OrderStatus.PENDING_PAYMENT) {
+            // Already processed (idempotent) — return current state
+            return toDTO(order);
+        }
+
+        // Verify payment with Mollie (never trust webhook data alone)
+        String apiKey = order.event.customer.mollieApiKey;
+        MolliePaymentService.MolliePayment payment = molliePaymentService.getPayment(apiKey, molliePaymentId);
+        order.paymentStatus = payment.status();
+
+        if ("paid".equals(payment.status())) {
+            order.paidAt = LocalDateTime.now();
+            return finalizeConfirmation(order);
+        }
+
+        // Payment not yet paid — update status but don't confirm
+        return toDTO(order);
+    }
+
+    @Transactional
+    public OrderResponseDTO initiatePayment(Long orderId) {
+        TicketOrder order = TicketOrder.findById(orderId);
+        if (order == null) {
+            throw new TicketServiceException("Bestelling niet gevonden", 404);
+        }
+
+        if (order.status != OrderStatus.PENDING_PAYMENT) {
+            throw new TicketServiceException("Bestelling is niet in betaalstatus", 400);
+        }
+
+        if (order.expiresAt != null && order.expiresAt.isBefore(LocalDateTime.now())) {
+            cancelExpiredOrder(order);
+            throw new TicketServiceException("Reservering is verlopen. Plaats een nieuwe bestelling.", 400);
+        }
+
+        String apiKey = order.event.customer.mollieApiKey;
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new TicketServiceException("Betaalprovider niet geconfigureerd", 400);
+        }
+
+        // Create a new Mollie payment (previous one may have expired)
+        String description = "Tickets " + order.event.name + " - " + order.orderNumber;
+        MolliePaymentService.MolliePayment payment = molliePaymentService.createPayment(
+                apiKey, order.totalPrice, description, order.orderNumber
+        );
+
+        order.molliePaymentId = payment.id();
+        order.paymentStatus = payment.status();
+
+        return toDTOWithPaymentUrl(order, payment.checkoutUrl());
+    }
+
+    @Transactional
+    public OrderResponseDTO refundOrder(Long orderId) {
+        TicketOrder order = TicketOrder.findById(orderId);
+        if (order == null) {
+            throw new TicketServiceException("Bestelling niet gevonden", 404);
+        }
+
+        if (order.status != OrderStatus.CONFIRMED) {
+            throw new TicketServiceException("Alleen bevestigde bestellingen kunnen worden terugbetaald", 400);
+        }
+
+        // If paid via Mollie, create refund
+        if (order.molliePaymentId != null && !order.molliePaymentId.isBlank()) {
+            String apiKey = order.event.customer.mollieApiKey;
+            MolliePaymentService.MollieRefund refund = molliePaymentService.createRefund(
+                    apiKey, order.molliePaymentId, order.totalPrice
+            );
+            order.mollieRefundId = refund.id();
+        }
+
+        order.status = OrderStatus.REFUNDED;
+
+        // Return tickets to pool
+        Event event = order.event;
+        event.ticketsSold -= order.quantity;
+        if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
+            TicketCategory cat = order.tickets.get(0).ticketCategory;
+            cat.ticketsSold -= order.quantity;
+        }
+        if (event.status == EventStatus.SOLD_OUT && event.getAvailableTickets() > 0) {
+            event.status = EventStatus.PUBLISHED;
+        }
+
+        return toDTO(order);
+    }
+
+    @Transactional
     public OrderResponseDTO cancelOrder(Long orderId) {
         TicketOrder order = TicketOrder.findById(orderId);
         if (order == null) {
             throw new TicketServiceException("Bestelling niet gevonden", 404);
         }
 
-        if (order.status != OrderStatus.RESERVED) {
+        if (order.status != OrderStatus.RESERVED && order.status != OrderStatus.PENDING_PAYMENT) {
             throw new TicketServiceException("Alleen gereserveerde bestellingen kunnen worden geannuleerd", 400);
         }
 
@@ -343,7 +466,22 @@ public class OrderService {
                 o.quantity, o.event.ticketPrice, o.serviceFeePerTicket, o.totalServiceFee,
                 o.totalPrice, o.status.name(), o.event.name,
                 o.event.id, categoryName, categoryId,
-                o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs
+                o.createdAt, o.confirmedAt, o.expiresAt, ticketDTOs,
+                null, o.paymentStatus
+        );
+    }
+
+    private OrderResponseDTO toDTOWithPaymentUrl(TicketOrder o, String paymentUrl) {
+        OrderResponseDTO dto = toDTO(o);
+        return new OrderResponseDTO(
+                dto.id(), dto.orderNumber(), dto.buyerFirstName(), dto.buyerLastName(),
+                dto.buyerEmail(), dto.buyerPhone(),
+                dto.buyerStreet(), dto.buyerHouseNumber(), dto.buyerPostalCode(), dto.buyerCity(),
+                dto.quantity(), dto.ticketPrice(), dto.serviceFeePerTicket(), dto.totalServiceFee(),
+                dto.totalPrice(), dto.status(), dto.eventName(),
+                dto.eventId(), dto.ticketCategoryName(), dto.ticketCategoryId(),
+                dto.createdAt(), dto.confirmedAt(), dto.expiresAt(), dto.tickets(),
+                paymentUrl, dto.paymentStatus()
         );
     }
 

@@ -54,6 +54,8 @@ public class Customer extends PanacheEntity {
 
     public LocalDateTime inviteTokenExpiry;
 
+    public String mollieApiKey;
+
     @Column(nullable = false)
     public boolean active = true;
 
