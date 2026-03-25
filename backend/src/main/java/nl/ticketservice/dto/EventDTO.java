@@ -19,7 +19,7 @@ public record EventDTO(
         @NotBlank(message = "Locatie is verplicht")
         String location,
         String address,
-        @Min(0) @Max(100000)
+        @Min(1) @Max(100000)
         Integer maxTickets,
         @Min(0)
         Integer physicalTickets,

@@ -258,6 +258,10 @@ public class EventService {
             event.maxTickets = 1; // temporary default, recomputed after categories saved
         }
         if (dto.physicalTickets() != null) {
+            if (dto.physicalTickets() > event.maxTickets) {
+                throw new TicketServiceException(
+                        "Fysieke tickets (" + dto.physicalTickets() + ") kan niet meer zijn dan totaal tickets (" + event.maxTickets + ")", 400);
+            }
             event.physicalTickets = dto.physicalTickets();
         }
         if (dto.ticketPrice() != null) {
