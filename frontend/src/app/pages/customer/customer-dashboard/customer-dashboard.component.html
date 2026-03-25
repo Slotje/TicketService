@@ -608,7 +608,7 @@
           <strong style="color:#166534;">Mollie geconfigureerd</strong>
           <p style="margin:0;font-size:0.85rem;color:#15803d;">API Key: {{ mollieMaskedKey }}</p>
         </div>
-        <p-button label="Verwijderen" icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="removeMollieKey()" style="margin-left:auto;" />
+        <p-button label="Verwijderen" icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="removeMollieKey()" [style]="{'margin-left':'auto'}" />
       </div>
     } @else {
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding:1rem;background:#fef3c7;border-radius:8px;border:1px solid #fde68a;">
