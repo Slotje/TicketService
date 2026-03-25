@@ -334,6 +334,11 @@
 
 .category-qty {
   :host ::ng-deep {
+    .qty-no-type .p-inputnumber-input {
+      pointer-events: none;
+      user-select: none;
+      caret-color: transparent;
+    }
     .p-inputnumber {
       .p-inputnumber-input {
         width: 3rem;
