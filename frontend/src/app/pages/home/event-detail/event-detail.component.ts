@@ -59,11 +59,13 @@ export class EventDetailComponent implements OnInit {
 
   get maxTickets(): number {
     if (!this.event) return 10;
-    let max = Math.min(this.event.maxTicketsPerOrder, this.event.availableTickets ?? 0);
+    const available = this.event.availableTickets ?? this.event.maxTickets;
+    let max = Math.min(this.event.maxTicketsPerOrder, available);
+    max -= this.reservedQuantityForEvent;
     if (this.selectedCategory?.maxTickets && this.selectedCategory.maxTickets > 0) {
-      max = Math.min(max, this.selectedCategory.availableTickets ?? 0);
+      max = Math.min(max, this.selectedCategory.availableTickets ?? max);
     }
-    return Math.max(max, 0);
+    return Math.max(max, 1);
   }
 
   get selectedCategories(): TicketCategory[] {
@@ -100,10 +102,12 @@ export class EventDetailComponent implements OnInit {
     if (!this.event) return 10;
     const currentQty = this.categoryQuantities[cat.id!] ?? 0;
     const othersQty = this.totalSelectedQuantity - currentQty;
-    const existingQty = this.existingQuantityForEvent;
-    let max = this.event.maxTicketsPerOrder - othersQty - existingQty;
+    // Only subtract reserved orders (actual server-side reservations), not cart items.
+    // Cart items get replaced on addItem(), so they shouldn't block the +/- buttons.
+    const reservedQty = this.reservedQuantityForEvent;
+    let max = this.event.maxTicketsPerOrder - othersQty - reservedQty;
     if (cat.maxTickets && cat.maxTickets > 0) {
-      max = Math.min(max, cat.availableTickets ?? 0);
+      max = Math.min(max, cat.availableTickets ?? max);
     }
     return Math.max(max, 0);
   }
