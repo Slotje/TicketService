@@ -335,7 +335,7 @@ public class XssSecurityTest {
             .then()
                 .statusCode(201)
                 .extract()
-                .path("id"));
+                .path("id")).longValue();
 
         given()
                 .contentType(ContentType.JSON)
