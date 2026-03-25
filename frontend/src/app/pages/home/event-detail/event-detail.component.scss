@@ -350,6 +350,14 @@
       .p-inputnumber-button {
         width: 2rem;
         padding: 0.35rem;
+        background: var(--ts-navy-800, #1e293b) !important;
+        border-color: var(--ts-navy-800, #1e293b) !important;
+        color: #fff !important;
+
+        &:hover {
+          background: var(--ts-navy-950, #0f172a) !important;
+          border-color: var(--ts-navy-950, #0f172a) !important;
+        }
       }
     }
   }
