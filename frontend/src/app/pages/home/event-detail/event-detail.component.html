@@ -107,7 +107,7 @@
         </div>
 
         <div class="order-card-body">
-          @if (event.availableTickets === 0) {
+          @if (event.availableTickets != null && event.availableTickets <= 0) {
             <p-message severity="warn" text="Dit evenement is uitverkocht" [style]="{'width': '100%'}" />
           } @else if (orderPlaced) {
             <p-message severity="success" text="Bestelling geplaatst! Je wordt doorgestuurd..." [style]="{'width': '100%'}" />
@@ -222,11 +222,11 @@
                       </div>
                     }
                   </div>
-                  <small class="text-muted">Max {{ event.maxTicketsPerOrder }} tickets per bestelling (nog {{ event.maxTicketsPerOrder - totalSelectedQuantity - existingQuantityForEvent }} over)</small>
-                  @if (existingQuantityForEvent > 0) {
+                  <small class="text-muted">Max {{ event.maxTicketsPerOrder }} tickets per bestelling (nog {{ event.maxTicketsPerOrder - totalSelectedQuantity - reservedQuantityForEvent }} over)</small>
+                  @if (reservedQuantityForEvent > 0) {
                     <small class="text-muted" style="display:block;color:var(--ts-gold-dark);">
-                      <i class="pi pi-shopping-cart" style="font-size:0.7rem;"></i>
-                      {{ existingQuantityForEvent }} ticket(s) al in winkelwagen/gereserveerd
+                      <i class="pi pi-info-circle" style="font-size:0.7rem;"></i>
+                      {{ reservedQuantityForEvent }} ticket(s) al gereserveerd
                     </small>
                   }
                   @if (submitted && !hasSelectedCategories) {
