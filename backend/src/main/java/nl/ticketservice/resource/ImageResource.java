@@ -107,6 +107,7 @@ public class ImageResource {
 
     @GET
     @Path("/{filename}")
+    @Transactional
     public Response getImage(@PathParam("filename") String filename) {
         // Prevent path traversal
         if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
