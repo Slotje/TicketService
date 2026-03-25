@@ -102,13 +102,20 @@ export class EventDetailComponent implements OnInit {
     if (!this.event) return 10;
     const currentQty = this.categoryQuantities[cat.id!] ?? 0;
     const othersQty = this.totalSelectedQuantity - currentQty;
-    // Only subtract reserved orders (actual server-side reservations), not cart items.
-    // Cart items get replaced on addItem(), so they shouldn't block the +/- buttons.
     const reservedQty = this.reservedQuantityForEvent;
+
+    // Start with max per order minus what's already selected/reserved
     let max = this.event.maxTicketsPerOrder - othersQty - reservedQty;
-    if (cat.maxTickets && cat.maxTickets > 0) {
-      max = Math.min(max, cat.availableTickets ?? max);
+
+    // Limit by event-level availability
+    const eventAvailable = this.event.availableTickets ?? this.event.maxTickets;
+    max = Math.min(max, eventAvailable);
+
+    // Limit by category-level availability (if category has its own cap)
+    if (cat.maxTickets && cat.maxTickets > 0 && cat.availableTickets != null) {
+      max = Math.min(max, cat.availableTickets);
     }
+
     return Math.max(max, 0);
   }
 
@@ -212,7 +219,7 @@ export class EventDetailComponent implements OnInit {
           serviceFee: cat.serviceFee ?? this.event.effectiveOnlineServiceFee ?? this.event.serviceFee ?? 0,
           quantity: this.categoryQuantities[cat.id!],
           maxTicketsPerOrder: this.event.maxTicketsPerOrder,
-          availableTickets: cat.availableTickets ?? this.event.availableTickets ?? 0,
+          availableTickets: Math.min(cat.availableTickets ?? this.event.availableTickets ?? 0, this.event.availableTickets ?? this.event.maxTickets),
           imageUrl: this.event.imageUrl
         });
       }
