@@ -599,25 +599,9 @@ public class AuthSecurityTest {
 
         Long cancelOrderId = ((Number) orderResponse.path("id")).longValue();
 
-        // Set buyer details and confirm
-        given()
-                .contentType(ContentType.JSON)
-                .body("{\"buyerStreet\":\"Teststraat\",\"buyerHouseNumber\":\"1\","
-                        + "\"buyerPostalCode\":\"1234AB\",\"buyerCity\":\"Amsterdam\"}")
-            .when()
-                .put("/api/orders/" + cancelOrderId + "/details")
-            .then()
-                .statusCode(200);
-
-        given()
-                .contentType(ContentType.JSON)
-            .when()
-                .post("/api/orders/" + cancelOrderId + "/confirm")
-            .then()
-                .statusCode(200);
-
-        // Verify POST /api/orders/{id}/cancel works without auth
+        // Verify POST /api/orders/{id}/cancel works without auth on a RESERVED order
         // (document this as a security risk: anyone with orderId can cancel)
+        // Note: cancel only works on RESERVED orders, so we skip confirm
         given()
                 .contentType(ContentType.JSON)
             .when()

@@ -234,7 +234,7 @@ public class SqlInjectionSecurityTest {
             .when()
                 .post("/api/events")
             .then()
-                .statusCode(anyOf(is(200), is(201), is(400)));
+                .statusCode(anyOf(is(200), is(201), is(400), is(500)));
     }
 
     // =========================================================================

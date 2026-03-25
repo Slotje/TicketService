@@ -36,6 +36,7 @@ public class EventOrderCoverageTest {
     private static Long scanTestEventId;
     private static Long scanTestOrderId;
     private static Long categoryWithLimitId;
+    private static Long categoryTestEventId;
 
     private String getAdminToken() {
         if (adminToken == null) {
@@ -474,6 +475,16 @@ public class EventOrderCoverageTest {
                 .extract()
                 .path("tickets[0].qrCodeData");
 
+        // First scan — may already be scanned by prior test, both 200 and 400 are OK
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + getScannerToken())
+            .when()
+                .post("/api/orders/scan/" + qrCode)
+            .then()
+                .statusCode(anyOf(is(200), is(400)));
+
+        // Second scan must be 400 (already scanned)
         given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + getScannerToken())
@@ -1005,7 +1016,7 @@ public class EventOrderCoverageTest {
     @Order(90)
     void setup_createCategoryWithLimit() {
         // Create a category with maxTickets=1 on a published event
-        Long publishedEventId = ((Number) given()
+        categoryTestEventId = ((Number) given()
             .when()
                 .get("/api/events/published")
             .then()
@@ -1027,7 +1038,7 @@ public class EventOrderCoverageTest {
                 .header("Authorization", "Bearer " + getAdminToken())
                 .body(categoryBody)
             .when()
-                .post("/api/events/" + publishedEventId + "/categories")
+                .post("/api/events/" + categoryTestEventId + "/categories")
             .then()
                 .statusCode(200)
                 .extract()
@@ -1037,7 +1048,7 @@ public class EventOrderCoverageTest {
         given()
                 .contentType(ContentType.JSON)
                 .body("{" +
-                        "\"eventId\":" + publishedEventId + "," +
+                        "\"eventId\":" + categoryTestEventId + "," +
                         "\"ticketCategoryId\":" + categoryWithLimitId + "," +
                         "\"buyerFirstName\":\"Cat\"," +
                         "\"buyerLastName\":\"Buyer\"," +
@@ -1053,18 +1064,10 @@ public class EventOrderCoverageTest {
     @Test
     @Order(91)
     void createOrder_categorySoldOut_returns400() {
-        Long publishedEventId = ((Number) given()
-            .when()
-                .get("/api/events/published")
-            .then()
-                .statusCode(200)
-                .extract()
-                .path("[0].id")).longValue();
-
         given()
                 .contentType(ContentType.JSON)
                 .body("{" +
-                        "\"eventId\":" + publishedEventId + "," +
+                        "\"eventId\":" + categoryTestEventId + "," +
                         "\"ticketCategoryId\":" + categoryWithLimitId + "," +
                         "\"buyerFirstName\":\"Too\"," +
                         "\"buyerLastName\":\"Late\"," +
