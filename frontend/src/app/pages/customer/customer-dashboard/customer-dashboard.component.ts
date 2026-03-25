@@ -66,6 +66,7 @@ export class CustomerDashboardComponent implements OnInit {
   brandingError = '';
   brandingSuccess = '';
 
+  mollieDialogVisible = false;
   mollieApiKey = '';
   mollieConfigured = false;
   mollieMaskedKey = '';
@@ -476,6 +477,14 @@ export class CustomerDashboardComponent implements OnInit {
         this.brandingError = 'Fout bij downloaden voorbeeld ticket';
       }
     });
+  }
+
+  openMollieDialog() {
+    this.mollieDialogVisible = true;
+    this.mollieError = '';
+    this.mollieSuccess = '';
+    this.mollieApiKey = '';
+    this.loadMollieSettings();
   }
 
   loadMollieSettings() {

@@ -17,6 +17,7 @@
     </div>
     <div class="hero-actions">
       <p-button label="Branding" icon="pi pi-palette" [outlined]="true" styleClass="hero-btn-outline" (onClick)="openBranding()" />
+      <p-button label="Betalingen" icon="pi pi-credit-card" [outlined]="true" styleClass="hero-btn-outline" (onClick)="openMollieDialog()" />
       <p-button label="Nieuw Evenement" icon="pi pi-plus" styleClass="hero-btn-gold" (onClick)="openNew()" />
       <p-button label="Uitloggen" icon="pi pi-sign-out" [text]="true" styleClass="hero-btn-text" (onClick)="customerAuth.logout()" />
     </div>
@@ -392,39 +393,6 @@
 
   <div class="branding-layout">
     <div class="branding-form-section">
-      <!-- Mollie Payment Settings -->
-      <h3 style="margin: 0 0 1rem;">
-        <i class="pi pi-credit-card" style="margin-right: 0.5rem;"></i>Betaalinstellingen
-      </h3>
-
-      @if (mollieError) {
-        <p-message severity="error" [text]="mollieError" [style]="{'width': '100%'}" class="mb-2" />
-      }
-      @if (mollieSuccess) {
-        <p-message severity="success" [text]="mollieSuccess" [style]="{'width': '100%'}" class="mb-2" />
-      }
-
-      <div class="form-field mb-2">
-        <label>Mollie API Key</label>
-        @if (mollieConfigured) {
-          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
-            <span style="display:inline-flex;align-items:center;gap:0.4rem;background:#f0fdf4;color:#166534;padding:0.35rem 0.75rem;border-radius:6px;font-size:0.85rem;border:1px solid #bbf7d0;">
-              <i class="pi pi-check-circle" style="font-size:0.8rem;"></i> Geconfigureerd ({{ mollieMaskedKey }})
-            </span>
-            <p-button label="Verwijderen" icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="removeMollieKey()" />
-          </div>
-        }
-        <div style="display:flex;gap:0.5rem;">
-          <input pInputText [(ngModel)]="mollieApiKey" [type]="'password'" [placeholder]="mollieConfigured ? 'Nieuwe key invoeren...' : 'test_xxx of live_xxx'" class="w-full" />
-          <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveMollieSettings()" [loading]="savingMollie" [disabled]="!mollieApiKey" size="small" />
-        </div>
-        <small style="color:#9ca3af;margin-top:0.25rem;display:block;">
-          Vind je API key op <a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank" style="color:var(--ts-gold-dark);">mollie.com/dashboard</a>. Gebruik <code>test_</code> keys om te testen.
-        </small>
-      </div>
-
-      <div class="section-divider mt-2 mb-2"></div>
-
       <h3 style="margin: 0 0 1.25rem;">Personalisatie</h3>
 
       <div class="form-field mb-2">
@@ -627,6 +595,59 @@
     <p-button label="Annuleren" icon="pi pi-times" (onClick)="brandingDialogVisible = false" [text]="true" />
     <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveBranding()" [loading]="savingBranding" />
   </ng-template>
+</p-dialog>
+
+<!-- Mollie Payment Settings Dialog -->
+<p-dialog
+  [(visible)]="mollieDialogVisible"
+  header="Betaalinstellingen"
+  [modal]="true"
+  [style]="{'width': '550px'}"
+  [closable]="true">
+
+  @if (mollieError) {
+    <p-message severity="error" [text]="mollieError" [style]="{'width': '100%'}" class="mb-2" />
+  }
+  @if (mollieSuccess) {
+    <p-message severity="success" [text]="mollieSuccess" [style]="{'width': '100%'}" class="mb-2" />
+  }
+
+  <div style="margin-bottom: 1.5rem;">
+    <p style="color: #6b7280; margin: 0 0 1rem;">
+      Koppel je Mollie account om online betalingen te accepteren voor je evenementen. Zonder Mollie-key worden bestellingen direct bevestigd zonder betaling.
+    </p>
+
+    @if (mollieConfigured) {
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding:1rem;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;">
+        <i class="pi pi-check-circle" style="font-size:1.2rem;color:#166534;"></i>
+        <div>
+          <strong style="color:#166534;">Mollie geconfigureerd</strong>
+          <p style="margin:0;font-size:0.85rem;color:#15803d;">API Key: {{ mollieMaskedKey }}</p>
+        </div>
+        <p-button label="Verwijderen" icon="pi pi-trash" severity="danger" size="small" [text]="true" (onClick)="removeMollieKey()" style="margin-left:auto;" />
+      </div>
+    } @else {
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;padding:1rem;background:#fef3c7;border-radius:8px;border:1px solid #fde68a;">
+        <i class="pi pi-info-circle" style="font-size:1.2rem;color:#92400e;"></i>
+        <div>
+          <strong style="color:#92400e;">Niet geconfigureerd</strong>
+          <p style="margin:0;font-size:0.85rem;color:#a16207;">Bestellingen worden direct bevestigd zonder betaling.</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="form-field mb-2">
+    <label style="font-weight:600;margin-bottom:0.5rem;display:block;">{{ mollieConfigured ? 'Nieuwe API Key' : 'Mollie API Key' }}</label>
+    <div style="display:flex;gap:0.5rem;">
+      <input pInputText [(ngModel)]="mollieApiKey" type="password" [placeholder]="'test_xxx of live_xxx'" class="w-full" />
+      <p-button label="Opslaan" icon="pi pi-check" (onClick)="saveMollieSettings()" [loading]="savingMollie" [disabled]="!mollieApiKey" />
+    </div>
+    <small style="color:#9ca3af;margin-top:0.5rem;display:block;">
+      Vind je API key op <a href="https://www.mollie.com/dashboard/developers/api-keys" target="_blank" style="color:var(--ts-gold-dark);text-decoration:underline;">mollie.com/dashboard</a> onder Developers &gt; API keys.<br/>
+      Gebruik <code style="background:#f1f5f9;padding:0.15rem 0.4rem;border-radius:3px;">test_</code> keys om te testen zonder echte betalingen.
+    </small>
+  </div>
 </p-dialog>
 
 <p-confirmDialog />
