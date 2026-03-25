@@ -42,7 +42,7 @@ public class PdfService {
     // Premium color palette
     private static final DeviceRgb DARK_BG = new DeviceRgb(15, 23, 42);       // Navy 950
     private static final DeviceRgb DARK_CARD = new DeviceRgb(30, 41, 59);      // Navy 900
-    private static final DeviceRgb TEXT_MUTED = new DeviceRgb(148, 163, 184);   // Slate 400
+    private static final DeviceRgb TEXT_MUTED = new DeviceRgb(203, 213, 225);   // Slate 300 — better dark mode contrast
     private static final DeviceRgb TEXT_LIGHT = new DeviceRgb(226, 232, 240);   // Slate 200
     private static final DeviceRgb GOLD = new DeviceRgb(212, 168, 83);          // Brand gold
     private static final DeviceRgb GOLD_DARK = new DeviceRgb(184, 144, 62);     // Darker gold
@@ -296,7 +296,7 @@ public class PdfService {
                 }
                 footer.add(new Paragraph(footerText)
                         .setFontSize(7)
-                        .setFontColor(DIVIDER)
+                        .setFontColor(TEXT_MUTED)
                         .setTextAlignment(TextAlignment.CENTER));
 
                 contentArea.add(footer);
@@ -466,7 +466,7 @@ public class PdfService {
                 footerText += "  •  " + customer.website;
             }
             footer.add(new Paragraph(footerText)
-                    .setFontSize(7).setFontColor(DIVIDER)
+                    .setFontSize(7).setFontColor(TEXT_MUTED)
                     .setTextAlignment(TextAlignment.CENTER));
 
             contentArea.add(footer);

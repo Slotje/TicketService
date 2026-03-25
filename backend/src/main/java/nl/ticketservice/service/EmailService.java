@@ -44,8 +44,21 @@ public class EmailService {
         return """
                 <!DOCTYPE html>
                 <html lang="nl">
-                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-                <body style="margin:0;padding:0;background-color:#f0f2f5;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+                <head>
+                  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <meta name="color-scheme" content="light">
+                  <meta name="supported-color-schemes" content="light">
+                  <style>
+                    :root { color-scheme: light; }
+                    @media (prefers-color-scheme: dark) {
+                      .email-body, .email-body table, .email-body td, .email-body div, .email-body p, .email-body span, .email-body h1, .email-body h2, .email-body h3, .email-body strong, .email-body a, .email-body small, .email-body label {
+                        color: inherit !important;
+                        background-color: inherit !important;
+                      }
+                    }
+                  </style>
+                </head>
+                <body class="email-body" style="margin:0;padding:0;background-color:#f0f2f5;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#1f2937;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:40px 20px;">
                     <tr><td align="center">
                       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
