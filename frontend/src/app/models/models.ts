@@ -27,6 +27,11 @@ export interface TicketCategory {
   endTime?: string | null;
   sortOrder?: number;
   active: boolean;
+  imageUrl?: string;
+  physicalTickets?: number;
+  physicalTicketsSold?: number;
+  physicalTicketsGenerated?: boolean;
+  showAvailability?: boolean;
 }
 
 export interface Event {

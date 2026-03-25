@@ -19,12 +19,10 @@ public record EventDTO(
         @NotBlank(message = "Locatie is verplicht")
         String location,
         String address,
-        @NotNull(message = "Maximaal aantal tickets is verplicht")
-        @Min(1) @Max(100000)
+        @Min(0) @Max(100000)
         Integer maxTickets,
         @Min(0)
         Integer physicalTickets,
-        @NotNull(message = "Prijs is verplicht")
         @DecimalMin("0.00")
         BigDecimal ticketPrice,
         @DecimalMin("0.00")

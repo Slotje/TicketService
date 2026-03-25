@@ -62,6 +62,22 @@ public class TicketCategory extends PanacheEntity {
     @Column(nullable = false)
     public boolean active = true;
 
+    @Size(max = 500)
+    public String imageUrl;
+
+    @Min(0)
+    @Column(nullable = false)
+    public Integer physicalTickets = 0;
+
+    @Column(nullable = false)
+    public Integer physicalTicketsSold = 0;
+
+    @Column(nullable = false)
+    public boolean physicalTicketsGenerated = false;
+
+    @Column(nullable = false)
+    public boolean showAvailability = true;
+
     public int getAvailableTickets() {
         if (maxTickets <= 0) return Integer.MAX_VALUE; // unlimited within event capacity
         return maxTickets - ticketsSold - ticketsReserved;
