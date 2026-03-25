@@ -243,11 +243,13 @@ class EntityTest {
     @Test
     void testOrderStatusValues() {
         OrderStatus[] values = OrderStatus.values();
-        assertEquals(4, values.length);
+        assertEquals(6, values.length);
         assertNotNull(OrderStatus.valueOf("RESERVED"));
+        assertNotNull(OrderStatus.valueOf("PENDING_PAYMENT"));
         assertNotNull(OrderStatus.valueOf("CONFIRMED"));
         assertNotNull(OrderStatus.valueOf("CANCELLED"));
         assertNotNull(OrderStatus.valueOf("EXPIRED"));
+        assertNotNull(OrderStatus.valueOf("REFUNDED"));
     }
 
     // --- TicketCategory tests ---
