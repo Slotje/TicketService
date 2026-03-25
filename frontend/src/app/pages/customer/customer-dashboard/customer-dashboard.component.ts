@@ -66,6 +66,13 @@ export class CustomerDashboardComponent implements OnInit {
   brandingError = '';
   brandingSuccess = '';
 
+  mollieApiKey = '';
+  mollieConfigured = false;
+  mollieMaskedKey = '';
+  savingMollie = false;
+  mollieError = '';
+  mollieSuccess = '';
+
   colorPresets = [
     '#0f172a', '#1e3a5f', '#1a365d', '#1e40af',
     '#7c3aed', '#be123c', '#9f1239', '#dc2626',
@@ -384,6 +391,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.brandingDialogVisible = true;
     this.brandingError = '';
     this.brandingSuccess = '';
+    this.loadMollieSettings();
     // Load current branding from localStorage or API
     const customerId = localStorage.getItem('customer_id');
     if (customerId) {
@@ -467,6 +475,48 @@ export class CustomerDashboardComponent implements OnInit {
       error: () => {
         this.brandingError = 'Fout bij downloaden voorbeeld ticket';
       }
+    });
+  }
+
+  loadMollieSettings() {
+    this.api.getMollieSettings().subscribe({
+      next: (data) => {
+        this.mollieConfigured = data.configured;
+        this.mollieMaskedKey = data.maskedKey;
+      },
+      error: () => {}
+    });
+  }
+
+  saveMollieSettings() {
+    this.savingMollie = true;
+    this.mollieError = '';
+    this.api.saveMollieSettings(this.mollieApiKey).subscribe({
+      next: () => {
+        this.mollieSuccess = 'Mollie API key opgeslagen!';
+        this.savingMollie = false;
+        this.mollieApiKey = '';
+        this.loadMollieSettings();
+        setTimeout(() => this.mollieSuccess = '', 3000);
+      },
+      error: (err) => {
+        this.mollieError = err.error?.error || 'Fout bij opslaan';
+        this.savingMollie = false;
+      }
+    });
+  }
+
+  removeMollieKey() {
+    this.savingMollie = true;
+    this.api.saveMollieSettings('').subscribe({
+      next: () => {
+        this.mollieConfigured = false;
+        this.mollieMaskedKey = '';
+        this.savingMollie = false;
+        this.mollieSuccess = 'Mollie API key verwijderd';
+        setTimeout(() => this.mollieSuccess = '', 3000);
+      },
+      error: () => this.savingMollie = false
     });
   }
 }

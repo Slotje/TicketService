@@ -146,6 +146,32 @@ public class CustomerAuthResource {
         return Response.ok(Map.of("success", true)).build();
     }
 
+    @PUT
+    @Path("/mollie")
+    @Transactional
+    public Response updateMollieSettings(Map<String, String> body,
+                                         @HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        String apiKey = body.get("mollieApiKey");
+        if (apiKey != null) {
+            customer.mollieApiKey = apiKey.isBlank() ? null : apiKey.trim();
+        }
+        return Response.ok(Map.of("success", true)).build();
+    }
+
+    @GET
+    @Path("/mollie")
+    public Response getMollieSettings(@HeaderParam("Authorization") String authHeader) {
+        Customer customer = customerAuthService.requireCustomer(authHeader);
+        boolean configured = customer.mollieApiKey != null && !customer.mollieApiKey.isBlank();
+        String maskedKey = "";
+        if (configured) {
+            String key = customer.mollieApiKey;
+            maskedKey = "****" + key.substring(Math.max(0, key.length() - 4));
+        }
+        return Response.ok(Map.of("configured", configured, "maskedKey", maskedKey)).build();
+    }
+
     @GET
     @Path("/branding/preview-ticket")
     @Produces("application/pdf")

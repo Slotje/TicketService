@@ -19,14 +19,19 @@ public class ReservationCleanupService {
     @Transactional
     public void cleanupExpiredReservations() {
         List<TicketOrder> expiredOrders = TicketOrder.list(
-                "status = ?1 and expiresAt < ?2",
+                "status in (?1, ?2) and expiresAt < ?3",
                 OrderStatus.RESERVED,
+                OrderStatus.PENDING_PAYMENT,
                 LocalDateTime.now()
         );
 
         for (TicketOrder order : expiredOrders) {
-            LOG.infof("Reservering %s is verlopen, tickets worden vrijgegeven", order.orderNumber);
+            LOG.infof("Reservering %s is verlopen (status: %s), tickets worden vrijgegeven",
+                    order.orderNumber, order.status);
             order.event.ticketsReserved -= order.quantity;
+            if (!order.tickets.isEmpty() && order.tickets.get(0).ticketCategory != null) {
+                order.tickets.get(0).ticketCategory.ticketsReserved -= order.quantity;
+            }
             order.status = OrderStatus.EXPIRED;
         }
 

@@ -94,7 +94,8 @@ class DtoTest {
                 new BigDecimal("5.00"), new BigDecimal("55.00"),
                 "CONFIRMED", "Concert", 10L, "VIP", 5L,
                 now, now.plusMinutes(5), now.plusMinutes(30),
-                List.of(ticket)
+                List.of(ticket),
+                null, null
         );
 
         assertEquals(1L, dto.id());

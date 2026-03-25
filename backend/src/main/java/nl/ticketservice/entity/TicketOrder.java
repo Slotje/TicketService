@@ -88,6 +88,15 @@ public class TicketOrder extends PanacheEntity {
 
     public LocalDateTime lastEmailAttempt;
 
+    @Column(unique = true)
+    public String molliePaymentId;
+
+    public String paymentStatus;
+
+    public LocalDateTime paidAt;
+
+    public String mollieRefundId;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();

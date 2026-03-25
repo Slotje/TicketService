@@ -11,9 +11,11 @@ import nl.ticketservice.dto.OrderResponseDTO;
 import nl.ticketservice.dto.TicketDTO;
 import nl.ticketservice.exception.TicketServiceException;
 import nl.ticketservice.service.AdminAuthService;
+import nl.ticketservice.service.CustomerAuthService;
 import nl.ticketservice.service.OrderService;
 import nl.ticketservice.service.PdfService;
 import nl.ticketservice.service.QrCodeService;
+import nl.ticketservice.entity.Customer;
 import nl.ticketservice.entity.TicketOrder;
 
 import java.util.List;
@@ -37,6 +39,9 @@ public class OrderResource {
 
     @Inject
     AdminAuthService adminAuthService;
+
+    @Inject
+    CustomerAuthService customerAuthService;
 
     @GET
     @Path("/event/{eventId}")
@@ -123,5 +128,54 @@ public class OrderResource {
             throw new TicketServiceException("Niet geautoriseerd. Log in als scanner gebruiker.", 401);
         }
         return orderService.scanTicket(qrCodeData, eventId);
+    }
+
+    // =========================================================================
+    // Payment endpoints
+    // =========================================================================
+
+    @POST
+    @Path("/{id}/pay")
+    public OrderResponseDTO initiatePayment(@PathParam("id") Long id) {
+        return orderService.initiatePayment(id);
+    }
+
+    @POST
+    @Path("/webhooks/mollie")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response mollieWebhook(@FormParam("id") String paymentId) {
+        try {
+            if (paymentId != null && !paymentId.isBlank()) {
+                orderService.completePayment(paymentId);
+            }
+        } catch (Exception e) {
+            // Always return 200 to Mollie, even on errors (Mollie requirement)
+            // Log the error for debugging
+        }
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/{id}/refund")
+    public OrderResponseDTO refund(@PathParam("id") Long id,
+                                   @HeaderParam("Authorization") String authHeader) {
+        // Require admin or customer auth
+        try {
+            adminAuthService.requireAdmin(authHeader);
+        } catch (Exception adminFail) {
+            try {
+                Customer customer = customerAuthService.requireCustomer(authHeader);
+                // Customer can only refund orders for their own events
+                TicketOrder order = TicketOrder.findById(id);
+                if (order == null || !order.event.customer.id.equals(customer.id)) {
+                    throw new TicketServiceException("Geen toegang tot deze bestelling", 403);
+                }
+            } catch (TicketServiceException e) {
+                throw e;
+            } catch (Exception customerFail) {
+                throw new TicketServiceException("Niet geautoriseerd", 401);
+            }
+        }
+        return orderService.refundOrder(id);
     }
 }

@@ -25,10 +25,12 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   loading = true;
   processing = false;
   cancelling = false;
+  retrying = false;
   errorMessage = '';
   successMessage = '';
   remainingTime = '';
   private timerInterval: any;
+  private pollInterval: any;
 
   buyerDetails: BuyerDetails = {
     buyerStreet: '',
@@ -61,8 +63,11 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
             buyerCity: this.userAuth.city || ''
           };
         }
-        if (order.status === 'RESERVED') {
+        if (order.status === 'RESERVED' || order.status === 'PENDING_PAYMENT') {
           this.startTimer();
+        }
+        if (order.status === 'PENDING_PAYMENT') {
+          this.startPaymentPolling();
         }
       },
       error: () => this.loading = false
@@ -71,6 +76,7 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
   private startTimer() {
@@ -105,16 +111,18 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
 
   getStatusLabel(): string {
     const map: Record<string, string> = {
-      RESERVED: 'Gereserveerd', CONFIRMED: 'Bevestigd',
-      CANCELLED: 'Geannuleerd', EXPIRED: 'Verlopen'
+      RESERVED: 'Gereserveerd', PENDING_PAYMENT: 'Wacht op betaling',
+      CONFIRMED: 'Bevestigd', CANCELLED: 'Geannuleerd',
+      EXPIRED: 'Verlopen', REFUNDED: 'Terugbetaald'
     };
     return map[this.order?.status ?? ''] ?? this.order?.status ?? '';
   }
 
   getStatusSeverity(): 'info' | 'success' | 'danger' | 'warn' {
     const map: Record<string, 'info' | 'success' | 'danger' | 'warn'> = {
-      RESERVED: 'warn', CONFIRMED: 'success',
-      CANCELLED: 'danger', EXPIRED: 'danger'
+      RESERVED: 'warn', PENDING_PAYMENT: 'warn',
+      CONFIRMED: 'success', CANCELLED: 'danger',
+      EXPIRED: 'danger', REFUNDED: 'info'
     };
     return map[this.order?.status ?? ''] ?? 'info';
   }
@@ -136,6 +144,14 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
           next: (order) => {
             this.order = order;
             this.processing = false;
+
+            // If payment URL is returned, redirect to Mollie
+            if (order.paymentUrl) {
+              window.location.href = order.paymentUrl;
+              return;
+            }
+
+            // No payment needed — direct confirmation
             this.successMessage = 'Bestelling is bevestigd! Je tickets zijn nu beschikbaar.';
             clearInterval(this.timerInterval);
           },
@@ -150,6 +166,43 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
         this.processing = false;
       }
     });
+  }
+
+  retryPayment() {
+    this.retrying = true;
+    this.errorMessage = '';
+    this.api.retryPayment(this.order!.id).subscribe({
+      next: (order) => {
+        this.retrying = false;
+        if (order.paymentUrl) {
+          window.location.href = order.paymentUrl;
+        }
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.error || 'Fout bij opnieuw betalen';
+        this.retrying = false;
+      }
+    });
+  }
+
+  private startPaymentPolling() {
+    this.pollInterval = setInterval(() => {
+      if (!this.order) return;
+      this.api.getOrderByNumber(this.order.orderNumber).subscribe({
+        next: (order) => {
+          if (order.status === 'CONFIRMED') {
+            this.order = order;
+            this.successMessage = 'Betaling ontvangen! Je tickets zijn nu beschikbaar.';
+            clearInterval(this.pollInterval);
+            clearInterval(this.timerInterval);
+          } else if (order.status === 'EXPIRED' || order.status === 'CANCELLED') {
+            this.order = order;
+            clearInterval(this.pollInterval);
+            clearInterval(this.timerInterval);
+          }
+        }
+      });
+    }, 3000);
   }
 
   cancelOrder() {
