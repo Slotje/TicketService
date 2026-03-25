@@ -159,6 +159,7 @@ public class EventService {
         category.event = event;
         updateCategoryEntity(category, dto);
         category.persist();
+        recomputeEventTotals(eventId);
         return toCategoryDTO(category);
     }
 
@@ -169,6 +170,7 @@ public class EventService {
             throw new TicketServiceException("Ticket categorie niet gevonden", 404);
         }
         updateCategoryEntity(category, dto);
+        recomputeEventTotals(eventId);
         return toCategoryDTO(category);
     }
 
@@ -182,6 +184,7 @@ public class EventService {
             throw new TicketServiceException("Categorie kan niet worden verwijderd: er zijn al tickets verkocht", 409);
         }
         category.delete();
+        recomputeEventTotals(eventId);
     }
 
     private void updateCategoryEntity(TicketCategory category, TicketCategoryDTO dto) {
@@ -200,6 +203,45 @@ public class EventService {
             category.sortOrder = dto.sortOrder();
         }
         category.active = dto.active();
+        category.imageUrl = dto.imageUrl();
+        if (dto.physicalTickets() != null) {
+            category.physicalTickets = dto.physicalTickets();
+        }
+        category.showAvailability = dto.showAvailability();
+    }
+
+    /**
+     * Recompute event-level totals from the sum of all ticket categories.
+     * Called after creating/updating/deleting categories.
+     */
+    @Transactional
+    public void recomputeEventTotals(Long eventId) {
+        Event event = Event.findById(eventId);
+        if (event == null) return;
+        List<TicketCategory> cats = TicketCategory.findByEvent(eventId);
+        if (cats.isEmpty()) return;
+
+        int totalMax = 0;
+        int totalPhysical = 0;
+        BigDecimal lowestPrice = null;
+
+        for (TicketCategory cat : cats) {
+            if (cat.maxTickets > 0) {
+                totalMax += cat.maxTickets;
+            }
+            totalPhysical += cat.physicalTickets;
+            if (cat.active && (lowestPrice == null || cat.price.compareTo(lowestPrice) < 0)) {
+                lowestPrice = cat.price;
+            }
+        }
+
+        if (totalMax > 0) {
+            event.maxTickets = totalMax;
+        }
+        event.physicalTickets = totalPhysical;
+        if (lowestPrice != null) {
+            event.ticketPrice = lowestPrice;
+        }
     }
 
     private void updateEntity(Event event, EventDTO dto) {
@@ -209,22 +251,33 @@ public class EventService {
         event.endDate = dto.endDate();
         event.location = dto.location();
         event.address = dto.address();
-        event.maxTickets = dto.maxTickets();
+        // maxTickets and ticketPrice are optional — will be computed from categories
+        if (dto.maxTickets() != null && dto.maxTickets() > 0) {
+            event.maxTickets = dto.maxTickets();
+        } else if (event.maxTickets == null) {
+            event.maxTickets = 1; // temporary default, recomputed after categories saved
+        }
         if (dto.physicalTickets() != null) {
-            if (dto.physicalTickets() > dto.maxTickets()) {
+            if (dto.physicalTickets() > event.maxTickets) {
                 throw new TicketServiceException(
-                        "Fysieke tickets (" + dto.physicalTickets() + ") kan niet meer zijn dan totaal tickets (" + dto.maxTickets() + ")", 400);
+                        "Fysieke tickets (" + dto.physicalTickets() + ") kan niet meer zijn dan totaal tickets (" + event.maxTickets + ")", 400);
             }
             event.physicalTickets = dto.physicalTickets();
         }
-        event.ticketPrice = dto.ticketPrice();
+        if (dto.ticketPrice() != null) {
+            event.ticketPrice = dto.ticketPrice();
+        } else if (event.ticketPrice == null) {
+            event.ticketPrice = BigDecimal.ZERO;
+        }
         if (dto.serviceFee() != null) {
             event.serviceFee = dto.serviceFee();
         }
         if (dto.maxTicketsPerOrder() != null) {
             event.maxTicketsPerOrder = dto.maxTicketsPerOrder();
         }
-        event.imageUrl = dto.imageUrl();
+        if (dto.imageUrl() != null) {
+            event.imageUrl = dto.imageUrl();
+        }
         event.showAvailability = dto.showAvailability();
         if (dto.status() != null) {
             event.status = EventStatus.valueOf(dto.status());
@@ -257,7 +310,9 @@ public class EventService {
                 c.id, c.name, c.description, c.price, c.serviceFee,
                 c.maxTickets, c.ticketsSold, c.ticketsReserved,
                 c.getAvailableTickets(), c.validDate, c.validEndDate, c.startTime, c.endTime,
-                c.sortOrder, c.active
+                c.sortOrder, c.active,
+                c.imageUrl, c.physicalTickets, c.physicalTicketsSold,
+                c.physicalTicketsGenerated, c.showAvailability
         );
     }
 }

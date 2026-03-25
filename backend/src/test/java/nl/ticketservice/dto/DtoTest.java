@@ -20,7 +20,7 @@ class DtoTest {
                 1L, "VIP", "VIP access", new BigDecimal("50.00"), new BigDecimal("5.00"),
                 100, 10, 5, 85, LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 2),
                 LocalDateTime.of(2026, 6, 1, 18, 0), LocalDateTime.of(2026, 6, 2, 23, 0),
-                1, true
+                1, true, null, 0, 0, false, true
         );
         EventDTO dto = new EventDTO(
                 1L, "Concert", "A great concert", now, now.plusHours(3),
@@ -264,7 +264,8 @@ class DtoTest {
         LocalDateTime endTime = LocalDateTime.of(2026, 6, 2, 23, 0);
         TicketCategoryDTO dto = new TicketCategoryDTO(
                 1L, "VIP", "VIP access", new BigDecimal("75.00"), new BigDecimal("5.00"),
-                200, 50, 10, 140, date, endDate, startTime, endTime, 1, true
+                200, 50, 10, 140, date, endDate, startTime, endTime, 1, true,
+                null, 0, 0, false, true
         );
 
         assertEquals(1L, dto.id());

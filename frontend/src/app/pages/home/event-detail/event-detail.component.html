@@ -190,7 +190,7 @@
                                 @if (cat.endTime) { - {{ formatTime(cat.endTime) }} }
                               </span>
                             }
-                            @if (event.showAvailability !== false && cat.availableTickets != null && cat.maxTickets && cat.maxTickets > 0) {
+                            @if (cat.showAvailability !== false && cat.availableTickets != null && cat.maxTickets && cat.maxTickets > 0) {
                               <span class="category-avail" [class.low]="cat.availableTickets! < 50">
                                 <i class="pi pi-ticket"></i>
                                 {{ cat.availableTickets }} beschikbaar

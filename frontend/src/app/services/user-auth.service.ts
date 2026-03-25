@@ -111,6 +111,7 @@ export class UserAuthService {
     localStorage.removeItem('user_house_number');
     localStorage.removeItem('user_postal_code');
     localStorage.removeItem('user_city');
+    localStorage.removeItem('ts_cart');
     this.loggedIn$.next(false);
     this.router.navigate(['/']);
   }

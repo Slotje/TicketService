@@ -66,6 +66,7 @@ export class CustomerDashboardComponent implements OnInit {
   brandingError = '';
   brandingSuccess = '';
 
+  mollieDialogVisible = false;
   mollieApiKey = '';
   mollieConfigured = false;
   mollieMaskedKey = '';
@@ -99,11 +100,11 @@ export class CustomerDashboardComponent implements OnInit {
     });
   }
 
-  emptyForm(): Event {
+  emptyForm(): any {
     return {
       name: '', description: '', eventDate: '', endDate: '',
-      location: '', address: '', maxTickets: 100, physicalTickets: 0,
-      ticketPrice: 25.00, maxTicketsPerOrder: 10, showAvailability: true,
+      location: '', address: '', maxTickets: null, physicalTickets: 0,
+      ticketPrice: null, maxTicketsPerOrder: 10, showAvailability: true,
       imageUrl: '', status: 'DRAFT', customerId: 0
     };
   }
@@ -128,6 +129,8 @@ export class CustomerDashboardComponent implements OnInit {
     this.dialogError = '';
     this.eventCategories = (event.ticketCategories || []).map(c => ({
       ...c,
+      showAvailability: c.showAvailability ?? true,
+      physicalTickets: c.physicalTickets ?? 0,
       _validDateObj: c.validDate ? new Date(c.validDate + 'T00:00:00') : null,
       _validEndDateObj: c.validEndDate ? new Date(c.validEndDate + 'T00:00:00') : null,
       _startTimeObj: c.startTime ? new Date(c.startTime) : null,
@@ -139,9 +142,31 @@ export class CustomerDashboardComponent implements OnInit {
   addCategory() {
     this.eventCategories.push({
       name: '', description: '', price: 0, serviceFee: null,
-      maxTickets: 0, validDate: null, validEndDate: null, startTime: null, endTime: null,
-      sortOrder: this.eventCategories.length,
-      active: true, _validDateObj: null, _validEndDateObj: null, _startTimeObj: null, _endTimeObj: null
+      maxTickets: 100, physicalTickets: 0, validDate: null, validEndDate: null,
+      startTime: null, endTime: null, sortOrder: this.eventCategories.length,
+      active: true, showAvailability: true, imageUrl: null,
+      _validDateObj: null, _validEndDateObj: null, _startTimeObj: null, _endTimeObj: null
+    });
+  }
+
+  uploadCategoryImage(event: any, index: number) {
+    const file = event.target?.files?.[0] || event;
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('customer_token');
+    const headers: any = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    this.http.post<{url: string}>('/api/images/upload', formData, { headers }).subscribe({
+      next: (res) => {
+        this.eventCategories[index].imageUrl = res.url;
+      },
+      error: (err) => {
+        this.dialogError = err.error?.error || 'Fout bij uploaden afbeelding';
+      }
     });
   }
 
@@ -191,6 +216,12 @@ export class CustomerDashboardComponent implements OnInit {
       return;
     }
 
+    const validCategories = this.eventCategories.filter(c => c.name?.trim());
+    if (validCategories.length === 0) {
+      this.dialogError = 'Voeg minstens één ticketsoort toe';
+      return;
+    }
+
     this.saving = true;
     const obs = this.editMode
       ? this.api.updateMyEvent(this.editingId!, this.eventForm)
@@ -226,13 +257,16 @@ export class CustomerDashboardComponent implements OnInit {
         description: cat.description,
         price: cat.price || 0,
         serviceFee: cat.serviceFee,
-        maxTickets: cat.maxTickets || 0,
+        maxTickets: cat.maxTickets || 100,
         validDate: cat._validDateObj ? this.formatLocalDate(new Date(cat._validDateObj)) : null,
         validEndDate: cat._validEndDateObj ? this.formatLocalDate(new Date(cat._validEndDateObj)) : null,
         startTime: cat._startTimeObj ? this.formatLocalDateTime(new Date(cat._startTimeObj)) : null,
         endTime: cat._endTimeObj ? this.formatLocalDateTime(new Date(cat._endTimeObj)) : null,
         sortOrder: i,
-        active: cat.active ?? true
+        active: cat.active ?? true,
+        imageUrl: cat.imageUrl || undefined,
+        physicalTickets: cat.physicalTickets || 0,
+        showAvailability: cat.showAvailability ?? true
       };
 
       if (cat.id) {
@@ -476,6 +510,14 @@ export class CustomerDashboardComponent implements OnInit {
         this.brandingError = 'Fout bij downloaden voorbeeld ticket';
       }
     });
+  }
+
+  openMollieDialog() {
+    this.mollieDialogVisible = true;
+    this.mollieError = '';
+    this.mollieSuccess = '';
+    this.mollieApiKey = '';
+    this.loadMollieSettings();
   }
 
   loadMollieSettings() {

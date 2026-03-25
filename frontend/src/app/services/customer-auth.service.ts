@@ -76,6 +76,8 @@ export class CustomerAuthService {
     localStorage.removeItem('customer_id');
     localStorage.removeItem('customer_company_name');
     localStorage.removeItem('customer_contact_person');
+    localStorage.removeItem('customer_slug');
+    localStorage.removeItem('ts_cart');
     this.loggedIn$.next(false);
     this.router.navigate(['/klant/login']);
   }

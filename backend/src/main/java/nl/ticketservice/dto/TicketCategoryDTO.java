@@ -27,5 +27,10 @@ public record TicketCategoryDTO(
         LocalDateTime startTime,
         LocalDateTime endTime,
         Integer sortOrder,
-        boolean active
+        boolean active,
+        String imageUrl,
+        Integer physicalTickets,
+        Integer physicalTicketsSold,
+        boolean physicalTicketsGenerated,
+        boolean showAvailability
 ) {}
