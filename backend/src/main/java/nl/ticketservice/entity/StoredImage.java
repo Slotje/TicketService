@@ -16,7 +16,7 @@ public class StoredImage extends PanacheEntity {
     public String contentType;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "BYTEA")
+    @Column(nullable = false)
     public byte[] data;
 
     @Column(nullable = false)
