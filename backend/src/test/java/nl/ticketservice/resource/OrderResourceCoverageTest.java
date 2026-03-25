@@ -384,7 +384,7 @@ public class OrderResourceCoverageTest {
                 .post("/api/orders")
             .then()
                 .statusCode(400)
-                .body("error", containsString("uitverkocht"));
+                .body("error", containsString("niet beschikbaar"));
     }
 
     // =========================================================================
