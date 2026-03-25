@@ -67,13 +67,54 @@ public class ScheduledServicesTest {
     }
 
     private Long getPublishedEventId() {
-        return ((Number) given()
+        // Create a dedicated event for ScheduledServicesTest to avoid ticket exhaustion
+        String adminToken = getAdminToken();
+        Long customerId = ((Number) given()
+                .header("Authorization", "Bearer " + adminToken)
             .when()
-                .get("/api/events/published")
+                .get("/api/customers")
             .then()
                 .statusCode(200)
                 .extract()
                 .path("[0].id")).longValue();
+
+        Long newEventId = ((Number) given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body(Map.of(
+                        "name", "Scheduled Services Test Event",
+                        "description", "Event for ScheduledServicesTest",
+                        "eventDate", "2028-06-01T18:00:00",
+                        "location", "Test Venue",
+                        "maxTickets", 100,
+                        "ticketPrice", 25.00,
+                        "maxTicketsPerOrder", 10,
+                        "customerId", customerId))
+            .when()
+                .post("/api/events")
+            .then()
+                .statusCode(201)
+                .extract()
+                .path("id")).longValue();
+
+        // Publish it
+        given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body(Map.of("name", "Scheduled Services Test Event",
+                        "eventDate", "2028-06-01T18:00:00",
+                        "location", "Test Venue",
+                        "maxTickets", 100,
+                        "ticketPrice", 25.00,
+                        "maxTicketsPerOrder", 10,
+                        "customerId", customerId,
+                        "status", "PUBLISHED"))
+            .when()
+                .put("/api/events/" + newEventId)
+            .then()
+                .statusCode(200);
+
+        return newEventId;
     }
 
     // =========================================================================
