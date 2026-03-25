@@ -59,7 +59,8 @@
       </div>
 
       @if (order.status === 'RESERVED' && remainingTime !== 'Verlopen') {
-        <p-message severity="warn" [text]="'Reservering verloopt over ' + remainingTime + '. Vul je adresgegevens in en bevestig je bestelling.'" [style]="{'width': '100%'}" }
+        <p-message severity="warn" [text]="'Reservering verloopt over ' + remainingTime + '. Vul je adresgegevens in en bevestig je bestelling.'" [style]="{'width': '100%'}" />
+      }
 
       @if (order.status === 'PENDING_PAYMENT') {
         <div class="payment-pending-section">
